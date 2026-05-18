@@ -40,7 +40,8 @@ function Signup() {
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Account created!");
+    toast.success("Account created! Please check your email to confirm, then log in.", { duration: 6000 });
+    nav({ to: "/login" });
   };
 
   const onGoogle = async () => {
