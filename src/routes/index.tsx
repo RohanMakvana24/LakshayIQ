@@ -57,7 +57,7 @@ function Landing() {
             </div>
           </Link>
 
-          {/* Center Navigation Links mirroring standard premium setups */}
+          {/* Center Navigation Links */}
           <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
             <Link to="/" className="text-emerald-500 transition-colors">Home</Link>
             <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
@@ -122,7 +122,7 @@ function Landing() {
             </div>
           </div>
 
-          {/* DYNAMIC HERO IMAGE & FLOATING METRICS (Inspired by Reference Mockup) */}
+          {/* DYNAMIC HERO IMAGE & FLOATING METRICS */}
           <div className="relative flex items-center justify-center md:col-span-5 lg:col-span-6">
             <div className="relative w-full max-w-[460px] aspect-square flex items-center justify-center">
               {/* Giant Background Organic Circle */}
@@ -132,12 +132,12 @@ function Landing() {
               <div className="absolute -inset-4 rounded-full border border-dashed border-slate-200/80 animate-[spin_120s_linear_infinite]" />
               <div className="absolute -inset-12 rounded-full border border-slate-100/60" />
               
-              {/* Main Cutout Display Illustration */}
+              {/* Main Cutout Display Container (Rounded Fix Handled Here) */}
               <div className="absolute bottom-4 overflow-hidden rounded-b-full w-[85%] h-[90%] flex items-end justify-center">
                 <img 
                   src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop" 
                   alt="Student representative showcasing achievement" 
-                  className="w-full h-full object-cover object-top scale-105 brightness-[1.02] contrast-[1.02]"
+                  className="w-full h-full object-cover object-top scale-105 brightness-[1.02] contrast-[1.02] rounded-b-full"
                 />
               </div>
 
@@ -211,7 +211,7 @@ function Landing() {
                 <FileText className="h-6 w-6" />
               </div>
               <h3 className="mt-6 text-xl font-bold">Previous Year Papers</h3>
-              <p className="mt-3 text-sm text-emerald-550 leading-relaxed text-emerald-50/90">
+              <p className="mt-3 text-sm leading-relaxed text-emerald-50/90">
                 Exhaustive collection of semester question papers structured by historical year timelines, tracking exact distribution models.
               </p>
               <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:underline">
@@ -248,7 +248,7 @@ function Landing() {
             </div>
           </div>
           
-          {/* Carousel indicators mirroring mockup layout */}
+          {/* Carousel indicators */}
           <div className="mt-8 flex items-center justify-center gap-2">
             <span className="h-2 w-6 rounded-full bg-emerald-500" />
             <span className="h-2 w-2 rounded-full bg-slate-200" />
@@ -277,7 +277,7 @@ function Landing() {
               <div key={step.title} className="group relative rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md">
                 <div className="flex items-center justify-between">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Step 0{idx + 1}</div>
-                  <div className="text-xs font-bold text-slate-300">{(idx + 1 * 20)}% Grid</div>
+                  <div className="text-xs font-bold text-slate-300">{((idx + 1) * 20)}% Grid</div>
                 </div>
                 <div className="mt-4 flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-700 transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-600">
                   <step.icon className="h-4 w-4" />
