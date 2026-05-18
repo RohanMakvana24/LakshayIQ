@@ -14,6 +14,226 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string | null
+          user_id: string
+          video_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id?: string | null
+          user_id: string
+          video_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string | null
+          user_id?: string
+          video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookmarks_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "unit_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmarks_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "unit_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration: string | null
+          id: string
+          name: string
+          slug: string
+          thumbnail_url: string | null
+          total_semesters: number
+          university_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          id?: string
+          name: string
+          slug: string
+          thumbnail_url?: string | null
+          total_semesters?: number
+          university_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          thumbnail_url?: string | null
+          total_semesters?: number
+          university_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_timetables: {
+        Row: {
+          course_id: string
+          created_at: string
+          exam_end_date: string | null
+          exam_start_date: string | null
+          file_url: string
+          id: string
+          semester_id: string
+          title: string
+          university_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          exam_end_date?: string | null
+          exam_start_date?: string | null
+          file_url: string
+          id?: string
+          semester_id: string
+          title: string
+          university_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          exam_end_date?: string | null
+          exam_start_date?: string | null
+          file_url?: string
+          id?: string
+          semester_id?: string
+          title?: string
+          university_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_timetables_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_timetables_semester_id_fkey"
+            columns: ["semester_id"]
+            isOneToOne: false
+            referencedRelation: "semesters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_timetables_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      important_questions: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          question_file_url: string | null
+          question_text: string
+          unit_id: string
+          year: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          question_file_url?: string | null
+          question_text: string
+          unit_id: string
+          year?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          question_file_url?: string | null
+          question_text?: string
+          unit_id?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "important_questions_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      previous_year_papers: {
+        Row: {
+          created_at: string
+          file_url: string
+          id: string
+          semester: number | null
+          subject_id: string
+          title: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          file_url: string
+          id?: string
+          semester?: number | null
+          subject_id: string
+          title: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          file_url?: string
+          id?: string
+          semester?: number | null
+          subject_id?: string
+          title?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "previous_year_papers_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -37,6 +257,235 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      semesters: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          semester_number: number
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          semester_number: number
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          semester_number?: number
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "semesters_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          semester_id: string
+          slug: string
+          subject_code: string | null
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          semester_id: string
+          slug: string
+          subject_code?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          semester_id?: string
+          slug?: string
+          subject_code?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subjects_semester_id_fkey"
+            columns: ["semester_id"]
+            isOneToOne: false
+            referencedRelation: "semesters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_materials: {
+        Row: {
+          created_at: string
+          file_size: string | null
+          file_type: string
+          file_url: string
+          id: string
+          title: string
+          unit_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_size?: string | null
+          file_type?: string
+          file_url: string
+          id?: string
+          title: string
+          unit_id: string
+        }
+        Update: {
+          created_at?: string
+          file_size?: string | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          title?: string
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_materials_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_videos: {
+        Row: {
+          created_at: string
+          duration: string | null
+          id: string
+          thumbnail_url: string | null
+          title: string
+          unit_id: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: string | null
+          id?: string
+          thumbnail_url?: string | null
+          title: string
+          unit_id: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          duration?: string | null
+          id?: string
+          thumbnail_url?: string | null
+          title?: string
+          unit_id?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_videos_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      units: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          subject_id: string
+          title: string
+          unit_number: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          subject_id: string
+          title: string
+          unit_number: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          subject_id?: string
+          title?: string
+          unit_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "units_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      universities: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          slug?: string
           updated_at?: string
         }
         Relationships: []
