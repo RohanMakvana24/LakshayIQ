@@ -21,11 +21,21 @@ import { Route as AuthenticatedStudentSearchRouteImport } from './routes/_authen
 import { Route as AuthenticatedStudentBookmarksRouteImport } from './routes/_authenticated/student/bookmarks'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin/content'
+import { Route as AuthenticatedAdminUniversitiesIndexRouteImport } from './routes/_authenticated/admin/universities.index'
+import { Route as AuthenticatedAdminUnitsIndexRouteImport } from './routes/_authenticated/admin/units.index'
+import { Route as AuthenticatedAdminSubjectsIndexRouteImport } from './routes/_authenticated/admin/subjects.index'
+import { Route as AuthenticatedAdminSemestersIndexRouteImport } from './routes/_authenticated/admin/semesters.index'
+import { Route as AuthenticatedAdminCoursesIndexRouteImport } from './routes/_authenticated/admin/courses.index'
 import { Route as AuthenticatedStudentUniversityIdRouteImport } from './routes/_authenticated/student/university.$id'
 import { Route as AuthenticatedStudentUnitIdRouteImport } from './routes/_authenticated/student/unit.$id'
 import { Route as AuthenticatedStudentSubjectIdRouteImport } from './routes/_authenticated/student/subject.$id'
 import { Route as AuthenticatedStudentSemesterIdRouteImport } from './routes/_authenticated/student/semester.$id'
 import { Route as AuthenticatedStudentCourseIdRouteImport } from './routes/_authenticated/student/course.$id'
+import { Route as AuthenticatedAdminUniversitiesAddRouteImport } from './routes/_authenticated/admin/universities.add'
+import { Route as AuthenticatedAdminUnitsAddRouteImport } from './routes/_authenticated/admin/units.add'
+import { Route as AuthenticatedAdminSubjectsAddRouteImport } from './routes/_authenticated/admin/subjects.add'
+import { Route as AuthenticatedAdminSemestersAddRouteImport } from './routes/_authenticated/admin/semesters.add'
+import { Route as AuthenticatedAdminCoursesAddRouteImport } from './routes/_authenticated/admin/courses.add'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -90,6 +100,36 @@ const AuthenticatedAdminContentRoute =
     path: '/content',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminUniversitiesIndexRoute =
+  AuthenticatedAdminUniversitiesIndexRouteImport.update({
+    id: '/universities/',
+    path: '/universities/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminUnitsIndexRoute =
+  AuthenticatedAdminUnitsIndexRouteImport.update({
+    id: '/units/',
+    path: '/units/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSubjectsIndexRoute =
+  AuthenticatedAdminSubjectsIndexRouteImport.update({
+    id: '/subjects/',
+    path: '/subjects/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSemestersIndexRoute =
+  AuthenticatedAdminSemestersIndexRouteImport.update({
+    id: '/semesters/',
+    path: '/semesters/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminCoursesIndexRoute =
+  AuthenticatedAdminCoursesIndexRouteImport.update({
+    id: '/courses/',
+    path: '/courses/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedStudentUniversityIdRoute =
   AuthenticatedStudentUniversityIdRouteImport.update({
     id: '/university/$id',
@@ -120,6 +160,36 @@ const AuthenticatedStudentCourseIdRoute =
     path: '/course/$id',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
+const AuthenticatedAdminUniversitiesAddRoute =
+  AuthenticatedAdminUniversitiesAddRouteImport.update({
+    id: '/universities/add',
+    path: '/universities/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminUnitsAddRoute =
+  AuthenticatedAdminUnitsAddRouteImport.update({
+    id: '/units/add',
+    path: '/units/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSubjectsAddRoute =
+  AuthenticatedAdminSubjectsAddRouteImport.update({
+    id: '/subjects/add',
+    path: '/subjects/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSemestersAddRoute =
+  AuthenticatedAdminSemestersAddRouteImport.update({
+    id: '/semesters/add',
+    path: '/semesters/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminCoursesAddRoute =
+  AuthenticatedAdminCoursesAddRouteImport.update({
+    id: '/courses/add',
+    path: '/courses/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -133,11 +203,21 @@ export interface FileRoutesByFullPath {
   '/student/search': typeof AuthenticatedStudentSearchRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/student/': typeof AuthenticatedStudentIndexRoute
+  '/admin/courses/add': typeof AuthenticatedAdminCoursesAddRoute
+  '/admin/semesters/add': typeof AuthenticatedAdminSemestersAddRoute
+  '/admin/subjects/add': typeof AuthenticatedAdminSubjectsAddRoute
+  '/admin/units/add': typeof AuthenticatedAdminUnitsAddRoute
+  '/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
   '/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
   '/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
   '/student/unit/$id': typeof AuthenticatedStudentUnitIdRoute
   '/student/university/$id': typeof AuthenticatedStudentUniversityIdRoute
+  '/admin/courses/': typeof AuthenticatedAdminCoursesIndexRoute
+  '/admin/semesters/': typeof AuthenticatedAdminSemestersIndexRoute
+  '/admin/subjects/': typeof AuthenticatedAdminSubjectsIndexRoute
+  '/admin/units/': typeof AuthenticatedAdminUnitsIndexRoute
+  '/admin/universities/': typeof AuthenticatedAdminUniversitiesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -149,11 +229,21 @@ export interface FileRoutesByTo {
   '/student/search': typeof AuthenticatedStudentSearchRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/student': typeof AuthenticatedStudentIndexRoute
+  '/admin/courses/add': typeof AuthenticatedAdminCoursesAddRoute
+  '/admin/semesters/add': typeof AuthenticatedAdminSemestersAddRoute
+  '/admin/subjects/add': typeof AuthenticatedAdminSubjectsAddRoute
+  '/admin/units/add': typeof AuthenticatedAdminUnitsAddRoute
+  '/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
   '/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
   '/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
   '/student/unit/$id': typeof AuthenticatedStudentUnitIdRoute
   '/student/university/$id': typeof AuthenticatedStudentUniversityIdRoute
+  '/admin/courses': typeof AuthenticatedAdminCoursesIndexRoute
+  '/admin/semesters': typeof AuthenticatedAdminSemestersIndexRoute
+  '/admin/subjects': typeof AuthenticatedAdminSubjectsIndexRoute
+  '/admin/units': typeof AuthenticatedAdminUnitsIndexRoute
+  '/admin/universities': typeof AuthenticatedAdminUniversitiesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -169,11 +259,21 @@ export interface FileRoutesById {
   '/_authenticated/student/search': typeof AuthenticatedStudentSearchRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/student/': typeof AuthenticatedStudentIndexRoute
+  '/_authenticated/admin/courses/add': typeof AuthenticatedAdminCoursesAddRoute
+  '/_authenticated/admin/semesters/add': typeof AuthenticatedAdminSemestersAddRoute
+  '/_authenticated/admin/subjects/add': typeof AuthenticatedAdminSubjectsAddRoute
+  '/_authenticated/admin/units/add': typeof AuthenticatedAdminUnitsAddRoute
+  '/_authenticated/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
   '/_authenticated/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
   '/_authenticated/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/_authenticated/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
   '/_authenticated/student/unit/$id': typeof AuthenticatedStudentUnitIdRoute
   '/_authenticated/student/university/$id': typeof AuthenticatedStudentUniversityIdRoute
+  '/_authenticated/admin/courses/': typeof AuthenticatedAdminCoursesIndexRoute
+  '/_authenticated/admin/semesters/': typeof AuthenticatedAdminSemestersIndexRoute
+  '/_authenticated/admin/subjects/': typeof AuthenticatedAdminSubjectsIndexRoute
+  '/_authenticated/admin/units/': typeof AuthenticatedAdminUnitsIndexRoute
+  '/_authenticated/admin/universities/': typeof AuthenticatedAdminUniversitiesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -189,11 +289,21 @@ export interface FileRouteTypes {
     | '/student/search'
     | '/admin/'
     | '/student/'
+    | '/admin/courses/add'
+    | '/admin/semesters/add'
+    | '/admin/subjects/add'
+    | '/admin/units/add'
+    | '/admin/universities/add'
     | '/student/course/$id'
     | '/student/semester/$id'
     | '/student/subject/$id'
     | '/student/unit/$id'
     | '/student/university/$id'
+    | '/admin/courses/'
+    | '/admin/semesters/'
+    | '/admin/subjects/'
+    | '/admin/units/'
+    | '/admin/universities/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -205,11 +315,21 @@ export interface FileRouteTypes {
     | '/student/search'
     | '/admin'
     | '/student'
+    | '/admin/courses/add'
+    | '/admin/semesters/add'
+    | '/admin/subjects/add'
+    | '/admin/units/add'
+    | '/admin/universities/add'
     | '/student/course/$id'
     | '/student/semester/$id'
     | '/student/subject/$id'
     | '/student/unit/$id'
     | '/student/university/$id'
+    | '/admin/courses'
+    | '/admin/semesters'
+    | '/admin/subjects'
+    | '/admin/units'
+    | '/admin/universities'
   id:
     | '__root__'
     | '/'
@@ -224,11 +344,21 @@ export interface FileRouteTypes {
     | '/_authenticated/student/search'
     | '/_authenticated/admin/'
     | '/_authenticated/student/'
+    | '/_authenticated/admin/courses/add'
+    | '/_authenticated/admin/semesters/add'
+    | '/_authenticated/admin/subjects/add'
+    | '/_authenticated/admin/units/add'
+    | '/_authenticated/admin/universities/add'
     | '/_authenticated/student/course/$id'
     | '/_authenticated/student/semester/$id'
     | '/_authenticated/student/subject/$id'
     | '/_authenticated/student/unit/$id'
     | '/_authenticated/student/university/$id'
+    | '/_authenticated/admin/courses/'
+    | '/_authenticated/admin/semesters/'
+    | '/_authenticated/admin/subjects/'
+    | '/_authenticated/admin/units/'
+    | '/_authenticated/admin/universities/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -324,6 +454,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminContentRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/universities/': {
+      id: '/_authenticated/admin/universities/'
+      path: '/universities'
+      fullPath: '/admin/universities/'
+      preLoaderRoute: typeof AuthenticatedAdminUniversitiesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/units/': {
+      id: '/_authenticated/admin/units/'
+      path: '/units'
+      fullPath: '/admin/units/'
+      preLoaderRoute: typeof AuthenticatedAdminUnitsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/subjects/': {
+      id: '/_authenticated/admin/subjects/'
+      path: '/subjects'
+      fullPath: '/admin/subjects/'
+      preLoaderRoute: typeof AuthenticatedAdminSubjectsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/semesters/': {
+      id: '/_authenticated/admin/semesters/'
+      path: '/semesters'
+      fullPath: '/admin/semesters/'
+      preLoaderRoute: typeof AuthenticatedAdminSemestersIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/courses/': {
+      id: '/_authenticated/admin/courses/'
+      path: '/courses'
+      fullPath: '/admin/courses/'
+      preLoaderRoute: typeof AuthenticatedAdminCoursesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/student/university/$id': {
       id: '/_authenticated/student/university/$id'
       path: '/university/$id'
@@ -359,6 +524,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentCourseIdRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
+    '/_authenticated/admin/universities/add': {
+      id: '/_authenticated/admin/universities/add'
+      path: '/universities/add'
+      fullPath: '/admin/universities/add'
+      preLoaderRoute: typeof AuthenticatedAdminUniversitiesAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/units/add': {
+      id: '/_authenticated/admin/units/add'
+      path: '/units/add'
+      fullPath: '/admin/units/add'
+      preLoaderRoute: typeof AuthenticatedAdminUnitsAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/subjects/add': {
+      id: '/_authenticated/admin/subjects/add'
+      path: '/subjects/add'
+      fullPath: '/admin/subjects/add'
+      preLoaderRoute: typeof AuthenticatedAdminSubjectsAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/semesters/add': {
+      id: '/_authenticated/admin/semesters/add'
+      path: '/semesters/add'
+      fullPath: '/admin/semesters/add'
+      preLoaderRoute: typeof AuthenticatedAdminSemestersAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/courses/add': {
+      id: '/_authenticated/admin/courses/add'
+      path: '/courses/add'
+      fullPath: '/admin/courses/add'
+      preLoaderRoute: typeof AuthenticatedAdminCoursesAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
@@ -366,12 +566,34 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminContentRoute: typeof AuthenticatedAdminContentRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminCoursesAddRoute: typeof AuthenticatedAdminCoursesAddRoute
+  AuthenticatedAdminSemestersAddRoute: typeof AuthenticatedAdminSemestersAddRoute
+  AuthenticatedAdminSubjectsAddRoute: typeof AuthenticatedAdminSubjectsAddRoute
+  AuthenticatedAdminUnitsAddRoute: typeof AuthenticatedAdminUnitsAddRoute
+  AuthenticatedAdminUniversitiesAddRoute: typeof AuthenticatedAdminUniversitiesAddRoute
+  AuthenticatedAdminCoursesIndexRoute: typeof AuthenticatedAdminCoursesIndexRoute
+  AuthenticatedAdminSemestersIndexRoute: typeof AuthenticatedAdminSemestersIndexRoute
+  AuthenticatedAdminSubjectsIndexRoute: typeof AuthenticatedAdminSubjectsIndexRoute
+  AuthenticatedAdminUnitsIndexRoute: typeof AuthenticatedAdminUnitsIndexRoute
+  AuthenticatedAdminUniversitiesIndexRoute: typeof AuthenticatedAdminUniversitiesIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminContentRoute: AuthenticatedAdminContentRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminCoursesAddRoute: AuthenticatedAdminCoursesAddRoute,
+  AuthenticatedAdminSemestersAddRoute: AuthenticatedAdminSemestersAddRoute,
+  AuthenticatedAdminSubjectsAddRoute: AuthenticatedAdminSubjectsAddRoute,
+  AuthenticatedAdminUnitsAddRoute: AuthenticatedAdminUnitsAddRoute,
+  AuthenticatedAdminUniversitiesAddRoute:
+    AuthenticatedAdminUniversitiesAddRoute,
+  AuthenticatedAdminCoursesIndexRoute: AuthenticatedAdminCoursesIndexRoute,
+  AuthenticatedAdminSemestersIndexRoute: AuthenticatedAdminSemestersIndexRoute,
+  AuthenticatedAdminSubjectsIndexRoute: AuthenticatedAdminSubjectsIndexRoute,
+  AuthenticatedAdminUnitsIndexRoute: AuthenticatedAdminUnitsIndexRoute,
+  AuthenticatedAdminUniversitiesIndexRoute:
+    AuthenticatedAdminUniversitiesIndexRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
