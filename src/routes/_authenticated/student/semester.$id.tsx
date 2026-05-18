@@ -32,7 +32,7 @@ function SemesterPage() {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {subjects.map((s) => (
+        {subjects.map((s: typeof subjects[number]) => (
           <Link key={s.id} to="/student/subject/$id" params={{ id: s.id }}>
             <Card className="group h-full p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elegant">
               <div className="flex items-start justify-between">
