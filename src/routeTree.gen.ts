@@ -21,20 +21,30 @@ import { Route as AuthenticatedStudentSearchRouteImport } from './routes/_authen
 import { Route as AuthenticatedStudentBookmarksRouteImport } from './routes/_authenticated/student/bookmarks'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin/content'
+import { Route as AuthenticatedAdminVideosIndexRouteImport } from './routes/_authenticated/admin/videos.index'
 import { Route as AuthenticatedAdminUniversitiesIndexRouteImport } from './routes/_authenticated/admin/universities.index'
 import { Route as AuthenticatedAdminUnitsIndexRouteImport } from './routes/_authenticated/admin/units.index'
+import { Route as AuthenticatedAdminTimetablesIndexRouteImport } from './routes/_authenticated/admin/timetables.index'
 import { Route as AuthenticatedAdminSubjectsIndexRouteImport } from './routes/_authenticated/admin/subjects.index'
 import { Route as AuthenticatedAdminSemestersIndexRouteImport } from './routes/_authenticated/admin/semesters.index'
+import { Route as AuthenticatedAdminQuestionsIndexRouteImport } from './routes/_authenticated/admin/questions.index'
+import { Route as AuthenticatedAdminPapersIndexRouteImport } from './routes/_authenticated/admin/papers.index'
+import { Route as AuthenticatedAdminMaterialsIndexRouteImport } from './routes/_authenticated/admin/materials.index'
 import { Route as AuthenticatedAdminCoursesIndexRouteImport } from './routes/_authenticated/admin/courses.index'
 import { Route as AuthenticatedStudentUniversityIdRouteImport } from './routes/_authenticated/student/university.$id'
 import { Route as AuthenticatedStudentUnitIdRouteImport } from './routes/_authenticated/student/unit.$id'
 import { Route as AuthenticatedStudentSubjectIdRouteImport } from './routes/_authenticated/student/subject.$id'
 import { Route as AuthenticatedStudentSemesterIdRouteImport } from './routes/_authenticated/student/semester.$id'
 import { Route as AuthenticatedStudentCourseIdRouteImport } from './routes/_authenticated/student/course.$id'
+import { Route as AuthenticatedAdminVideosAddRouteImport } from './routes/_authenticated/admin/videos.add'
 import { Route as AuthenticatedAdminUniversitiesAddRouteImport } from './routes/_authenticated/admin/universities.add'
 import { Route as AuthenticatedAdminUnitsAddRouteImport } from './routes/_authenticated/admin/units.add'
+import { Route as AuthenticatedAdminTimetablesAddRouteImport } from './routes/_authenticated/admin/timetables.add'
 import { Route as AuthenticatedAdminSubjectsAddRouteImport } from './routes/_authenticated/admin/subjects.add'
 import { Route as AuthenticatedAdminSemestersAddRouteImport } from './routes/_authenticated/admin/semesters.add'
+import { Route as AuthenticatedAdminQuestionsAddRouteImport } from './routes/_authenticated/admin/questions.add'
+import { Route as AuthenticatedAdminPapersAddRouteImport } from './routes/_authenticated/admin/papers.add'
+import { Route as AuthenticatedAdminMaterialsAddRouteImport } from './routes/_authenticated/admin/materials.add'
 import { Route as AuthenticatedAdminCoursesAddRouteImport } from './routes/_authenticated/admin/courses.add'
 
 const SignupRoute = SignupRouteImport.update({
@@ -100,6 +110,12 @@ const AuthenticatedAdminContentRoute =
     path: '/content',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminVideosIndexRoute =
+  AuthenticatedAdminVideosIndexRouteImport.update({
+    id: '/videos/',
+    path: '/videos/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminUniversitiesIndexRoute =
   AuthenticatedAdminUniversitiesIndexRouteImport.update({
     id: '/universities/',
@@ -112,6 +128,12 @@ const AuthenticatedAdminUnitsIndexRoute =
     path: '/units/',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminTimetablesIndexRoute =
+  AuthenticatedAdminTimetablesIndexRouteImport.update({
+    id: '/timetables/',
+    path: '/timetables/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminSubjectsIndexRoute =
   AuthenticatedAdminSubjectsIndexRouteImport.update({
     id: '/subjects/',
@@ -122,6 +144,24 @@ const AuthenticatedAdminSemestersIndexRoute =
   AuthenticatedAdminSemestersIndexRouteImport.update({
     id: '/semesters/',
     path: '/semesters/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminQuestionsIndexRoute =
+  AuthenticatedAdminQuestionsIndexRouteImport.update({
+    id: '/questions/',
+    path: '/questions/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPapersIndexRoute =
+  AuthenticatedAdminPapersIndexRouteImport.update({
+    id: '/papers/',
+    path: '/papers/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMaterialsIndexRoute =
+  AuthenticatedAdminMaterialsIndexRouteImport.update({
+    id: '/materials/',
+    path: '/materials/',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminCoursesIndexRoute =
@@ -160,6 +200,12 @@ const AuthenticatedStudentCourseIdRoute =
     path: '/course/$id',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
+const AuthenticatedAdminVideosAddRoute =
+  AuthenticatedAdminVideosAddRouteImport.update({
+    id: '/videos/add',
+    path: '/videos/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminUniversitiesAddRoute =
   AuthenticatedAdminUniversitiesAddRouteImport.update({
     id: '/universities/add',
@@ -172,6 +218,12 @@ const AuthenticatedAdminUnitsAddRoute =
     path: '/units/add',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminTimetablesAddRoute =
+  AuthenticatedAdminTimetablesAddRouteImport.update({
+    id: '/timetables/add',
+    path: '/timetables/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminSubjectsAddRoute =
   AuthenticatedAdminSubjectsAddRouteImport.update({
     id: '/subjects/add',
@@ -182,6 +234,24 @@ const AuthenticatedAdminSemestersAddRoute =
   AuthenticatedAdminSemestersAddRouteImport.update({
     id: '/semesters/add',
     path: '/semesters/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminQuestionsAddRoute =
+  AuthenticatedAdminQuestionsAddRouteImport.update({
+    id: '/questions/add',
+    path: '/questions/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPapersAddRoute =
+  AuthenticatedAdminPapersAddRouteImport.update({
+    id: '/papers/add',
+    path: '/papers/add',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMaterialsAddRoute =
+  AuthenticatedAdminMaterialsAddRouteImport.update({
+    id: '/materials/add',
+    path: '/materials/add',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminCoursesAddRoute =
@@ -204,20 +274,30 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/student/': typeof AuthenticatedStudentIndexRoute
   '/admin/courses/add': typeof AuthenticatedAdminCoursesAddRoute
+  '/admin/materials/add': typeof AuthenticatedAdminMaterialsAddRoute
+  '/admin/papers/add': typeof AuthenticatedAdminPapersAddRoute
+  '/admin/questions/add': typeof AuthenticatedAdminQuestionsAddRoute
   '/admin/semesters/add': typeof AuthenticatedAdminSemestersAddRoute
   '/admin/subjects/add': typeof AuthenticatedAdminSubjectsAddRoute
+  '/admin/timetables/add': typeof AuthenticatedAdminTimetablesAddRoute
   '/admin/units/add': typeof AuthenticatedAdminUnitsAddRoute
   '/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
+  '/admin/videos/add': typeof AuthenticatedAdminVideosAddRoute
   '/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
   '/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
   '/student/unit/$id': typeof AuthenticatedStudentUnitIdRoute
   '/student/university/$id': typeof AuthenticatedStudentUniversityIdRoute
   '/admin/courses/': typeof AuthenticatedAdminCoursesIndexRoute
+  '/admin/materials/': typeof AuthenticatedAdminMaterialsIndexRoute
+  '/admin/papers/': typeof AuthenticatedAdminPapersIndexRoute
+  '/admin/questions/': typeof AuthenticatedAdminQuestionsIndexRoute
   '/admin/semesters/': typeof AuthenticatedAdminSemestersIndexRoute
   '/admin/subjects/': typeof AuthenticatedAdminSubjectsIndexRoute
+  '/admin/timetables/': typeof AuthenticatedAdminTimetablesIndexRoute
   '/admin/units/': typeof AuthenticatedAdminUnitsIndexRoute
   '/admin/universities/': typeof AuthenticatedAdminUniversitiesIndexRoute
+  '/admin/videos/': typeof AuthenticatedAdminVideosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -230,20 +310,30 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/student': typeof AuthenticatedStudentIndexRoute
   '/admin/courses/add': typeof AuthenticatedAdminCoursesAddRoute
+  '/admin/materials/add': typeof AuthenticatedAdminMaterialsAddRoute
+  '/admin/papers/add': typeof AuthenticatedAdminPapersAddRoute
+  '/admin/questions/add': typeof AuthenticatedAdminQuestionsAddRoute
   '/admin/semesters/add': typeof AuthenticatedAdminSemestersAddRoute
   '/admin/subjects/add': typeof AuthenticatedAdminSubjectsAddRoute
+  '/admin/timetables/add': typeof AuthenticatedAdminTimetablesAddRoute
   '/admin/units/add': typeof AuthenticatedAdminUnitsAddRoute
   '/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
+  '/admin/videos/add': typeof AuthenticatedAdminVideosAddRoute
   '/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
   '/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
   '/student/unit/$id': typeof AuthenticatedStudentUnitIdRoute
   '/student/university/$id': typeof AuthenticatedStudentUniversityIdRoute
   '/admin/courses': typeof AuthenticatedAdminCoursesIndexRoute
+  '/admin/materials': typeof AuthenticatedAdminMaterialsIndexRoute
+  '/admin/papers': typeof AuthenticatedAdminPapersIndexRoute
+  '/admin/questions': typeof AuthenticatedAdminQuestionsIndexRoute
   '/admin/semesters': typeof AuthenticatedAdminSemestersIndexRoute
   '/admin/subjects': typeof AuthenticatedAdminSubjectsIndexRoute
+  '/admin/timetables': typeof AuthenticatedAdminTimetablesIndexRoute
   '/admin/units': typeof AuthenticatedAdminUnitsIndexRoute
   '/admin/universities': typeof AuthenticatedAdminUniversitiesIndexRoute
+  '/admin/videos': typeof AuthenticatedAdminVideosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -260,20 +350,30 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/student/': typeof AuthenticatedStudentIndexRoute
   '/_authenticated/admin/courses/add': typeof AuthenticatedAdminCoursesAddRoute
+  '/_authenticated/admin/materials/add': typeof AuthenticatedAdminMaterialsAddRoute
+  '/_authenticated/admin/papers/add': typeof AuthenticatedAdminPapersAddRoute
+  '/_authenticated/admin/questions/add': typeof AuthenticatedAdminQuestionsAddRoute
   '/_authenticated/admin/semesters/add': typeof AuthenticatedAdminSemestersAddRoute
   '/_authenticated/admin/subjects/add': typeof AuthenticatedAdminSubjectsAddRoute
+  '/_authenticated/admin/timetables/add': typeof AuthenticatedAdminTimetablesAddRoute
   '/_authenticated/admin/units/add': typeof AuthenticatedAdminUnitsAddRoute
   '/_authenticated/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
+  '/_authenticated/admin/videos/add': typeof AuthenticatedAdminVideosAddRoute
   '/_authenticated/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
   '/_authenticated/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/_authenticated/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
   '/_authenticated/student/unit/$id': typeof AuthenticatedStudentUnitIdRoute
   '/_authenticated/student/university/$id': typeof AuthenticatedStudentUniversityIdRoute
   '/_authenticated/admin/courses/': typeof AuthenticatedAdminCoursesIndexRoute
+  '/_authenticated/admin/materials/': typeof AuthenticatedAdminMaterialsIndexRoute
+  '/_authenticated/admin/papers/': typeof AuthenticatedAdminPapersIndexRoute
+  '/_authenticated/admin/questions/': typeof AuthenticatedAdminQuestionsIndexRoute
   '/_authenticated/admin/semesters/': typeof AuthenticatedAdminSemestersIndexRoute
   '/_authenticated/admin/subjects/': typeof AuthenticatedAdminSubjectsIndexRoute
+  '/_authenticated/admin/timetables/': typeof AuthenticatedAdminTimetablesIndexRoute
   '/_authenticated/admin/units/': typeof AuthenticatedAdminUnitsIndexRoute
   '/_authenticated/admin/universities/': typeof AuthenticatedAdminUniversitiesIndexRoute
+  '/_authenticated/admin/videos/': typeof AuthenticatedAdminVideosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -290,20 +390,30 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/student/'
     | '/admin/courses/add'
+    | '/admin/materials/add'
+    | '/admin/papers/add'
+    | '/admin/questions/add'
     | '/admin/semesters/add'
     | '/admin/subjects/add'
+    | '/admin/timetables/add'
     | '/admin/units/add'
     | '/admin/universities/add'
+    | '/admin/videos/add'
     | '/student/course/$id'
     | '/student/semester/$id'
     | '/student/subject/$id'
     | '/student/unit/$id'
     | '/student/university/$id'
     | '/admin/courses/'
+    | '/admin/materials/'
+    | '/admin/papers/'
+    | '/admin/questions/'
     | '/admin/semesters/'
     | '/admin/subjects/'
+    | '/admin/timetables/'
     | '/admin/units/'
     | '/admin/universities/'
+    | '/admin/videos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -316,20 +426,30 @@ export interface FileRouteTypes {
     | '/admin'
     | '/student'
     | '/admin/courses/add'
+    | '/admin/materials/add'
+    | '/admin/papers/add'
+    | '/admin/questions/add'
     | '/admin/semesters/add'
     | '/admin/subjects/add'
+    | '/admin/timetables/add'
     | '/admin/units/add'
     | '/admin/universities/add'
+    | '/admin/videos/add'
     | '/student/course/$id'
     | '/student/semester/$id'
     | '/student/subject/$id'
     | '/student/unit/$id'
     | '/student/university/$id'
     | '/admin/courses'
+    | '/admin/materials'
+    | '/admin/papers'
+    | '/admin/questions'
     | '/admin/semesters'
     | '/admin/subjects'
+    | '/admin/timetables'
     | '/admin/units'
     | '/admin/universities'
+    | '/admin/videos'
   id:
     | '__root__'
     | '/'
@@ -345,20 +465,30 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/student/'
     | '/_authenticated/admin/courses/add'
+    | '/_authenticated/admin/materials/add'
+    | '/_authenticated/admin/papers/add'
+    | '/_authenticated/admin/questions/add'
     | '/_authenticated/admin/semesters/add'
     | '/_authenticated/admin/subjects/add'
+    | '/_authenticated/admin/timetables/add'
     | '/_authenticated/admin/units/add'
     | '/_authenticated/admin/universities/add'
+    | '/_authenticated/admin/videos/add'
     | '/_authenticated/student/course/$id'
     | '/_authenticated/student/semester/$id'
     | '/_authenticated/student/subject/$id'
     | '/_authenticated/student/unit/$id'
     | '/_authenticated/student/university/$id'
     | '/_authenticated/admin/courses/'
+    | '/_authenticated/admin/materials/'
+    | '/_authenticated/admin/papers/'
+    | '/_authenticated/admin/questions/'
     | '/_authenticated/admin/semesters/'
     | '/_authenticated/admin/subjects/'
+    | '/_authenticated/admin/timetables/'
     | '/_authenticated/admin/units/'
     | '/_authenticated/admin/universities/'
+    | '/_authenticated/admin/videos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -454,6 +584,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminContentRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/videos/': {
+      id: '/_authenticated/admin/videos/'
+      path: '/videos'
+      fullPath: '/admin/videos/'
+      preLoaderRoute: typeof AuthenticatedAdminVideosIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/universities/': {
       id: '/_authenticated/admin/universities/'
       path: '/universities'
@@ -468,6 +605,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUnitsIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/timetables/': {
+      id: '/_authenticated/admin/timetables/'
+      path: '/timetables'
+      fullPath: '/admin/timetables/'
+      preLoaderRoute: typeof AuthenticatedAdminTimetablesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/subjects/': {
       id: '/_authenticated/admin/subjects/'
       path: '/subjects'
@@ -480,6 +624,27 @@ declare module '@tanstack/react-router' {
       path: '/semesters'
       fullPath: '/admin/semesters/'
       preLoaderRoute: typeof AuthenticatedAdminSemestersIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/questions/': {
+      id: '/_authenticated/admin/questions/'
+      path: '/questions'
+      fullPath: '/admin/questions/'
+      preLoaderRoute: typeof AuthenticatedAdminQuestionsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/papers/': {
+      id: '/_authenticated/admin/papers/'
+      path: '/papers'
+      fullPath: '/admin/papers/'
+      preLoaderRoute: typeof AuthenticatedAdminPapersIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/materials/': {
+      id: '/_authenticated/admin/materials/'
+      path: '/materials'
+      fullPath: '/admin/materials/'
+      preLoaderRoute: typeof AuthenticatedAdminMaterialsIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/courses/': {
@@ -524,6 +689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentCourseIdRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
+    '/_authenticated/admin/videos/add': {
+      id: '/_authenticated/admin/videos/add'
+      path: '/videos/add'
+      fullPath: '/admin/videos/add'
+      preLoaderRoute: typeof AuthenticatedAdminVideosAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/universities/add': {
       id: '/_authenticated/admin/universities/add'
       path: '/universities/add'
@@ -538,6 +710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUnitsAddRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/timetables/add': {
+      id: '/_authenticated/admin/timetables/add'
+      path: '/timetables/add'
+      fullPath: '/admin/timetables/add'
+      preLoaderRoute: typeof AuthenticatedAdminTimetablesAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/subjects/add': {
       id: '/_authenticated/admin/subjects/add'
       path: '/subjects/add'
@@ -550,6 +729,27 @@ declare module '@tanstack/react-router' {
       path: '/semesters/add'
       fullPath: '/admin/semesters/add'
       preLoaderRoute: typeof AuthenticatedAdminSemestersAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/questions/add': {
+      id: '/_authenticated/admin/questions/add'
+      path: '/questions/add'
+      fullPath: '/admin/questions/add'
+      preLoaderRoute: typeof AuthenticatedAdminQuestionsAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/papers/add': {
+      id: '/_authenticated/admin/papers/add'
+      path: '/papers/add'
+      fullPath: '/admin/papers/add'
+      preLoaderRoute: typeof AuthenticatedAdminPapersAddRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/materials/add': {
+      id: '/_authenticated/admin/materials/add'
+      path: '/materials/add'
+      fullPath: '/admin/materials/add'
+      preLoaderRoute: typeof AuthenticatedAdminMaterialsAddRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/courses/add': {
@@ -567,15 +767,25 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminCoursesAddRoute: typeof AuthenticatedAdminCoursesAddRoute
+  AuthenticatedAdminMaterialsAddRoute: typeof AuthenticatedAdminMaterialsAddRoute
+  AuthenticatedAdminPapersAddRoute: typeof AuthenticatedAdminPapersAddRoute
+  AuthenticatedAdminQuestionsAddRoute: typeof AuthenticatedAdminQuestionsAddRoute
   AuthenticatedAdminSemestersAddRoute: typeof AuthenticatedAdminSemestersAddRoute
   AuthenticatedAdminSubjectsAddRoute: typeof AuthenticatedAdminSubjectsAddRoute
+  AuthenticatedAdminTimetablesAddRoute: typeof AuthenticatedAdminTimetablesAddRoute
   AuthenticatedAdminUnitsAddRoute: typeof AuthenticatedAdminUnitsAddRoute
   AuthenticatedAdminUniversitiesAddRoute: typeof AuthenticatedAdminUniversitiesAddRoute
+  AuthenticatedAdminVideosAddRoute: typeof AuthenticatedAdminVideosAddRoute
   AuthenticatedAdminCoursesIndexRoute: typeof AuthenticatedAdminCoursesIndexRoute
+  AuthenticatedAdminMaterialsIndexRoute: typeof AuthenticatedAdminMaterialsIndexRoute
+  AuthenticatedAdminPapersIndexRoute: typeof AuthenticatedAdminPapersIndexRoute
+  AuthenticatedAdminQuestionsIndexRoute: typeof AuthenticatedAdminQuestionsIndexRoute
   AuthenticatedAdminSemestersIndexRoute: typeof AuthenticatedAdminSemestersIndexRoute
   AuthenticatedAdminSubjectsIndexRoute: typeof AuthenticatedAdminSubjectsIndexRoute
+  AuthenticatedAdminTimetablesIndexRoute: typeof AuthenticatedAdminTimetablesIndexRoute
   AuthenticatedAdminUnitsIndexRoute: typeof AuthenticatedAdminUnitsIndexRoute
   AuthenticatedAdminUniversitiesIndexRoute: typeof AuthenticatedAdminUniversitiesIndexRoute
+  AuthenticatedAdminVideosIndexRoute: typeof AuthenticatedAdminVideosIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -583,17 +793,28 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminCoursesAddRoute: AuthenticatedAdminCoursesAddRoute,
+  AuthenticatedAdminMaterialsAddRoute: AuthenticatedAdminMaterialsAddRoute,
+  AuthenticatedAdminPapersAddRoute: AuthenticatedAdminPapersAddRoute,
+  AuthenticatedAdminQuestionsAddRoute: AuthenticatedAdminQuestionsAddRoute,
   AuthenticatedAdminSemestersAddRoute: AuthenticatedAdminSemestersAddRoute,
   AuthenticatedAdminSubjectsAddRoute: AuthenticatedAdminSubjectsAddRoute,
+  AuthenticatedAdminTimetablesAddRoute: AuthenticatedAdminTimetablesAddRoute,
   AuthenticatedAdminUnitsAddRoute: AuthenticatedAdminUnitsAddRoute,
   AuthenticatedAdminUniversitiesAddRoute:
     AuthenticatedAdminUniversitiesAddRoute,
+  AuthenticatedAdminVideosAddRoute: AuthenticatedAdminVideosAddRoute,
   AuthenticatedAdminCoursesIndexRoute: AuthenticatedAdminCoursesIndexRoute,
+  AuthenticatedAdminMaterialsIndexRoute: AuthenticatedAdminMaterialsIndexRoute,
+  AuthenticatedAdminPapersIndexRoute: AuthenticatedAdminPapersIndexRoute,
+  AuthenticatedAdminQuestionsIndexRoute: AuthenticatedAdminQuestionsIndexRoute,
   AuthenticatedAdminSemestersIndexRoute: AuthenticatedAdminSemestersIndexRoute,
   AuthenticatedAdminSubjectsIndexRoute: AuthenticatedAdminSubjectsIndexRoute,
+  AuthenticatedAdminTimetablesIndexRoute:
+    AuthenticatedAdminTimetablesIndexRoute,
   AuthenticatedAdminUnitsIndexRoute: AuthenticatedAdminUnitsIndexRoute,
   AuthenticatedAdminUniversitiesIndexRoute:
     AuthenticatedAdminUniversitiesIndexRoute,
+  AuthenticatedAdminVideosIndexRoute: AuthenticatedAdminVideosIndexRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
