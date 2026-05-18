@@ -32,7 +32,7 @@ function CoursePage() {
       <section>
         <h2 className="mb-4 font-display text-xl font-semibold">Semesters</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {semesters.map((s) => (
+          {semesters.map((s: { id: string; number: number; subjects: number }) => (
             <Link key={s.id} to="/student/semester/$id" params={{ id: s.id }}>
               <Card className="group flex h-full items-center gap-4 p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elegant">
                 <div className="grid h-14 w-14 place-items-center rounded-xl bg-gradient-primary text-xl font-bold text-primary-foreground shadow-elegant">{s.number}</div>

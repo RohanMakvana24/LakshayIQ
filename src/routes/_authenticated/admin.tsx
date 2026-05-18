@@ -2,11 +2,40 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { AppShell, type NavItem } from "@/components/app-shell";
-import { LayoutDashboard, Database, Users, Loader2 } from "lucide-react";
+import { LayoutDashboard, Building2, BookOpen, Layers, FileText, Boxes, Users, Loader2 } from "lucide-react";
 
 const items: NavItem[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard },
-  { to: "/admin/content", label: "Content", icon: Database },
+  {
+    label: "Universities", icon: Building2, children: [
+      { to: "/admin/universities", label: "Manage Universities" },
+      { to: "/admin/universities/add", label: "Add University" },
+    ],
+  },
+  {
+    label: "Courses", icon: BookOpen, children: [
+      { to: "/admin/courses", label: "Manage Courses" },
+      { to: "/admin/courses/add", label: "Add Course" },
+    ],
+  },
+  {
+    label: "Semesters", icon: Layers, children: [
+      { to: "/admin/semesters", label: "Manage Semesters" },
+      { to: "/admin/semesters/add", label: "Add Semester" },
+    ],
+  },
+  {
+    label: "Subjects", icon: FileText, children: [
+      { to: "/admin/subjects", label: "Manage Subjects" },
+      { to: "/admin/subjects/add", label: "Add Subject" },
+    ],
+  },
+  {
+    label: "Units", icon: Boxes, children: [
+      { to: "/admin/units", label: "Manage Units" },
+      { to: "/admin/units/add", label: "Add Unit" },
+    ],
+  },
   { to: "/admin/users", label: "Users", icon: Users },
 ];
 

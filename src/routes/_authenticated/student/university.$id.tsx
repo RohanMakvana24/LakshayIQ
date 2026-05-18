@@ -30,7 +30,7 @@ function UniversityPage() {
       <section>
         <h2 className="mb-4 font-display text-xl font-semibold">Courses</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((c) => (
+          {courses.map((c: { id: string; name: string; code: string; duration: string; semesters: number }) => (
             <Link key={c.id} to="/student/course/$id" params={{ id: c.id }}>
               <Card className="group h-full p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elegant">
                 <div className="flex items-start justify-between">
