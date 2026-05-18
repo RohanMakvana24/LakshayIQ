@@ -74,7 +74,7 @@ function SubjectPage() {
       <section>
         <h2 className="mb-4 font-display text-xl font-semibold">Units</h2>
         <div className="grid gap-3">
-          {units.map((u) => (
+          {units.map((u: { id: string; number: number; title: string; videos: number; materials: number }) => (
             <Link key={u.id} to="/student/unit/$id" params={{ id: u.id }}>
               <Card className="group flex items-center gap-4 p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elegant">
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-primary text-lg font-bold text-primary-foreground shadow-elegant">{u.number}</div>
