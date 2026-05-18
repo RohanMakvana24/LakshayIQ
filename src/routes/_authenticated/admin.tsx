@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { AppShell, type NavItem } from "@/components/app-shell";
-import { LayoutDashboard, Building2, BookOpen, Layers, FileText, Boxes, Users, Loader2 } from "lucide-react";
+import { LayoutDashboard, Building2, BookOpen, Layers, FileText, Boxes, Users, Loader2, Video, FileDown, HelpCircle, FileSpreadsheet, CalendarDays } from "lucide-react";
 
 const items: NavItem[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard },
@@ -34,6 +34,36 @@ const items: NavItem[] = [
     label: "Units", icon: Boxes, children: [
       { to: "/admin/units", label: "Manage Units" },
       { to: "/admin/units/add", label: "Add Unit" },
+    ],
+  },
+  {
+    label: "Videos", icon: Video, children: [
+      { to: "/admin/videos", label: "Manage Videos" },
+      { to: "/admin/videos/add", label: "Add Video" },
+    ],
+  },
+  {
+    label: "Materials", icon: FileDown, children: [
+      { to: "/admin/materials", label: "Manage Materials" },
+      { to: "/admin/materials/add", label: "Add Material" },
+    ],
+  },
+  {
+    label: "Questions", icon: HelpCircle, children: [
+      { to: "/admin/questions", label: "Manage Questions" },
+      { to: "/admin/questions/add", label: "Add Question" },
+    ],
+  },
+  {
+    label: "PYQ Papers", icon: FileSpreadsheet, children: [
+      { to: "/admin/papers", label: "Manage Papers" },
+      { to: "/admin/papers/add", label: "Add Paper" },
+    ],
+  },
+  {
+    label: "Timetables", icon: CalendarDays, children: [
+      { to: "/admin/timetables", label: "Manage Timetables" },
+      { to: "/admin/timetables/add", label: "Add Timetable" },
     ],
   },
   { to: "/admin/users", label: "Users", icon: Users },
