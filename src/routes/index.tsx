@@ -16,8 +16,12 @@ import {
   Layers,
   BookMarked,
   Download,
-  HelpCircle
+  HelpCircle,
+  ChevronRight,
+  BookAlert
 } from "lucide-react";
+
+import { BiSolidBookHeart } from "react-icons/bi";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,27 +45,28 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-[#fafbfc] text-slate-900 antialiased selection:bg-emerald-500/10 selection:text-emerald-600">
+      
       {/* HEADER SECTION */}
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-md transition-transform group-hover:scale-105">
-              <GraduationCap className="h-5 w-5" />
-              <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-amber-400 border-2 border-white" />
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-md transition-transform group-hover:scale-105">
+              <BiSolidBookHeart className="h-5 w-5" />
+              <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-sans text-xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Lakshay <span className="text-emerald-500">IQ</span>
+              <span className="font-sans text-xl font-black tracking-tight text-slate-900">
+                Lakshay <span className="text-emerald-500 text-[13px]">.IQ</span>
               </span>
-              <span className="text-[10px] font-medium uppercase tracking-widest text-slate-400">Smart Learning</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Smart Learning</span>
             </div>
           </Link>
 
           {/* Center Navigation Links */}
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
+          <nav className="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
             <Link to="/" className="text-emerald-500 transition-colors">Home</Link>
-            <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
-            <a href="#flow" className="hover:text-slate-900 transition-colors">Academic Flow</a>
+            <a href="#features" className="hover:text-slate-900 transition-colors">Products</a>
+            <a href="#flow" className="hover:text-slate-900 transition-colors">Learning Flow</a>
             <span className="h-4 w-px bg-slate-200" />
             <div className="relative flex items-center">
               <Search className="absolute left-3 h-4 w-4 text-slate-400" />
@@ -74,224 +79,214 @@ function Landing() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" className="text-slate-600 hover:text-slate-950">
+            <Button asChild variant="ghost" className="text-slate-600 font-semibold hover:text-slate-950">
               <Link to="/login">Log in</Link>
             </Button>
-            <Button asChild className="rounded-full bg-emerald-500 font-medium text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-600 transition-all hover:shadow-lg hover:shadow-emerald-500/30">
-              <Link to="/signup">Create free account</Link>
+            <Button asChild className="rounded-full bg-emerald-500 font-semibold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-600 transition-all hover:shadow-lg">
+              <Link to="/signup">Sign up now</Link>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6">
-        {/* HERO SECTION */}
-        <section className="grid items-center gap-12 py-12 md:grid-cols-12 md:py-20 lg:gap-8">
-          <div className="md:col-span-7 lg:col-span-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50/50 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse" /> 
-              Built for Indian University Students
-            </div>
-            
-            <h1 className="mt-6 text-4xl font-extrabold leading-[1.15] tracking-tight text-slate-900 sm:text-5xl md:text-5xl lg:text-6xl">
-              Up Your <span className="text-emerald-500">Skills</span> To <span className="underline decoration-emerald-400 decoration-wavy decoration-2 underline-offset-4">Advance</span> Your Career Path
-            </h1>
-            
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-500 sm:text-lg">
-              Access structural notes, organized PYQs, video lessons, and curriculum guidelines compiled specifically for your regional university system. Organised exactly the way you study.
-            </p>
-            
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Button asChild size="lg" className="rounded-full bg-emerald-500 px-8 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all hover:-translate-y-0.5">
-                <Link to="/signup">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="rounded-full border-slate-200 bg-white px-8 text-slate-600 hover:bg-slate-50 shadow-sm">
-                <Link to="/login">Get free trial</Link>
-              </Button>
-            </div>
-            
-            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-slate-100 pt-8 text-sm text-slate-400">
-              <span className="flex items-center gap-2 font-medium text-slate-500">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-50 text-amber-500"><ShieldCheck className="h-3.5 w-3.5" /></span> 
-                Verified Curriculum
-              </span>
-              <span className="flex items-center gap-2 font-medium text-slate-500">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-50 text-purple-500"><Bookmark className="h-3.5 w-3.5" /></span> 
-                Career-Oriented Materials
-              </span>
-            </div>
-          </div>
-
-          {/* DYNAMIC HERO IMAGE & FLOATING METRICS */}
-          <div className="relative flex items-center justify-center md:col-span-5 lg:col-span-6">
-            <div className="relative w-full max-w-[460px] aspect-square flex items-center justify-center">
-              {/* Giant Background Organic Circle */}
-              <div className="absolute inset-4 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-500 opacity-90 shadow-2xl shadow-emerald-500/20" />
+      <main className="w-full">
+        
+        {/* FULL SCREEN HERO COMPONENT - STRETCHES COMPLETELY EDGE-TO-EDGE */}
+        <section className="w-full overflow-hidden bg-gradient-to-br from-[#042f24] via-[#03251c] to-[#01140f] text-white shadow-2xl">
+          <div className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:py-24">
+            <div className="grid items-center gap-12 md:grid-cols-12 lg:gap-8">
               
-              {/* Radial Accent Rings */}
-              <div className="absolute -inset-4 rounded-full border border-dashed border-slate-200/80 animate-[spin_120s_linear_infinite]" />
-              <div className="absolute -inset-12 rounded-full border border-slate-100/60" />
-              
-              {/* Main Cutout Display Container (Rounded Fix Handled Here) */}
-              <div className="absolute bottom-4 overflow-hidden rounded-b-full w-[85%] h-[90%] flex items-end justify-center">
-                <img 
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop" 
-                  alt="Student representative showcasing achievement" 
-                  className="w-full h-full object-cover object-top scale-105 brightness-[1.02] contrast-[1.02] rounded-b-full"
-                />
-              </div>
-
-              {/* FLOATING BADGE 1: 5K+ Online Courses */}
-              <div className="absolute -right-2 top-10 flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-xl transition-transform hover:scale-105">
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-                  <BookOpen className="h-5 w-5" />
-                  <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-emerald-400" />
+              {/* Left Content Column */}
+              <div className="md:col-span-7 lg:col-span-6">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-emerald-300 shadow-sm">
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-400 animate-pulse" /> 
+                  Lakshay IQ — Smart Learning
                 </div>
-                <div>
-                  <p className="text-base font-bold leading-none text-slate-900">5K+</p>
-                  <p className="text-[11px] font-medium text-slate-400 mt-1">Online Courses</p>
+                
+                <h1 className="mt-6 text-4xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl lg:text-6xl">
+                  Every <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Note, PYQ & Video</span> Your Semester Needs
+                </h1>
+                
+                <p className="mt-6 max-w-xl text-base leading-relaxed text-emerald-100/70 sm:text-lg">
+                  Every resolution product showcase redesigned, polished, and optimized for a sleek, premium SaaS feel. Access structural notes, organized question banks, and learning resources.
+                </p>
+                
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <Button asChild size="lg" className="rounded-full bg-emerald-500 px-8 font-semibold text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all">
+                    <Link to="/signup">Learn more <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
                 </div>
               </div>
 
-              {/* FLOATING BADGE 2: 2K+ Video Lessons */}
-              <div className="absolute -left-6 top-1/3 flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-xl transition-transform hover:scale-105">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                  <Video className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-base font-bold leading-none text-slate-900">2K+</p>
-                  <p className="text-[11px] font-medium text-slate-400 mt-1">Video Lessons</p>
+              {/* Right Image/Circle Framework Column */}
+              <div className="relative flex items-center justify-center md:col-span-5 lg:col-span-6">
+                {/* Main Outer Geometric Circle Layer */}
+                <div className="relative flex aspect-square w-full max-w-[380px] items-center justify-center rounded-full border-4 border-emerald-500/20 bg-emerald-950/10 p-6 backdrop-blur-sm">
+                  
+                  {/* INNER IMAGE CONTAINER - PERFECT RECTANGLE OVERRIDE TO CIRCLE */}
+                  <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-emerald-400/40 shadow-2xl">
+                    <img 
+                      src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600&auto=format&fit=crop" 
+                      alt="Students studying collaboratively" 
+                      className="absolute inset-0 h-full w-full object-cover object-center"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                  </div>
+
+                  {/* FLOATING METRIC 1: 5K+ Online Courses */}
+                  <div className="absolute -left-10 top-12 flex items-center gap-2.5 rounded-xl border border-white/5 bg-[#042a20]/95 p-2.5 shadow-xl backdrop-blur-md">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
+                      <BookOpen className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold leading-none text-white">5K+</p>
+                      <p className="text-[9px] font-medium text-emerald-400/70 mt-0.5">Online Courses</p>
+                    </div>
+                  </div>
+
+                  {/* FLOATING METRIC 2: 2K+ Video Lessons */}
+                  <div className="absolute -right-8 top-1/4 flex items-center gap-2.5 rounded-xl border border-white/5 bg-[#042a20]/95 p-2.5 shadow-xl backdrop-blur-md">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/20 text-teal-400">
+                      <Video className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold leading-none text-white">2K+</p>
+                      <p className="text-[9px] font-medium text-emerald-400/70 mt-0.5">Video Lessons</p>
+                    </div>
+                  </div>
+
+                  {/* FLOATING METRIC 3: 5K+ Learning Materials */}
+                  <div className="absolute -left-6 bottom-10 flex items-center gap-2.5 rounded-xl border border-white/5 bg-[#042a20]/95 p-2.5 shadow-xl backdrop-blur-md">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold leading-none text-white">5K+</p>
+                      <p className="text-[9px] font-medium text-emerald-400/70 mt-0.5">Materials</p>
+                    </div>
+                  </div>
+
+                  {/* FLOATING METRIC 4: 250+ Tutors */}
+                  <div className="absolute -right-4 bottom-16 flex items-center gap-2.5 rounded-xl border border-white/5 bg-[#042a20]/95 p-2.5 shadow-xl backdrop-blur-md">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400">
+                      <GraduationCap className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold leading-none text-white">250+</p>
+                      <p className="text-[9px] font-medium text-emerald-400/70 mt-0.5">Expert Tutors</p>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
-              {/* FLOATING BADGE 3: Tutors 250+ */}
-              <div className="absolute bottom-16 -right-6 flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-xl transition-transform hover:scale-105">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                  <GraduationCap className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-base font-bold leading-none text-slate-900">250+</p>
-                  <p className="text-[11px] font-medium text-slate-400 mt-1">Expert Tutors</p>
-                </div>
-              </div>
-              
-              {/* Floating Decorative Circle */}
-              <div className="absolute bottom-6 left-6 h-6 w-6 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/20" />
             </div>
           </div>
         </section>
 
-        {/* TRUSTED PLATFORMS / COLLABORATION BAR */}
-        <section className="border-y border-slate-100 bg-white py-10 -mx-6 px-6">
-          <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-center md:text-left">
-              <p className="text-xl font-black text-slate-900">250+</p>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Collaborations</p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-40 grayscale contrast-200">
-              <span className="text-lg font-bold tracking-tight text-slate-800">duolingo</span>
-              <span className="text-lg font-bold tracking-tight text-slate-800">◇ Codecov</span>
-              <span className="text-lg font-bold tracking-tight text-slate-800">[User Testing]</span>
-              <span className="text-lg font-bold tracking-tight text-slate-800">magic leap</span>
-            </div>
-          </div>
-        </section>
-
-        {/* CORE PLATFORM MODULES SECTION */}
-        <section id="features" className="py-20 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-emerald-500">Our Services</p>
-          <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Fostering a playful & engaging learning environment
-          </h2>
+        {/* REST OF CONTENT AREAS TIED INSIDE BOUNDING BOX CONTAINER */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {/* CARD 1: Interaction Design / PYQs */}
-            <div className="group relative rounded-2xl border border-slate-100 bg-emerald-500 p-8 text-left text-white shadow-xl transition-all hover:-translate-y-1">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md text-white">
-                <FileText className="h-6 w-6" />
-              </div>
-              <h3 className="mt-6 text-xl font-bold">Previous Year Papers</h3>
-              <p className="mt-3 text-sm leading-relaxed text-emerald-50/90">
-                Exhaustive collection of semester question papers structured by historical year timelines, tracking exact distribution models.
-              </p>
-              <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:underline">
-                Learn More <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
+          {/* TRUSTED PLATFORMS SECTION */}
+          <section className="bg-white py-12 text-center">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Top Indian Universities Supported</p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-40 grayscale contrast-200">
+              <span className="text-sm font-bold tracking-tight text-slate-800">Nramarttaya University</span>
+              <span className="text-sm font-bold tracking-tight text-slate-800">University of Pondiangara</span>
+              <span className="text-sm font-bold tracking-tight text-slate-800">Dnafiallaga University</span>
+              <span className="text-sm font-bold tracking-tight text-slate-800">Sedtramn & Technology</span>
+              <span className="text-sm font-bold tracking-tight text-slate-800">University of Bainarom</span>
             </div>
+          </section>
 
-            {/* CARD 2: Course Systems */}
-            <div className="group relative rounded-2xl border border-slate-100 bg-white p-8 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <BookMarked className="h-6 w-6" />
-              </div>
-              <h3 className="mt-6 text-xl font-bold text-slate-900">Curated Study Notes</h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-500">
-                Precision subject notes formulated directly from respective university mandates to secure clear insight on major scoring concepts.
-              </p>
-              <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-500 group-hover:underline">
-                Learn More <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-
-            {/* CARD 3: Video learning */}
-            <div className="group relative rounded-2xl border border-slate-100 bg-white p-8 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
-                <Video className="h-6 w-6" />
-              </div>
-              <h3 className="mt-6 text-xl font-bold text-slate-900">Video Tutorials</h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-500">
-                Visual subject breakdown series maps module-by-module to quickly resolve structural learning hurdles prior to finals.
-              </p>
-              <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-500 group-hover:underline">
-                Learn More <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-          </div>
-          
-          {/* Carousel indicators */}
-          <div className="mt-8 flex items-center justify-center gap-2">
-            <span className="h-2 w-6 rounded-full bg-emerald-500" />
-            <span className="h-2 w-2 rounded-full bg-slate-200" />
-            <span className="h-2 w-2 rounded-full bg-slate-200" />
-          </div>
-        </section>
-
-        {/* ACADEMIC ARCHITECTURE FLOW SECTION */}
-        <section id="flow" className="border-t border-slate-100 py-20">
-          <div className="flex flex-col items-center text-center">
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">STRUCTURED PIPELINE</span>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">The Lakshay IQ Flow</h2>
-            <p className="mt-3 max-w-2xl text-base text-slate-500">
-              Navigate your academic ecosystem dynamically through a robust hierarchy engineered to map direct student requirements.
-            </p>
-          </div>
-
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-            {[
-              { title: "University", icon: Globe, desc: "Select institutional hub" },
-              { title: "Course", icon: Layers, desc: "Isolate precise branch degree" },
-              { title: "Semester", icon: BookOpen, desc: "Identify active term track" },
-              { title: "Subject", icon: BookMarked, desc: "Target targeted syllabus courses" },
-              { title: "Unit", icon: Download, desc: "Extract specific study material" }
-            ].map((step, idx) => (
-              <div key={step.title} className="group relative rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Step 0{idx + 1}</div>
-                  <div className="text-xs font-bold text-slate-300">{((idx + 1) * 20)}% Grid</div>
+          {/* CORE PLATFORM MODULES SECTION */}
+          <section id="features" className="py-12 text-center">
+            <p className="text-xs font-bold uppercase tracking-widest text-emerald-500">Our Services</p>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              Fostering a playful & engaging learning environment
+            </h2>
+            
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {/* CARD 1: PYQ Grid Component */}
+              <div className="group relative rounded-2xl border border-slate-100 bg-emerald-500 p-8 text-left text-white shadow-xl transition-all hover:-translate-y-1">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md text-white">
+                  <FileText className="h-6 w-6" />
                 </div>
-                <div className="mt-4 flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-700 transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-600">
-                  <step.icon className="h-4 w-4" />
-                </div>
-                <p className="mt-4 font-sans text-base font-bold text-slate-900">{step.title}</p>
-                <p className="mt-1 text-xs text-slate-400 leading-normal">{step.desc}</p>
+                <h3 className="mt-6 text-xl font-bold">Previous Year Papers</h3>
+                <p className="mt-3 text-sm leading-relaxed text-emerald-50/90">
+                  Exhaustive collection of semester question papers structured by historical year timelines, tracking exact distribution models.
+                </p>
+                <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:underline">
+                  Learn More <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
               </div>
-            ))}
-          </div>
-        </section>
+
+              {/* CARD 2: Notes Grid Component */}
+              <div className="group relative rounded-2xl border border-slate-100 bg-white p-8 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                  <BookMarked className="h-6 w-6" />
+                </div>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Curated Study Notes</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-500">
+                  Precision subject notes formulated directly from respective university mandates to secure clear insight on major scoring concepts.
+                </p>
+                <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-500 group-hover:underline">
+                  Learn More <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </div>
+
+              {/* CARD 3: Video Grid Component */}
+              <div className="group relative rounded-2xl border border-slate-100 bg-white p-8 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+                  <Video className="h-6 w-6" />
+                </div>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Video Tutorials</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-500">
+                  Visual subject breakdown series maps module-by-module to quickly resolve structural learning hurdles prior to finals.
+                </p>
+                <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-500 group-hover:underline">
+                  Learn More <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* ACADEMIC ARCHITECTURE FLOW SECTION */}
+          <section id="flow" className="border-t border-slate-100 py-16">
+            <div className="text-center">
+              <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Lakshay IQ Flow</h2>
+            </div>
+
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              {[
+                { title: "University", active: false },
+                { title: "Course", active: true },
+                { title: "Semester", active: false },
+                { title: "Subject", active: false },
+                { title: "Unit", active: false }
+              ].map((step, idx) => (
+                <div key={step.title} className="flex items-center gap-3">
+                  <div className={`flex items-center gap-4 rounded-xl border px-6 py-4 shadow-sm transition-all ${
+                    step.active ? "bg-emerald-600 border-emerald-600 text-white shadow-emerald-600/10" : "bg-white text-slate-800"
+                  }`}>
+                    <div className={`h-6 w-6 flex items-center justify-center rounded-lg text-xs font-bold ${
+                      step.active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                    }`}>
+                      {idx + 1}
+                    </div>
+                    <span className="font-sans text-sm font-bold tracking-wide">{step.title}</span>
+                  </div>
+                  {idx < 4 && <ChevronRight className="h-5 w-5 text-slate-300 hidden md:block" />}
+                </div>
+              ))}
+            </div>
+          </section>
+
+        </div>
       </main>
 
       {/* FOOTER SECTION */}
-      <footer className="bg-slate-900 text-slate-400">
+      <footer className="bg-slate-900 text-slate-400 mt-16">
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
             <div className="sm:col-span-2">
