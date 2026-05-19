@@ -40,6 +40,13 @@ function Landing() {
     }
   }, [user, role, loading, nav]);
 
+  // Right after Google OAuth callback, supabase sets the session and we land
+  // on "/" with a user but before we navigate to /student or /admin. Show a
+  // unique branded loader during this window so the landing page doesn't flash.
+  if (user) {
+    return <OAuthRedirectLoader role={role} />;
+  }
+
   // Unique data matrix for our interactive subway flow map
   const systemStations = [
     { id: 0, title: "University", subtitle: "Root Node", desc: "Select your parent institution (e.g., AKTU, SPPU, VTU).", count: "120+ Hubs", color: "from-blue-500 to-cyan-500" },
