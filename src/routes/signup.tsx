@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +32,20 @@ function Signup() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Check if this email already exists in profiles (could be a Google signup)
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", email.trim().toLowerCase())
+      .maybeSingle();
+
+    if (existingProfile) {
+      setLoading(false);
+      toast.error("This email is already registered. Try logging in with your password or use Google Sign-in.", { duration: 5000 });
+      return;
+    }
+
     const { error } = await supabase.auth.signUp({
       email, password,
       options: {
@@ -41,14 +54,26 @@ function Signup() {
       },
     });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      if (error.message.toLowerCase().includes("already registered")) {
+        toast.error("This email is already registered. If you signed up with Google, use Google Sign-in to log in.", { duration: 5000 });
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
     toast.success("Account created! Please check your email to confirm, then log in.", { duration: 6000 });
     nav({ to: "/login" });
   };
 
   const onGoogle = async () => {
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (res.error) toast.error("Could not sign in with Google");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+    if (error) toast.error(error.message || "Could not sign in with Google");
   };
 
   return (

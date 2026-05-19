@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { 
@@ -7,18 +7,14 @@ import {
   BookOpen, 
   FileText, 
   Video, 
-  Bookmark, 
-  ShieldCheck, 
-  ArrowRight, 
   Sparkles,
   Search,
-  Globe,
-  Layers,
   BookMarked,
-  Download,
   HelpCircle,
-  ChevronRight,
-  BookAlert
+  ArrowRight,
+  Layers,
+  Network,
+  Milestone
 } from "lucide-react";
 
 import { BiSolidBookHeart } from "react-icons/bi";
@@ -36,12 +32,22 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const { user, role, loading } = useAuth();
   const nav = useNavigate();
+  const [activeStation, setActiveStation] = useState<number>(1);
   
   useEffect(() => {
     if (!loading && user && role) {
       nav({ to: role === "admin" ? "/admin" : "/student" });
     }
   }, [user, role, loading, nav]);
+
+  // Unique data matrix for our interactive subway flow map
+  const systemStations = [
+    { id: 0, title: "University", subtitle: "Root Node", desc: "Select your parent institution (e.g., AKTU, SPPU, VTU).", count: "120+ Hubs", color: "from-blue-500 to-cyan-500" },
+    { id: 1, title: "Course", subtitle: "Stream Vector", desc: "Branch out into your field—B.Tech, BCA, B.Com, or BSc.", count: "450+ Streams", color: "from-emerald-500 to-teal-500" },
+    { id: 2, title: "Semester", subtitle: "Timeline Index", desc: "Hop into your current cycle to slice curriculum cleanly.", count: "1-8 Tiers", color: "from-amber-500 to-orange-500" },
+    { id: 3, title: "Subject", subtitle: "Module Core", desc: "Target explicit domain structures without noisy cross-talk.", count: "3,200+ Books", color: "from-indigo-500 to-purple-500" },
+    { id: 4, title: "Unit", subtitle: "Quantum Byte", desc: "Pinpoint micro-chapters containing exact Notes, PYQs & Reels.", count: "15,000+ Units", color: "from-rose-500 to-pink-500" }
+  ];
 
   return (
     <div className="min-h-screen bg-[#fafbfc] text-slate-900 antialiased selection:bg-emerald-500/10 selection:text-emerald-600">
@@ -91,12 +97,11 @@ function Landing() {
 
       <main className="w-full">
         
-        {/* FULL SCREEN HERO COMPONENT - STRETCHES COMPLETELY EDGE-TO-EDGE */}
+        {/* HERO COMPONENT */}
         <section className="w-full overflow-hidden bg-gradient-to-br from-[#042f24] via-[#03251c] to-[#01140f] text-white shadow-2xl">
           <div className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:py-24">
             <div className="grid items-center gap-12 md:grid-cols-12 lg:gap-8">
               
-              {/* Left Content Column */}
               <div className="md:col-span-7 lg:col-span-6">
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-emerald-300 shadow-sm">
                   <Sparkles className="h-3.5 w-3.5 text-emerald-400 animate-pulse" /> 
@@ -118,22 +123,19 @@ function Landing() {
                 </div>
               </div>
 
-              {/* Right Image/Circle Framework Column */}
+              {/* Right Hero Graphics */}
               <div className="relative flex items-center justify-center md:col-span-5 lg:col-span-6">
-                {/* Main Outer Geometric Circle Layer */}
                 <div className="relative flex aspect-square w-full max-w-[380px] items-center justify-center rounded-full border-4 border-emerald-500/20 bg-emerald-950/10 p-6 backdrop-blur-sm">
-                  
-                  {/* INNER IMAGE CONTAINER - PERFECT RECTANGLE OVERRIDE TO CIRCLE */}
                   <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-emerald-400/40 shadow-2xl">
                     <img 
                       src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600&auto=format&fit=crop" 
-                      alt="Students studying collaboratively" 
+                      alt="Students studying" 
                       className="absolute inset-0 h-full w-full object-cover object-center"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
                   </div>
 
-                  {/* FLOATING METRIC 1: 5K+ Online Courses */}
+                  {/* FLOATING METRICS */}
                   <div className="absolute -left-10 top-12 flex items-center gap-2.5 rounded-xl border border-white/5 bg-[#042a20]/95 p-2.5 shadow-xl backdrop-blur-md">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
                       <BookOpen className="h-4 w-4" />
@@ -144,7 +146,6 @@ function Landing() {
                     </div>
                   </div>
 
-                  {/* FLOATING METRIC 2: 2K+ Video Lessons */}
                   <div className="absolute -right-8 top-1/4 flex items-center gap-2.5 rounded-xl border border-white/5 bg-[#042a20]/95 p-2.5 shadow-xl backdrop-blur-md">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/20 text-teal-400">
                       <Video className="h-4 w-4" />
@@ -154,138 +155,169 @@ function Landing() {
                       <p className="text-[9px] font-medium text-emerald-400/70 mt-0.5">Video Lessons</p>
                     </div>
                   </div>
-
-                  {/* FLOATING METRIC 3: 5K+ Learning Materials */}
-                  <div className="absolute -left-6 bottom-10 flex items-center gap-2.5 rounded-xl border border-white/5 bg-[#042a20]/95 p-2.5 shadow-xl backdrop-blur-md">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
-                      <FileText className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold leading-none text-white">5K+</p>
-                      <p className="text-[9px] font-medium text-emerald-400/70 mt-0.5">Materials</p>
-                    </div>
-                  </div>
-
-                  {/* FLOATING METRIC 4: 250+ Tutors */}
-                  <div className="absolute -right-4 bottom-16 flex items-center gap-2.5 rounded-xl border border-white/5 bg-[#042a20]/95 p-2.5 shadow-xl backdrop-blur-md">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400">
-                      <GraduationCap className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold leading-none text-white">250+</p>
-                      <p className="text-[9px] font-medium text-emerald-400/70 mt-0.5">Expert Tutors</p>
-                    </div>
-                  </div>
-
                 </div>
               </div>
-
             </div>
           </div>
         </section>
 
-        {/* REST OF CONTENT AREAS TIED INSIDE BOUNDING BOX CONTAINER */}
+        {/* BOUNDING CONTAINER */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           
-          {/* TRUSTED PLATFORMS SECTION */}
+          {/* UNIVERSITY BRANDS MARQUEE */}
           <section className="bg-white py-12 text-center">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Top Indian Universities Supported</p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-40 grayscale contrast-200">
               <span className="text-sm font-bold tracking-tight text-slate-800">Nramarttaya University</span>
               <span className="text-sm font-bold tracking-tight text-slate-800">University of Pondiangara</span>
               <span className="text-sm font-bold tracking-tight text-slate-800">Dnafiallaga University</span>
-              <span className="text-sm font-bold tracking-tight text-slate-800">Sedtramn & Technology</span>
-              <span className="text-sm font-bold tracking-tight text-slate-800">University of Bainarom</span>
             </div>
           </section>
 
-          {/* CORE PLATFORM MODULES SECTION */}
+          {/* FEATURES */}
           <section id="features" className="py-12 text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-emerald-500">Our Services</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
               Fostering a playful & engaging learning environment
             </h2>
-            
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {/* CARD 1: PYQ Grid Component */}
               <div className="group relative rounded-2xl border border-slate-100 bg-emerald-500 p-8 text-left text-white shadow-xl transition-all hover:-translate-y-1">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md text-white">
                   <FileText className="h-6 w-6" />
                 </div>
                 <h3 className="mt-6 text-xl font-bold">Previous Year Papers</h3>
-                <p className="mt-3 text-sm leading-relaxed text-emerald-50/90">
-                  Exhaustive collection of semester question papers structured by historical year timelines, tracking exact distribution models.
-                </p>
-                <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:underline">
-                  Learn More <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
+                <p className="mt-3 text-sm leading-relaxed text-emerald-50/90">Exhaustive collection of semester question papers structured by historical year timelines.</p>
               </div>
 
-              {/* CARD 2: Notes Grid Component */}
               <div className="group relative rounded-2xl border border-slate-100 bg-white p-8 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                   <BookMarked className="h-6 w-6" />
                 </div>
                 <h3 className="mt-6 text-xl font-bold text-slate-900">Curated Study Notes</h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-500">
-                  Precision subject notes formulated directly from respective university mandates to secure clear insight on major scoring concepts.
-                </p>
-                <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-500 group-hover:underline">
-                  Learn More <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
+                <p className="mt-3 text-sm leading-relaxed text-slate-500">Precision subject notes formulated directly from respective university mandates.</p>
               </div>
 
-              {/* CARD 3: Video Grid Component */}
               <div className="group relative rounded-2xl border border-slate-100 bg-white p-8 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
                   <Video className="h-6 w-6" />
                 </div>
                 <h3 className="mt-6 text-xl font-bold text-slate-900">Video Tutorials</h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-500">
-                  Visual subject breakdown series maps module-by-module to quickly resolve structural learning hurdles prior to finals.
-                </p>
-                <Link to="/signup" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-500 group-hover:underline">
-                  Learn More <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
+                <p className="mt-3 text-sm leading-relaxed text-slate-500">Visual subject breakdown series maps module-by-module to quickly resolve hurdles.</p>
               </div>
             </div>
           </section>
 
-          {/* ACADEMIC ARCHITECTURE FLOW SECTION */}
-          <section id="flow" className="border-t border-slate-100 py-16">
-            <div className="text-center">
-              <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Lakshay IQ Flow</h2>
+          {/* UNIQUE ANIMATED SUBWAY/CIRCUIT PIPELINE FLOW */}
+          <section id="flow" className="border-t border-slate-100 py-20 relative overflow-hidden">
+            <div className="text-center max-w-xl mx-auto mb-16">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
+                <Network className="w-3.5 h-3.5 text-emerald-500" /> Interactive Data Highway
+              </span>
+              <h2 className="text-3xl font-black tracking-tight text-slate-900 mt-3 sm:text-4xl">
+                Lakshay IQ Infrastructure Map
+              </h2>
+              <p className="text-sm text-slate-500 mt-2">
+                Hover or touch the hyper-nodes below to inspect how data sequences seamlessly route inside our intelligent repository.
+              </p>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              {[
-                { title: "University", active: false },
-                { title: "Course", active: true },
-                { title: "Semester", active: false },
-                { title: "Subject", active: false },
-                { title: "Unit", active: false }
-              ].map((step, idx) => (
-                <div key={step.title} className="flex items-center gap-3">
-                  <div className={`flex items-center gap-4 rounded-xl border px-6 py-4 shadow-sm transition-all ${
-                    step.active ? "bg-emerald-600 border-emerald-600 text-white shadow-emerald-600/10" : "bg-white text-slate-800"
-                  }`}>
-                    <div className={`h-6 w-6 flex items-center justify-center rounded-lg text-xs font-bold ${
-                      step.active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
-                    }`}>
-                      {idx + 1}
-                    </div>
-                    <span className="font-sans text-sm font-bold tracking-wide">{step.title}</span>
-                  </div>
-                  {idx < 4 && <ChevronRight className="h-5 w-5 text-slate-300 hidden md:block" />}
+            <div className="max-w-4xl mx-auto px-4">
+              
+              {/* THE SUBWAY INTERCONNECTED LINE */}
+              <div className="relative flex flex-col md:flex-row items-center justify-between gap-12 md:gap-0 bg-slate-900/5 p-8 rounded-3xl border border-slate-200/60 backdrop-blur-sm">
+                
+                {/* Embedded Highlighting Pipeline Line */}
+                <div className="absolute top-1/2 left-10 right-10 h-[4px] bg-slate-200 -translate-y-1/2 hidden md:block z-0">
+                  <div 
+                    className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-500 rounded-full transition-all duration-500 ease-out" 
+                    style={{ width: `${(activeStation / (systemStations.length - 1)) * 100}%` }}
+                  />
+                  {/* Energy Particle traveling down the pipeline */}
+                  <div className="absolute top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-white shadow-md border-2 border-emerald-500 energy-pulse" />
                 </div>
-              ))}
+
+                {systemStations.map((station, index) => {
+                  const isPast = index <= activeStation;
+                  const isCurrent = index === activeStation;
+
+                  return (
+                    <button
+                      key={station.title}
+                      onMouseEnter={() => setActiveStation(index)}
+                      onClick={() => setActiveStation(index)}
+                      className="relative z-10 flex flex-col items-center group focus:outline-none w-full md:w-auto"
+                    >
+                      {/* Node Station Dot */}
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm shadow-md transition-all duration-300 ${
+                        isCurrent 
+                          ? 'bg-slate-900 border-4 border-emerald-400 text-white scale-125 ring-4 ring-emerald-400/20 shadow-emerald-500/20'
+                          : isPast 
+                          ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white border-2 border-white' 
+                          : 'bg-white text-slate-400 border-2 border-slate-200 hover:border-slate-400 hover:text-slate-700'
+                      }`}>
+                        {index + 1}
+                      </div>
+
+                      {/* Micro label */}
+                      <span className={`mt-3 text-xs font-extrabold tracking-wide uppercase transition-colors duration-200 ${
+                        isCurrent ? 'text-slate-900 scale-105' : 'text-slate-400 group-hover:text-slate-600'
+                      }`}>
+                        {station.title}
+                      </span>
+
+                      {/* Active Underline Glow */}
+                      {isCurrent && (
+                        <div className="absolute -bottom-2 w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* DYNAMIC TELEMETRY DISPLAY BOX */}
+              <div className="mt-8 relative min-h-[160px] rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xl shadow-slate-100/70 overflow-hidden group">
+                {/* Background Grid Pattern Accent */}
+                <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+                
+                {/* Corner Gradient Glow matching active station vector */}
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-10 blur-2xl rounded-bl-full transition-all duration-500 ${systemStations[activeStation].color}`} />
+
+                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-10 animate-telemetry-fade">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2.5">
+                      <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded bg-gradient-to-r text-white shadow-sm ${systemStations[activeStation].color}`}>
+                        {systemStations[activeStation].subtitle}
+                      </span>
+                      <span className="text-xs font-bold text-slate-400">Layer 0{activeStation + 1}</span>
+                    </div>
+
+                    <h3 className="mt-2 text-2xl font-black text-slate-900 tracking-tight">
+                      {systemStations[activeStation].title} Segment Architecture
+                    </h3>
+                    
+                    <p className="mt-2 text-sm leading-relaxed text-slate-500 max-w-xl">
+                      {systemStations[activeStation].desc}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-start sm:items-end justify-center border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-8 min-w-[140px]">
+                    <span className="text-2xl font-black text-slate-900 tracking-tight">
+                      {systemStations[activeStation].count}
+                    </span>
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-500 mt-0.5 flex items-center gap-1">
+                      <Layers className="w-3 h-3" /> Indexed Nodes
+                    </span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </section>
 
         </div>
       </main>
 
-      {/* FOOTER SECTION */}
+      {/* FOOTER */}
       <footer className="bg-slate-900 text-slate-400 mt-16">
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
@@ -302,7 +334,6 @@ function Landing() {
               <ul className="mt-4 space-y-2 text-sm">
                 <li><a href="#flow" className="hover:text-white transition-colors">Universities</a></li>
                 <li><a href="#flow" className="hover:text-white transition-colors">Courses Offered</a></li>
-                <li><a href="#flow" className="hover:text-white transition-colors">Semester Systems</a></li>
               </ul>
             </div>
             <div>
@@ -310,7 +341,6 @@ function Landing() {
               <ul className="mt-4 space-y-2 text-sm">
                 <li className="flex items-center gap-1.5"><HelpCircle className="h-3.5 w-3.5" /> Help Center</li>
                 <li>Terms of Service</li>
-                <li>Privacy Policy</li>
               </ul>
             </div>
           </div>
@@ -319,6 +349,45 @@ function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Embedded High-Fidelity Physics Engine Styling Layer */}
+      <style>{`
+        @keyframes energyPulseScroll {
+          0% {
+            left: 0%;
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            left: 100%;
+            opacity: 0;
+          }
+        }
+
+        @keyframes boxFadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.98) translateY(4px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+
+        .energy-pulse {
+          animation: energyPulseScroll 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .animate-telemetry-fade {
+          animation: boxFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
     </div>
   );
 }
