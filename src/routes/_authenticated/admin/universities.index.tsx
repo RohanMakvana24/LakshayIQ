@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { useSupabaseTable } from "@/hooks/use-supabase-table";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 
 type Row = { id: string; name: string; slug: string; description: string | null; is_active: boolean; created_at: string };
 
@@ -24,6 +24,9 @@ function ManageUniversities() {
       key: "actions", header: "Actions", className: "text-right w-24",
       accessor: (r) => (
         <div className="flex justify-end gap-1">
+          <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" asChild>
+            <Link to={`/admin/universities/${r.id}/edit`}><Pencil className="h-3.5 w-3.5" /></Link>
+          </Button>
           <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(r.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
         </div>
       ),

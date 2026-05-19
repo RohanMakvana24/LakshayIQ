@@ -40,10 +40,11 @@ function Landing() {
     }
   }, [user, role, loading, nav]);
 
-  // Right after Google OAuth callback, supabase sets the session and we land
-  // on "/" with a user but before we navigate to /student or /admin. Show a
-  // unique branded loader during this window so the landing page doesn't flash.
-  if (user) {
+  // Show loader when:
+  // 1. Auth is still loading (session being checked after Google OAuth redirect)
+  // 2. User is already authenticated (waiting for redirect to student/admin)
+  // This prevents the landing page from flashing during Google OAuth callback.
+  if (loading || user) {
     return <OAuthRedirectLoader role={role} />;
   }
 

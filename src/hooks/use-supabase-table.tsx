@@ -38,8 +38,28 @@ export function useSupabaseTable<T extends { id: string }>(
     return true;
   };
 
-  return { data, loading, refresh: fetchAll, remove, insert };
+  const update = async (id: string, values: Record<string, unknown>) => {
+    const { error } = await supabase.from(table as never).update(values as never).eq("id", id);
+    if (error) { toast.error(error.message); return false; }
+    toast.success("Updated");
+    fetchAll();
+    return true;
+  };
+
+  return { data, loading, refresh: fetchAll, remove, insert, update };
 }
+
+export const uploadFile = async (bucket: string, path: string, file: File) => {
+  const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
+    upsert: true,
+  });
+  if (error) {
+    toast.error(`Upload failed: ${error.message}`);
+    return null;
+  }
+  const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(path);
+  return publicUrlData.publicUrl;
+};
 
 export const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
