@@ -40,6 +40,13 @@ function Landing() {
     }
   }, [user, role, loading, nav]);
 
+  // Right after Google OAuth callback, supabase sets the session and we land
+  // on "/" with a user but before we navigate to /student or /admin. Show a
+  // unique branded loader during this window so the landing page doesn't flash.
+  if (user) {
+    return <OAuthRedirectLoader role={role} />;
+  }
+
   // Unique data matrix for our interactive subway flow map
   const systemStations = [
     { id: 0, title: "University", subtitle: "Root Node", desc: "Select your parent institution (e.g., AKTU, SPPU, VTU).", count: "120+ Hubs", color: "from-blue-500 to-cyan-500" },
@@ -387,6 +394,87 @@ function Landing() {
         .animate-telemetry-fade {
           animation: boxFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+      `}</style>
+    </div>
+  );
+}
+
+function OAuthRedirectLoader({ role }: { role: "admin" | "student" | null }) {
+  const destination = role === "admin" ? "Admin Console" : "Student Dashboard";
+  const steps = [
+    "Verifying secure handshake",
+    "Syncing academic profile",
+    "Routing to your workspace",
+  ];
+
+  return (
+    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#090c12] px-6 text-slate-100 antialiased">
+      {/* grid + glows */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#131a26_1px,transparent_1px),linear-gradient(to_bottom,#131a26_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-30" />
+      <div className="absolute -top-32 -left-32 h-[480px] w-[480px] rounded-full bg-teal-500/10 blur-[120px]" />
+      <div className="absolute -bottom-32 -right-32 h-[520px] w-[520px] rounded-full bg-emerald-500/10 blur-[130px]" />
+
+      <div className="relative z-10 flex w-full max-w-md flex-col items-center text-center">
+        {/* orbiting brand mark */}
+        <div className="relative mb-8 h-32 w-32">
+          <div className="absolute inset-0 rounded-full border border-emerald-500/20" />
+          <div className="absolute inset-2 rounded-full border border-emerald-500/10" />
+          <div className="absolute inset-0 animate-[spin_3s_linear_infinite] rounded-full border-2 border-transparent border-t-emerald-400 border-r-emerald-400/40" />
+          <div className="absolute inset-3 animate-[spin_5s_linear_infinite_reverse] rounded-full border-2 border-transparent border-b-teal-400/70 border-l-teal-400/30" />
+          <div className="absolute inset-0 grid place-items-center">
+            <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30">
+              <BiSolidBookHeart className="h-7 w-7" />
+              <span className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[#090c12]" />
+            </div>
+          </div>
+        </div>
+
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-900/50 bg-emerald-950/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+          <Sparkles className="h-3 w-3 animate-pulse" /> Session Authenticated
+        </span>
+
+        <h1 className="mt-4 text-2xl font-black tracking-tight text-white">
+          Welcome to Lakshay <span className="text-emerald-400">.IQ</span>
+        </h1>
+        <p className="mt-1.5 text-sm font-medium text-slate-400">
+          Preparing your {destination}…
+        </p>
+
+        {/* progress bar */}
+        <div className="mt-7 h-1.5 w-full overflow-hidden rounded-full bg-slate-800/60">
+          <div className="loader-bar h-full w-1/3 rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400" />
+        </div>
+
+        {/* steps */}
+        <ul className="mt-6 w-full space-y-2 text-left font-mono text-[11px] font-semibold text-slate-400">
+          {steps.map((s, i) => (
+            <li
+              key={s}
+              className="flex items-center gap-2.5 rounded-lg border border-slate-800/60 bg-slate-900/40 px-3 py-2 backdrop-blur-xl loader-step"
+              style={{ animationDelay: `${i * 220}ms` }}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              <span className="text-slate-300">{s}</span>
+              <span className="ml-auto text-[9px] uppercase tracking-widest text-emerald-400">OK</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <style>{`
+        @keyframes loaderSlide {
+          0% { transform: translateX(-110%); }
+          100% { transform: translateX(320%); }
+        }
+        .loader-bar { animation: loaderSlide 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        @keyframes loaderStepIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .loader-step { opacity: 0; animation: loaderStepIn 0.45s ease-out forwards; }
       `}</style>
     </div>
   );
