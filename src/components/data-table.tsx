@@ -62,6 +62,11 @@ export function DataTable<T>({
   const start = (currentPage - 1) * pageSize;
   const rows = sorted.slice(start, start + pageSize);
 
+  // Keep page in range if data shrinks (e.g. after delete or filter)
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
   const toggleSort = (key: string) => {
     setSort((s) => s?.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" });
   };
