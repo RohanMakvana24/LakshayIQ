@@ -41,10 +41,7 @@ function Landing() {
     }
   }, [user, role, loading, nav]);
 
-  // Show loader when:
-  // 1. Auth is still loading (session being checked after Google OAuth redirect)
-  // 2. User is already authenticated (waiting for redirect to student/admin)
-  // This prevents the landing page from flashing during Google OAuth callback.
+
   if (loading || user) {
     return <OAuthRedirectLoader role={role} />;
   }

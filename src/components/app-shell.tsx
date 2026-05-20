@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { LogOut, Search, Bell, ChevronRight } from "lucide-react";
-import { BiSolidBookHeart } from "react-icons/bi"; // Make sure to run: npm i react-icons
+import { LogOut, Search, Bell, ChevronRight, Menu, ChevronLeft, PanelLeftClose, PanelLeft } from "lucide-react";
+import { BiSolidBookHeart } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,6 +18,10 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
   const { user, signOut } = useAuth();
   const nav = useNavigate();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  
+  // Sidebar State Management
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {};
@@ -28,160 +32,306 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
   });
 
   return (
-    <div className="min-h-screen bg-slate-50/50 text-slate-900">
-      {/* --- SIDEBAR --- */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 md:flex md:flex-col p-4 bg-white border-r border-slate-100">
-        
-        {/* Brand Header */}
-        <div className="flex items-center justify-between px-2 pb-6 border-b border-slate-100/80">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/10 transition-transform group-hover:scale-105">
-              <BiSolidBookHeart className="h-4.5 w-4.5" />
-              <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border border-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base font-black tracking-tight text-slate-900 leading-tight">
-                Lakshay <span className="text-emerald-500 text-[11px]">.IQ</span>
-              </span>
-              <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 leading-none">
-                {variant === "admin" ? "Admin Console" : "Smart Platform"}
-              </span>
-            </div>
-          </Link>
-        </div>
-
-        {/* Navigation Items */}
-        <nav className="flex-1 space-y-1.5 overflow-y-auto py-6 pr-1 custom-scrollbar">
-          {items.map((item) => {
-            if (item.children) {
-              const isOpen = openGroups[item.label];
-              const anyActive = item.children.some((c) => pathname.startsWith(c.to));
-              
-              return (
-                <div key={item.label} className="space-y-1">
-                  <button
-                    onClick={() => setOpenGroups((s) => ({ ...s, [item.label]: !s[item.label] }))}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all group relative",
-                      anyActive 
-                        ? "text-emerald-700 font-semibold bg-emerald-50/40" 
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    )}
-                  >
-                    <item.icon className={cn("h-4 w-4 transition-colors", anyActive ? "text-emerald-600" : "text-slate-400 group-hover:text-slate-600")} />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    <ChevronRight className={cn("h-3.5 w-3.5 transition-transform text-slate-400", isOpen && "rotate-90 text-emerald-600")} />
-                  </button>
-                  
-                  {isOpen && (
-                    <div className="ml-5 mt-1 space-y-1 border-l-2 border-emerald-100 pl-4 transition-all animate-in fade-in slide-in-from-left-2 duration-200">
-                      {item.children.map((c) => {
-                        const active = pathname === c.to;
-                        return (
-                          <Link 
-                            key={c.to} 
-                            to={c.to as never} 
-                            className={cn(
-                              "block rounded-lg px-3 py-2 text-xs transition-all relative",
-                              active 
-                                ? "bg-gradient-to-r from-emerald-50 to-transparent font-semibold text-emerald-600 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-4 before:bg-emerald-500 before:rounded-full" 
-                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-50/60"
-                            )}
-                          >
-                            {c.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            const to = item.to!;
-            const active = pathname === to || (to !== "/student" && to !== "/admin" && pathname.startsWith(to));
-            
-            return (
-              <Link 
-                key={to} 
-                to={to as never} 
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all relative group",
-                  active 
-                    ? "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-md shadow-emerald-600/10 font-semibold" 
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                )}
-              >
-                <item.icon className={cn("h-4 w-4", active ? "text-white" : "text-slate-400 group-hover:text-slate-600")} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* User Footer Profile */}
-        <div className="mt-auto border-t border-slate-100 pt-4 space-y-3">
-          <div className="flex items-center gap-3 rounded-xl bg-slate-50/80 p-2.5 border border-slate-100/50">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-tr from-emerald-500 to-emerald-400 text-white text-sm font-bold shadow-sm">
-              {(user?.email ?? "U")[0].toUpperCase()}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-slate-800">{user?.user_metadata?.full_name ?? (variant === "admin" ? "Admin User" : "Student User")}</p>
-              <p className="truncate text-[11px] text-slate-400">{user?.email}</p>
-            </div>
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans antialiased selection:bg-emerald-500/10 selection:text-emerald-600">
+      
+      {/* --- MOBILE SIDEBAR DRAWER --- */}
+      <div className={cn(
+        "fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm md:hidden transition-opacity duration-300",
+        mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+      )} onClick={() => setMobileMenuOpen(false)}>
+        <aside 
+          className={cn(
+            "fixed inset-y-0 left-0 w-72 bg-white p-5 flex flex-col border-r border-slate-200 transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1)",
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Mobile Header */}
+          <div className="flex items-center justify-between pb-6 border-b border-slate-100">
+            <BrandHeader variant={variant} isCollapsed={false} />
           </div>
           
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="w-full justify-start text-slate-500 hover:text-red-600 hover:bg-red-50/60 rounded-xl transition-all" 
-            onClick={async () => { await signOut(); nav({ to: "/login" }); }}
-          >
-            <LogOut className="mr-2 h-4 w-4" /> Sign out
-          </Button>
+          {/* Mobile Nav */}
+          <nav className="flex-1 space-y-1.5 overflow-y-auto py-6">
+            {renderNavItems({ items, pathname, openGroups, setOpenGroups, isCollapsed: false, setMobileMenuOpen })}
+          </nav>
+
+          {/* Mobile Footer */}
+          <UserFooter user={user} variant={variant} isCollapsed={false} signOut={signOut} nav={nav} />
+        </aside>
+      </div>
+
+      {/* --- DESKTOP SIDEBAR --- */}
+      <aside 
+        className={cn(
+          "fixed inset-y-0 left-0 z-30 hidden md:flex md:flex-col bg-white border-r border-slate-200/80 shadow-[1px_0_10px_rgba(0,0,0,0.01)] transition-all duration-300 ease-in-out p-4",
+          isCollapsed ? "w-20" : "w-66"
+        )}
+      >
+        {/* Collapse Trigger Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-7 h-6 w-6 hidden md:grid place-items-center rounded-full bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 shadow-sm transition-all duration-200 z-50"
+        >
+          {isCollapsed ? <PanelLeft className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
+        </button>
+
+        {/* Brand Header */}
+        <div className={cn("pb-5 border-b border-slate-100 flex items-center", isCollapsed ? "justify-center" : "px-1")}>
+          <BrandHeader variant={variant} isCollapsed={isCollapsed} />
         </div>
+
+        {/* Desktop Navigation */}
+        <nav className="flex-1 space-y-1.5 overflow-y-auto py-6 pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {renderNavItems({ items, pathname, openGroups, setOpenGroups, isCollapsed })}
+        </nav>
+
+        {/* Desktop Footer Profile */}
+        <UserFooter user={user} variant={variant} isCollapsed={isCollapsed} signOut={signOut} nav={nav} />
       </aside>
 
-      {/* --- MAIN MAIN WRAPPER --- */}
-      <div className="md:pl-64">
-        {/* Header Dashboard Bar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-slate-100 bg-white/80 px-6 backdrop-blur md:px-8">
-          {variant === "student" ? (
-            <form 
-              onSubmit={(e) => { 
-                e.preventDefault(); 
-                const fd = new FormData(e.currentTarget); 
-                nav({ to: "/student/search", search: { q: String(fd.get("q") || "") } as never }); 
-              }} 
-              className="flex max-w-md flex-1 items-center"
-            >
-              <div className="relative w-full">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input 
-                  name="q" 
-                  placeholder="Search universities, subjects, units…" 
-                  className="pl-9 h-9 bg-slate-50 border-slate-200/80 focus-visible:ring-emerald-500 rounded-xl transition-all" 
-                />
-              </div>
-            </form>
-          ) : (
-            <h2 className="font-display text-base font-bold text-slate-800">Admin Console Dashboard</h2>
-          )}
+      {/* --- MAIN CONTENT BAR --- */}
+      <div className={cn("transition-all duration-300 ease-in-out", isCollapsed ? "md:pl-20" : "md:pl-66")}>
+        
+        {/* Header Bar */}
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-slate-200/50 bg-white/80 px-4 md:px-8 backdrop-blur-md">
           
-          <div className="ml-auto flex items-center gap-2">
+          {/* Mobile Menu Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden h-9 w-9 rounded-xl text-slate-600 hover:bg-slate-50"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          {/* Search or Title Section */}
+          <div className="flex-1 max-w-md">
+            {variant === "student" ? (
+              <form 
+                onSubmit={(e) => { 
+                  e.preventDefault(); 
+                  const fd = new FormData(e.currentTarget); 
+                  nav({ to: "/student/search", search: { q: String(fd.get("q") || "") } as never }); 
+                }} 
+                className="flex items-center"
+              >
+                <div className="relative w-full group">
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                  <Input 
+                    name="q" 
+                    placeholder="Search universities, subjects, units…" 
+                    className="pl-10 h-9 bg-slate-50/80 border-slate-200/60 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 rounded-xl transition-all placeholder:text-slate-400/80 text-xs" 
+                  />
+                </div>
+              </form>
+            ) : (
+              <h2 className="font-semibold text-sm text-slate-800 tracking-tight">Admin Console Dashboard</h2>
+            )}
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 rounded-xl border border-slate-100 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50/50"
+              className="h-9 w-9 rounded-xl border border-slate-200/60 text-slate-500 hover:text-emerald-500 hover:bg-emerald-50/40 transition-all duration-200"
             >
               <Bell className="h-4 w-4" />
             </Button>
           </div>
         </header>
 
-        {/* Render View Routes */}
-        <main className="px-6 py-6 md:px-8 md:py-8">{children}</main>
+        {/* --- MAIN ROUTE VIEW --- */}
+        <main className="p-4 md:p-8 max-w-[1600px] mx-auto animate-in fade-in duration-300">
+          {children}
+        </main>
       </div>
+    </div>
+  );
+}
+
+/* ==========================================================================
+   HELPERS & SUB-COMPONENTS
+   ========================================================================== */
+
+function BrandHeader({ variant, isCollapsed }: { variant: string; isCollapsed: boolean }) {
+  return (
+    <Link to="/" className="flex items-center gap-3 group">
+      <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm transition-transform duration-300 group-hover:scale-105">
+        <BiSolidBookHeart className="h-4.5 w-4.5 text-emerald-400" />
+        {!isCollapsed && (
+          <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white animate-pulse" />
+        )}
+      </div>
+      {!isCollapsed && (
+        <div className="flex flex-col animate-in fade-in duration-200">
+          <span className="text-sm font-bold tracking-tight text-slate-800 leading-tight">
+            Lakshay <span className="text-emerald-500 font-black">.IQ</span>
+          </span>
+          <span className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mt-0.5">
+            {variant === "admin" ? "Admin Console" : "Smart Platform"}
+          </span>
+        </div>
+      )}
+    </Link>
+  );
+}
+
+interface RenderProps {
+  items: NavItem[];
+  pathname: string;
+  openGroups: Record<string, boolean>;
+  setOpenGroups: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  isCollapsed: boolean;
+  setMobileMenuOpen?: (open: boolean) => void;
+}
+
+function renderNavItems({ items, pathname, openGroups, setOpenGroups, isCollapsed, setMobileMenuOpen }: RenderProps) {
+  return items.map((item) => {
+    if (item.children) {
+      const isOpen = openGroups[item.label];
+      const anyActive = item.children.some((c) => pathname.startsWith(c.to));
+
+      if (isCollapsed) {
+        // Collapsed mode me nested dropdown directly nahi dikha sakte, basic dynamic indicator badge dikhega
+        return (
+          <div key={item.label} className="relative flex justify-center group/tooltip py-1">
+            <button
+              onClick={() => setOpenGroups((s) => ({ ...s, [item.label]: !s[item.label] }))}
+              className={cn(
+                "h-10 w-10 flex items-center justify-center rounded-xl transition-all relative",
+                anyActive ? "bg-emerald-50 text-emerald-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              )}
+            >
+              <item.icon className="h-4.5 w-4.5" />
+              {anyActive && <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+            </button>
+            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-md">
+              {item.label}
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div key={item.label} className="space-y-0.5">
+          <button
+            onClick={() => setOpenGroups((s) => ({ ...s, [item.label]: !s[item.label] }))}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-all group relative",
+              anyActive 
+                ? "text-emerald-600 font-semibold bg-emerald-50/40" 
+                : "text-slate-600 hover:bg-slate-50/80 hover:text-slate-900"
+            )}
+          >
+            <item.icon className={cn("h-4.5 w-4.5 transition-colors duration-200", anyActive ? "text-emerald-500" : "text-slate-400 group-hover:text-slate-600")} />
+            <span className="flex-1 text-left">{item.label}</span>
+            <ChevronRight className={cn("h-3.5 w-3.5 transition-transform duration-200 text-slate-400", isOpen && "rotate-90 text-emerald-500")} />
+          </button>
+          
+          {isOpen && (
+            <div className="ml-5 mt-0.5 space-y-0.5 border-l border-slate-100 pl-3.5 transition-all animate-in fade-in slide-in-from-left-1 duration-200">
+              {item.children.map((c) => {
+                const active = pathname === c.to;
+                return (
+                  <Link 
+                    key={c.to} 
+                    to={c.to as never} 
+                    onClick={() => setMobileMenuOpen?.(false)}
+                    className={cn(
+                      "block rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all relative",
+                      active 
+                        ? "text-emerald-600 font-bold bg-emerald-50/20 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-4 before:bg-emerald-500 before:rounded-r" 
+                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-50/40"
+                    )}
+                  >
+                    {c.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const to = item.to!;
+    const active = pathname === to || (to !== "/student" && to !== "/admin" && pathname.startsWith(to));
+    
+    if (isCollapsed) {
+      return (
+        <div key={to} className="relative flex justify-center group/tooltip py-1">
+          <Link 
+            to={to as never} 
+            className={cn(
+              "h-10 w-10 flex items-center justify-center rounded-xl transition-all relative",
+              active 
+                ? "bg-slate-900 text-white shadow-sm" 
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+            )}
+          >
+            <item.icon className="h-4.5 w-4.5" />
+          </Link>
+          <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-md">
+            {item.label}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <Link 
+        key={to} 
+        to={to as never} 
+        onClick={() => setMobileMenuOpen?.(false)}
+        className={cn(
+          "flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200 relative group",
+          active 
+            ? "bg-slate-900 text-white shadow-sm font-semibold" 
+            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+        )}
+      >
+        <item.icon className={cn("h-4.5 w-4.5 transition-colors", active ? "text-emerald-400" : "text-slate-400 group-hover:text-slate-600")} />
+        <span className="flex-1">{item.label}</span>
+      </Link>
+    );
+  });
+}
+
+interface FooterProps {
+  user: any;
+  variant: string;
+  isCollapsed: boolean;
+  signOut: () => Promise<void>;
+  nav: any;
+}
+
+function UserFooter({ user, variant, isCollapsed, signOut, nav }: FooterProps) {
+  return (
+    <div className="mt-auto border-t border-slate-100 pt-4 space-y-1.5">
+      <div className={cn("flex items-center gap-2.5 rounded-xl p-1.5 transition-all", isCollapsed ? "justify-center" : "bg-slate-50/60 border border-slate-100")}>
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-slate-900 text-emerald-400 text-xs font-bold shadow-sm">
+          {(user?.email ?? "U")[0].toUpperCase()}
+        </div>
+        {!isCollapsed && (
+          <div className="min-w-0 flex-1 animate-in fade-in duration-200">
+            <p className="truncate text-[11px] font-bold text-slate-700">{user?.user_metadata?.full_name ?? (variant === "admin" ? "Admin User" : "Student User")}</p>
+            <p className="truncate text-[10px] font-medium text-slate-400 mt-0.5">{user?.email}</p>
+          </div>
+        )}
+      </div>
+      
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className={cn("w-full text-slate-500 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl transition-all font-medium text-xs", isCollapsed ? "justify-center px-0" : "justify-start px-2.5")}
+        onClick={async () => { await signOut(); nav({ to: "/login" }); }}
+      >
+        <LogOut className={cn("h-4 w-4", isCollapsed ? "" : "mr-2")} /> 
+        {!isCollapsed && <span className="animate-in fade-in duration-200">Sign out</span>}
+      </Button>
     </div>
   );
 }
