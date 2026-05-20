@@ -120,7 +120,7 @@ export function DataTable<T>({
               ) : rows.map((row) => (
                 <tr key={rowKey(row)} className="border-b last:border-0 transition-colors hover:bg-accent/40">
                   {columns.map((c) => (
-                    <td key={c.key} className={cn("px-4 py-3", c.className)}>{c.accessor(row)}</td>
+                    <td key={c.key} className={cn("px-4 py-3 align-middle", c.className)}>{c.accessor(row)}</td>
                   ))}
                 </tr>
               ))}
