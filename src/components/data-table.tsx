@@ -129,13 +129,13 @@ export function DataTable<T>({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 text-sm">
+      <div className="flex flex-col gap-3 text-sm sm:flex-row sm:flex-wrap sm:items-center">
         <p className="text-muted-foreground">
           Showing <span className="font-medium text-foreground">{total === 0 ? 0 : start + 1}</span> to{" "}
           <span className="font-medium text-foreground">{Math.min(start + pageSize, total)}</span> of{" "}
           <span className="font-medium text-foreground">{total}</span> entries
         </p>
-        <div className="ml-auto flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1 sm:ml-auto">
           <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 1} onClick={() => setPage(1)}><ChevronsLeft className="h-4 w-4" /></Button>
           <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><ChevronLeft className="h-4 w-4" /></Button>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
