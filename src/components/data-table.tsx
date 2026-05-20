@@ -98,16 +98,20 @@ export function DataTable<T>({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                {columns.map((c) => (
-                  <th key={c.key} className={cn("px-4 py-3 font-semibold", c.className)}>
-                    {c.sortable && c.sortValue ? (
-                      <button onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1 hover:text-foreground">
-                        {c.header}
-                        <ArrowUpDown className={cn("h-3 w-3", sort?.key === c.key ? "text-primary" : "opacity-50")} />
-                      </button>
-                    ) : c.header}
-                  </th>
-                ))}
+                {columns.map((c) => {
+                  const isSorted = sort?.key === c.key;
+                  const SortGlyph = !isSorted ? ArrowUpDown : sort!.dir === "asc" ? ArrowUp : ArrowDown;
+                  return (
+                    <th key={c.key} className={cn("whitespace-nowrap px-4 py-3 font-semibold align-middle", c.className)}>
+                      {c.sortable && c.sortValue ? (
+                        <button onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1 hover:text-foreground">
+                          {c.header}
+                          <SortGlyph className={cn("h-3 w-3", isSorted ? "text-primary" : "opacity-50")} />
+                        </button>
+                      ) : c.header}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
