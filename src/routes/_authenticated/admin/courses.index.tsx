@@ -326,8 +326,12 @@ function ManageCourses() {
                 value={formik.values.name}
                 onChange={(e) => {
                   formik.handleChange(e);
-                  formik.setFieldValue("slug", slugify(e.target.value));
+                  // Only auto-fill slug if user hasn't manually edited it
+                  if (!formik.touched.slug) {
+                    formik.setFieldValue("slug", slugify(e.target.value));
+                  }
                 }}
+                onBlur={formik.handleBlur}
                 className="h-10 border-slate-200 rounded-xl text-xs"
               />
               {formik.touched.name && formik.errors.name && <p className="text-[10px] font-semibold text-rose-500">{formik.errors.name}</p>}
