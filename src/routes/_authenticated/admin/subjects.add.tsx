@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, BookOpen, GraduationCap, Eye, Image as ImageIcon, UploadCloud, Loader2, X } from "lucide-react";
 import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type Sem = { id: string; semester_number: number; course_id: string };
 type Course = { id: string; name: string };
@@ -74,7 +75,7 @@ function AddSubject() {
       setThumbnailUrl(publicUrl);
     } catch (error) {
       console.error("Storage upload failed:", error);
-      alert("Image upload કરવામાં ભૂલ થઈ! બકેટ પરમિશન અથવા 'university-assets' નામ ચેક કરો.");
+      toast.error("Image upload failed. Check 'university-assets' bucket permissions.");
     } finally {
       setUploadingFile(false);
     }

@@ -23,11 +23,14 @@ export function useSupabaseTable<T extends { id: string }>(
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this record?")) return;
     const { error } = await supabase.from(table as never).delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return false;
+    }
     toast.success("Deleted");
     fetchAll();
+    return true;
   };
 
   const insert = async (values: Record<string, unknown>) => {
