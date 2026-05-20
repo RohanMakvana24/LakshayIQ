@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ function AddSemester() {
   const nav = useNavigate();
   const { insert } = useSupabaseTable("semesters");
   const { data: courses } = useSupabaseTable<Course>("courses", { orderBy: "name", ascending: true });
+  const formRef = useRef<HTMLFormElement>(null);
   const [courseId, setCourseId] = useState("");
   const [semesterNumber, setSemesterNumber] = useState(1);
   const [title, setTitle] = useState("");
@@ -49,11 +50,7 @@ function AddSemester() {
           <Button 
             type="button" 
             size="sm"
-            onClick={(e) => {
-              // Direct external programmatic invocation to fire form state pipeline smoothly
-              const submitBtn = document.getElementById("submit-semester-btn");
-              submitBtn?.click();
-            }} 
+            onClick={() => formRef.current?.requestSubmit()} 
             disabled={saving || !courseId}
             className="bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-xs font-semibold px-5 shadow-sm"
           >
@@ -68,8 +65,9 @@ function AddSemester() {
         {/* Form Entry Fieldsets Context Block (7 Columns) */}
         <div className="lg:col-span-7 space-y-6">
           <Card className="p-6 border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] rounded-2xl bg-white">
-            <form className="space-y-5" onSubmit={async (e) => {
+            <form ref={formRef} className="space-y-5" onSubmit={async (e) => {
               e.preventDefault(); 
+              if (!courseId) return;
               setSaving(true);
               const ok = await insert({ course_id: courseId, semester_number: semesterNumber, title: title || null });
               setSaving(false); 
@@ -118,9 +116,6 @@ function AddSemester() {
                   />
                 </div>
               </div>
-
-              {/* Hidden direct submission trigger button anchor */}
-              <button id="submit-semester-btn" type="submit" className="hidden" />
 
             </form>
           </Card>
