@@ -73,7 +73,7 @@ export function DataTable<T>({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">Show</span>
           <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
@@ -84,11 +84,11 @@ export function DataTable<T>({
           </Select>
           <span className="text-muted-foreground">entries</span>
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex flex-1 flex-wrap items-center justify-end gap-2 sm:ml-auto sm:flex-nowrap">
           {toolbar}
-          <div className="relative">
+          <div className="relative w-full sm:w-64">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Search…" className="h-9 w-64 pl-9" />
+            <Input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Search…" className="h-9 w-full pl-9" />
           </div>
         </div>
       </div>
