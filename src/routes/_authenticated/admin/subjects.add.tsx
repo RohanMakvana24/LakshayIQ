@@ -22,6 +22,7 @@ export const Route = createFileRoute("/_authenticated/admin/subjects/add")({
 function AddSubject() {
   const nav = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   
   const { insert } = useSupabaseTable("subjects");
   const { data: sems } = useSupabaseTable<Sem>("semesters");
@@ -111,7 +112,7 @@ function AddSubject() {
           <Button 
             type="button" 
             size="sm"
-            onClick={() => document.getElementById("submit-subject-btn")?.click()} 
+            onClick={() => formRef.current?.requestSubmit()} 
             disabled={saving || uploadingFile || !semesterId}
             className="bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-xs font-semibold px-5 shadow-sm"
           >
@@ -126,8 +127,9 @@ function AddSubject() {
         {/* Form Entry Context Block */}
         <div className="lg:col-span-7 space-y-6">
           <Card className="p-6 border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] rounded-2xl bg-white">
-            <form className="grid gap-5 sm:grid-cols-2" onSubmit={async (e) => {
-              e.preventDefault(); 
+            <form ref={formRef} className="grid gap-5 sm:grid-cols-2" onSubmit={async (e) => {
+              e.preventDefault();
+              if (!semesterId || !name) return;
               setSaving(true);
               const ok = await insert({ 
                 semester_id: semesterId, 
@@ -258,7 +260,6 @@ function AddSubject() {
                 />
               </div>
 
-              <button id="submit-subject-btn" type="submit" className="hidden" />
             </form>
           </Card>
         </div>
