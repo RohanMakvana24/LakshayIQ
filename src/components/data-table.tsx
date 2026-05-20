@@ -1,5 +1,5 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -62,13 +62,18 @@ export function DataTable<T>({
   const start = (currentPage - 1) * pageSize;
   const rows = sorted.slice(start, start + pageSize);
 
+  // Keep page in range if data shrinks (e.g. after delete or filter)
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
   const toggleSort = (key: string) => {
     setSort((s) => s?.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" });
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">Show</span>
           <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
@@ -79,11 +84,11 @@ export function DataTable<T>({
           </Select>
           <span className="text-muted-foreground">entries</span>
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex flex-1 flex-wrap items-center justify-end gap-2 sm:ml-auto sm:flex-nowrap">
           {toolbar}
-          <div className="relative">
+          <div className="relative w-full sm:w-64">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Search…" className="h-9 w-64 pl-9" />
+            <Input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Search…" className="h-9 w-full pl-9" />
           </div>
         </div>
       </div>
@@ -93,16 +98,20 @@ export function DataTable<T>({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                {columns.map((c) => (
-                  <th key={c.key} className={cn("px-4 py-3 font-semibold", c.className)}>
-                    {c.sortable && c.sortValue ? (
-                      <button onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1 hover:text-foreground">
-                        {c.header}
-                        <ArrowUpDown className={cn("h-3 w-3", sort?.key === c.key ? "text-primary" : "opacity-50")} />
-                      </button>
-                    ) : c.header}
-                  </th>
-                ))}
+                {columns.map((c) => {
+                  const isSorted = sort?.key === c.key;
+                  const SortGlyph = !isSorted ? ArrowUpDown : sort!.dir === "asc" ? ArrowUp : ArrowDown;
+                  return (
+                    <th key={c.key} className={cn("whitespace-nowrap px-4 py-3 font-semibold align-middle", c.className)}>
+                      {c.sortable && c.sortValue ? (
+                        <button onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1 hover:text-foreground">
+                          {c.header}
+                          <SortGlyph className={cn("h-3 w-3", isSorted ? "text-primary" : "opacity-50")} />
+                        </button>
+                      ) : c.header}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -111,7 +120,7 @@ export function DataTable<T>({
               ) : rows.map((row) => (
                 <tr key={rowKey(row)} className="border-b last:border-0 transition-colors hover:bg-accent/40">
                   {columns.map((c) => (
-                    <td key={c.key} className={cn("px-4 py-3", c.className)}>{c.accessor(row)}</td>
+                    <td key={c.key} className={cn("px-4 py-3 align-middle", c.className)}>{c.accessor(row)}</td>
                   ))}
                 </tr>
               ))}
@@ -120,13 +129,13 @@ export function DataTable<T>({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 text-sm">
+      <div className="flex flex-col gap-3 text-sm sm:flex-row sm:flex-wrap sm:items-center">
         <p className="text-muted-foreground">
           Showing <span className="font-medium text-foreground">{total === 0 ? 0 : start + 1}</span> to{" "}
           <span className="font-medium text-foreground">{Math.min(start + pageSize, total)}</span> of{" "}
           <span className="font-medium text-foreground">{total}</span> entries
         </p>
-        <div className="ml-auto flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1 sm:ml-auto">
           <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 1} onClick={() => setPage(1)}><ChevronsLeft className="h-4 w-4" /></Button>
           <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><ChevronLeft className="h-4 w-4" /></Button>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
