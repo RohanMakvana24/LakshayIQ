@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { ArrowRight, BookMarked, GraduationCap, Layers, Sparkles } from "lucide-react";
+import { PageLoader } from "@/components/page-loader";
 
 export const Route = createFileRoute("/_authenticated/student/semester/$id")({
   loader: async ({ params }) => {
@@ -56,6 +57,8 @@ export const Route = createFileRoute("/_authenticated/student/semester/$id")({
   head: ({ loaderData }) => ({
     meta: [{ title: `Semester ${loaderData?.semester?.semester_number || ""} — Lakshay IQ` }],
   }),
+  pendingMs: 0,
+  pendingComponent: () => <PageLoader label="Loading Semester" />,
   component: SemesterPage,
 });
 

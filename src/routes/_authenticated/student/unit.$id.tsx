@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, FileText, Bookmark, Star, Download, Clock, ExternalLink, Sparkles, MonitorPlay } from "lucide-react";
+import { PageLoader } from "@/components/page-loader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,8 @@ export const Route = createFileRoute("/_authenticated/student/unit/$id")({
     if (error || !unit) throw notFound();
     return { unit };
   },
+  pendingMs: 0,
+  pendingComponent: () => <PageLoader label="Loading Unit" />,
   component: UnitPage,
 });
 
