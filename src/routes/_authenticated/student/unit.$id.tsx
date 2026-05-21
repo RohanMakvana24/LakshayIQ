@@ -42,26 +42,15 @@ function UnitPage() {
   const checkBookmark = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase
-      .from("bookmarks")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("unit_id", unit.id);
-    setIsBookmarked(!!data?.length);
+    // Bookmarks schema supports video_id/material_id only; skip unit-level check
+    setIsBookmarked(false);
   };
 
   const toggleBookmark = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-
-    if (isBookmarked) {
-      await supabase.from("bookmarks").delete().eq("user_id", user.id).eq("unit_id", unit.id);
-      toast.success("Removed from bookmarks");
-    } else {
-      await supabase.from("bookmarks").insert({ user_id: user.id, unit_id: unit.id });
-      toast.success("Added to bookmarks!");
-    }
-    setIsBookmarked(!isBookmarked);
+    // Unit-level bookmarks not supported by current schema
+    toast.info("Bookmark this unit's videos or materials directly");
   };
 
   const formatEmbedUrl = (url: string, type: "video" | "material") => {

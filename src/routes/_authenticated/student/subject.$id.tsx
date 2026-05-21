@@ -159,7 +159,7 @@ function SubjectPage() {
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
-                {papers.map((paper) => (
+                {papers.map((paper: any) => (
                   <div key={paper.id} className="flex items-center justify-between rounded-xl border border-neutral-200/80 p-3 bg-neutral-50/50 hover:bg-neutral-50 hover:border-neutral-900 transition-all duration-200 group">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="grid h-9 w-9 place-items-center rounded-lg bg-neutral-900 text-white shadow-sm group-hover:scale-105 transition-transform">
@@ -199,7 +199,7 @@ function SubjectPage() {
               </div>
             ) : (
               <div className="space-y-3 text-xs font-medium">
-                {timetables.map((sched) => (
+                {timetables.map((sched: any) => (
                   <div key={sched.id} className="rounded-xl border border-neutral-200/80 p-3 bg-neutral-50/40 flex items-center justify-between group hover:border-neutral-900 transition-all">
                     <div className="min-w-0 flex-1 pr-2">
                       <p className="font-bold text-neutral-900 truncate">{sched.title}</p>

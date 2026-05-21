@@ -120,7 +120,7 @@ function UniversityPage() {
         ) : (
           /* Primary Responsive Structural Card Mapping */
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((c) => (
+            {courses.map((c: any) => (
               <Link key={c.id} to="/student/course/$id" params={{ id: c.id }} className="block group h-full">
                 <Card className="h-full border border-neutral-200/80 bg-white p-5 rounded-2xl shadow-[0_4px_15px_-3px_rgba(0,0,0,0.01)] transition-all duration-300 hover:-translate-y-1 hover:border-neutral-900 hover:shadow-[0_12px_25px_-6px_rgba(0,0,0,0.05)] flex flex-col justify-between overflow-hidden relative">
                   
