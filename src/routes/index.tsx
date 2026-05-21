@@ -67,8 +67,8 @@ function Landing() {
               <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-sans text-xl font-black tracking-tight text-slate-900">
-                Lakshay <span className="text-emerald-500 text-[13px]">.IQ</span>
+              <span className="text-xl font-black tracking-tight text-slate-900" style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.03em" }}>
+                Lakshay<span className="text-emerald-500 text-[14px]">.IQ</span>
               </span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Smart Learning</span>
             </div>
