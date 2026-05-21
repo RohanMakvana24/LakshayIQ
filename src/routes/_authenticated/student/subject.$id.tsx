@@ -80,6 +80,8 @@ export const Route = createFileRoute("/_authenticated/student/subject/$id")({
   head: ({ loaderData }) => ({
     meta: [{ title: `${loaderData?.subject?.name || "Subject"} — Lakshay IQ` }],
   }),
+  pendingMs: 0,
+  pendingComponent: () => <PageLoader label="Loading Subject" />,
   component: SubjectPage,
 });
 
