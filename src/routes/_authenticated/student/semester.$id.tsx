@@ -134,9 +134,30 @@ function SemesterPage() {
                     
                     <div>
                       <div className="flex items-start justify-between gap-4">
-                        <div className="grid h-10 w-10 place-items-center rounded-xl bg-neutral-900 text-white shadow-sm transition-transform duration-300 group-hover:scale-105">
-                          <Layers className="h-4 w-4 stroke-[2.2]" />
-                        </div>
+                        {/* 🎯 SUBJECT LOGO FRAME (DYNAMICS IMAGES FROM URL WITH FALLBACK ICON) */}
+                        {s.thumbnail_url ? (
+                          <div className="h-12 w-12 shrink-0 rounded-xl border border-neutral-100 bg-neutral-50 p-1 flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105 shadow-sm">
+                            <img 
+                              src={s.thumbnail_url} 
+                              alt={s.name}
+                              className="h-full w-full object-contain rounded-lg"
+                              loading="lazy"
+                              onError={(e) => {
+                                // જો ક્યારેય ઈમેજ લિંક બ્રોકન હોય તો આ આઈકોન પ્લેસહોલ્ડર બની જશે
+                                e.currentTarget.style.display = "none";
+                                const parent = e.currentTarget.parentElement;
+                                if (parent) {
+                                  parent.className = "grid h-10 w-10 place-items-center rounded-xl bg-neutral-900 text-white shadow-sm";
+                                  parent.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers"><path d="m12 3-10 5 10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>';
+                                }
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="grid h-10 w-10 place-items-center rounded-xl bg-neutral-900 text-white shadow-sm transition-transform duration-300 group-hover:scale-105">
+                            <Layers className="h-4 w-4 stroke-[2.2]" />
+                          </div>
+                        )}
                         
                         {s.subject_code && (
                           <Badge variant="secondary" className="text-[10px] font-mono font-bold uppercase tracking-wider bg-neutral-50 border border-neutral-200 rounded-md text-neutral-500">

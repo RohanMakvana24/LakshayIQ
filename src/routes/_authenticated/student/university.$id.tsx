@@ -3,13 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { BookOpen, ArrowRight, Clock, Building2, MapPin, Sparkles } from "lucide-react";
+import { BookOpen, ArrowRight, Clock, Building2, Sparkles, Search, SlidersHorizontal } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
+import { useState, useMemo } from "react";
 
-// 🏛️ TanStack Router Loader Engine: ડેટાબેઝમાંથી પેરામીટર આઈડી પ્રાઈમ કરીને ડેટા લાવશે
+// 🏛️ TanStack Router Loader Engine
 export const Route = createFileRoute("/_authenticated/student/university/$id")({
   loader: async ({ params }) => {
-    // 1. યુનિવર્સિટીની બેઝિક વિગતો મેળવો (તમારી સાચી સ્મીકા મુજબ)
+    // 1. યુનિવર્સિટીની બેઝિક વિગતો મેળવો
     const { data: university, error: univError } = await supabase
       .from("universities")
       .select("id, name, slug, description, logo_url, banner_url, is_active")
@@ -41,8 +42,38 @@ export const Route = createFileRoute("/_authenticated/student/university/$id")({
 });
 
 function UniversityPage() {
-  // Loader માંથી ડાયનેમિકલી હાઈડ્રેટ થયેલો ડેટા એક્સટ્રેક્ટ કરો
+  // Loader માંથી ડેટા લોડ કરો
   const { university, courses } = Route.useLoaderData();
+
+  // Search અને Sort ની સ્ટેટ્સ
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"name-asc" | "sem-desc" | "sem-asc">("name-asc");
+
+  // ⚡ Client-side Search & Sort Engine: પરફોર્મન્સ ઓપ્ટિમાઇઝેશન માટે useMemo નો ઉપયોગ
+  const filteredAndSortedCourses = useMemo(() => {
+    let result = [...courses];
+
+    // 1. સર્ચ ફિલ્ટર એપ્લાય કરો (નામ અથવા ડિસ્ક્રિપ્શન બંનેમાં સર્ચ કરશે)
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.name.toLowerCase().includes(query) ||
+          (c.description && c.description.toLowerCase().includes(query))
+      );
+    }
+
+    // 2. સોર્ટિંગ ઓર્ડર એપ્લાય કરો
+    if (sortBy === "name-asc") {
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === "sem-desc") {
+      result.sort((a, b) => (b.total_semesters || 0) - (a.total_semesters || 0));
+    } else if (sortBy === "sem-asc") {
+      result.sort((a, b) => (a.total_semesters || 0) - (b.total_semesters || 0));
+    }
+
+    return result;
+  }, [courses, searchQuery, sortBy]);
 
   return (
     <div className="space-y-8 p-1 antialiased animate-fade-in">
@@ -56,9 +87,7 @@ function UniversityPage() {
       />
 
       {/* 🌌 CINEMATIC HERO BANNER HEADER FRAME */}
-      <header className="relative rounded-3xl border border-neutral-200/60 bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 shadow-[0_15px_40px_rgba(0,0,0,0.12)] overflow-hidden group">
-        
-        {/* Banner image backing with deep opacity mask overlay */}
+      <header className="relative rounded-2xl border border-neutral-200/60 bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 shadow-[0_15px_40px_rgba(0,0,0,0.12)] overflow-hidden group">
         <div className="absolute inset-0 z-0 opacity-40">
           {university.banner_url ? (
             <img 
@@ -71,10 +100,7 @@ function UniversityPage() {
           )}
         </div>
 
-        {/* Core Layout Identity Panel Content */}
         <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6 text-white">
-          
-          {/* Institutional Rounded-2xl Custom Logo Element */}
           <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-white text-neutral-950 border-2 border-white/20 shadow-xl overflow-hidden font-mono font-bold text-xl">
             {university.logo_url ? (
               <img src={university.logo_url} alt={university.name} className="h-full w-full object-cover" />
@@ -83,7 +109,6 @@ function UniversityPage() {
             )}
           </div>
 
-          {/* Typography Text Area Elements */}
           <div className="space-y-2 flex-1">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold font-mono tracking-wider text-emerald-400 border border-emerald-500/20 backdrop-blur-md">
               <Sparkles className="h-3 w-3" /> REGISTERED UNIVERSITY
@@ -96,47 +121,74 @@ function UniversityPage() {
             </p>
           </div>
           
-          {/* Dynamic Floating Quick Metric Badging */}
           <div className="shrink-0 font-mono text-xs font-bold uppercase tracking-wider bg-black/30 border border-white/5 px-3 py-1.5 rounded-xl backdrop-blur-md text-neutral-300">
             {courses.length} Active Courses
           </div>
         </div>
       </header>
 
-      {/* 📚 COURSES CONTENT Bento Matrix GRID */}
+      {/* 📚 COURSES CONTENT GRID WITH SEARCH & FILTER */}
       <section className="space-y-5">
-        <div className="border-b border-neutral-100 pb-3">
-          <h2 className="font-display text-xl font-bold tracking-tight text-neutral-900">Available Degrees & Programs</h2>
-          <p className="text-xs text-neutral-400 mt-0.5">Select a course pipeline framework to extract semester components</p>
+        <div className="border-b border-neutral-100 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl font-bold tracking-tight text-neutral-900">Available Degrees & Programs</h2>
+            <p className="text-xs text-neutral-400 mt-0.5">Select a course pipeline framework to extract semester components</p>
+          </div>
+
+          {/* 🔍 SEARCH AND SORT CONTROLS PANEL */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            {/* Search Input */}
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-9 pl-9 pr-4 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+              />
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="relative flex items-center gap-2 bg-white border border-neutral-200 rounded-xl px-3 h-9 text-sm text-neutral-700 hover:border-neutral-300 transition-colors">
+              <SlidersHorizontal className="h-3.5 w-3.5 text-neutral-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-transparent pr-2 font-medium text-neutral-900 outline-none cursor-pointer text-xs"
+              >
+                <option value="name-asc">Alphabetical (A-Z)</option>
+                <option value="sem-desc">Semesters: High to Low</option>
+                <option value="sem-asc">Semesters: Low to High</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        {courses.length === 0 ? (
-          /* Empty Database State Fallback Context Frame */
-          <div className="text-center py-20 border border-dashed border-neutral-200 rounded-2xl bg-neutral-50/50">
+        {/* 📭 Empty State કે ફિલ્ટર નો મેચ થાય ત્યારનું સ્ટેટ */}
+        {filteredAndSortedCourses.length === 0 ? (
+          <div className="text-center py-20 border border-dashed border-neutral-200 rounded-2xl bg-neutral-50/50 animate-fade-in">
             <BookOpen className="h-8 w-8 text-neutral-300 mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-neutral-500">No courses listed</h3>
-            <p className="text-xs text-neutral-400 mt-1">This university hasn't structured any curriculum templates inside our schema matrix yet.</p>
+            <h3 className="text-sm font-bold text-neutral-500">No courses match your criteria</h3>
+            <p className="text-xs text-neutral-400 mt-1">Try adjusting your search terms or filters to locate curriculum templates.</p>
           </div>
         ) : (
           /* Primary Responsive Structural Card Mapping */
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((c: any) => (
-              <Link key={c.id} to="/student/course/$id" params={{ id: c.id }} className="block group h-full">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 transition-all duration-300">
+            {filteredAndSortedCourses.map((c: any) => (
+              <Link key={c.id} to="/student/course/$id" params={{ id: c.id }} className="block group h-full animate-fade-in">
                 <Card className="h-full border border-neutral-200/80 bg-white p-5 rounded-2xl shadow-[0_4px_15px_-3px_rgba(0,0,0,0.01)] transition-all duration-300 hover:-translate-y-1 hover:border-neutral-900 hover:shadow-[0_12px_25px_-6px_rgba(0,0,0,0.05)] flex flex-col justify-between overflow-hidden relative">
                   
                   <div>
-                    {/* Header Matrix Inside Course Block */}
                     <div className="flex items-start justify-between gap-4">
                       <div className="grid h-10 w-10 place-items-center rounded-xl bg-neutral-900 text-white shadow-sm transition-transform duration-300 group-hover:scale-105">
                         <BookOpen className="h-4 w-4 stroke-[2.2]" />
                       </div>
-                      {/* Short slug badge identifier mapping */}
                       <Badge variant="outline" className="text-[10px] font-mono font-bold uppercase tracking-wider bg-neutral-50 text-neutral-500 rounded-md border-neutral-200">
                         {c.slug || "DEGREE"}
                       </Badge>
                     </div>
 
-                    {/* Meta Titles Info Mapping */}
                     <div className="mt-4 space-y-1.5">
                       <h3 className="font-display text-base font-bold text-neutral-900 group-hover:text-neutral-950 transition-colors line-clamp-1">
                         {c.name}
@@ -147,8 +199,7 @@ function UniversityPage() {
                     </div>
                   </div>
 
-                  {/* Operational Ledger Metadata Footer Summary Section */}
-                  <div className="mt-6 flex items-center justify-between border-t border-neutral-100 pt-3.5 text-xs font-medium">
+                  <div className="mt-6 flex item-center justify-between border-t border-neutral-100 pt-3.5 text-xs font-medium">
                     <p className="inline-flex items-center gap-1.5 text-[11px] text-neutral-500 font-mono">
                       <Clock className="h-3.5 w-3.5 text-neutral-400 stroke-[2]" /> 
                       <span>{c.duration || "3 Years"}</span> 

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { LogOut, Search, Bell, ChevronRight, Menu, ChevronLeft, PanelLeftClose, PanelLeft, Sparkles } from "lucide-react";
+import { LogOut, Search, Bell, ChevronRight, Menu, ChevronLeft, PanelLeftClose, PanelLeft, Sparkles, BookOpen, Brain } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,7 +155,6 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
 /* ==========================================================================
    HELPERS & SUB-COMPONENTS
    ========================================================================== */
-
 function BrandHeader({
   variant,
   isCollapsed,
@@ -166,46 +165,55 @@ function BrandHeader({
   return (
     <Link
       to="/"
-      className="group flex items-center gap-3 rounded-2xl px-2 py-1.5 transition-all duration-300 hover:bg-slate-100/80"
+      className="group relative flex items-center gap-3 rounded-2xl px-2 py-1.5 transition-all duration-300 hover:bg-zinc-100"
     >
-      {/* Logo */}
-      <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-slate-900 shadow-lg shadow-emerald-500/20 transition-all duration-300 group-hover:scale-105 group-hover:rotate-1">
+      {/* Logo Icon Container - Black & Green Theme */}
+      <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-neutral-950 to-zinc-900 shadow-lg shadow-emerald-950/20 transition-all duration-300 group-hover:scale-105 group-hover:rotate-1 border border-zinc-800">
+        {/* Subtle animated ring on hover */}
+        <div className="absolute inset-0 rounded-2xl ring-1 ring-emerald-500/20 group-hover:ring-emerald-500/40 transition-all duration-300" />
+        
+        {/* Soft green glow overlay */}
+        <div className="absolute inset-0 bg-emerald-500/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-        {/* Glow */}
-        <div className="absolute inset-0 bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        {/* Main Heart‑Book Icon (Kept your original icon) */}
+        <BiSolidBookHeart className="relative z-10 h-5 w-5 text-emerald-400 drop-shadow-[0_2px_8px_rgba(52,211,153,0.3)] transition-colors duration-300 group-hover:text-emerald-300" />
 
-        {/* Main Icon */}
-        <BiSolidBookHeart className="relative z-10 h-5 w-5 text-white" />
+        {/* Repositioned sparkle accent - Green/Cyan variant */}
+        <Sparkles className="absolute -bottom-0.5 -right-0.5 h-3 w-3 text-emerald-300 opacity-90 animate-pulse" />
 
-        {/* Floating Accent */}
-        <Sparkles className="absolute right-1 top-1 h-3 w-3 text-emerald-200 opacity-80" />
+        {/* Extra geometric dot for tech feel */}
+        <div className="absolute left-1 top-1 h-1 w-1 rounded-full bg-emerald-400/60" />
 
-        {/* Online Dot */}
+        {/* Online indicator dot (only when expanded) */}
         {!isCollapsed && (
-          <span className="absolute bottom-1 right-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-300 shadow-sm shadow-emerald-400 animate-pulse" />
+          <span className="absolute bottom-1 right-1 h-2 w-2 rounded-full border border-zinc-950 bg-emerald-400 shadow-sm shadow-emerald-500/50 animate-pulse" />
         )}
       </div>
 
       {/* Brand Text */}
       {!isCollapsed && (
-        <div className="flex flex-col leading-none">
+        <div className="flex flex-col leading-tight">
           <h1
-            className="flex items-center text-[17px] font-black tracking-tight text-slate-900"
+            className="text-[17px] font-black tracking-tight text-zinc-900"
             style={{
-              fontFamily: "'Unbounded', sans-serif",
-              letterSpacing: "-0.04em",
+              fontFamily: "'Clash Display', 'Sora', 'Plus Jakarta Sans', system-ui, sans-serif",
+              letterSpacing: "-0.02em",
             }}
           >
             Lakshay
-            <span className="ml-1 bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
+            <span className="ml-1 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent">
               IQ
             </span>
           </h1>
 
-          <div className="mt-1 flex items-center gap-1">
-            <div className="h-1 w-1 rounded-full bg-emerald-400" />
-
-            <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400">
+          <div className="mt-0.5 flex items-center gap-1.5">
+            <div className="h-1 w-1 rounded-full bg-emerald-500" />
+            <span
+              className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500"
+              style={{
+                fontFamily: "'Clash Display', 'Sora', 'Plus Jakarta Sans', system-ui, sans-serif",
+              }}
+            >
               {variant === "admin"
                 ? "Admin Console"
                 : "AI Learning Platform"}
