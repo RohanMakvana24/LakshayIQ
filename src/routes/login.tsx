@@ -90,8 +90,8 @@ function Login() {
               <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border border-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-base font-black tracking-tight text-slate-900 leading-tight">
-                Lakshay <span className="text-emerald-500 text-[11px]">.IQ</span>
+              <span className="text-base font-black tracking-tight text-slate-900 leading-tight" style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.02em" }}>
+                Lakshay<span className="text-emerald-500 text-[11px]">.IQ</span>
               </span>
               <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 leading-none">Smart Platform</span>
             </div>

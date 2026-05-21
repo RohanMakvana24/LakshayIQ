@@ -167,8 +167,8 @@ function BrandHeader({ variant, isCollapsed }: { variant: string; isCollapsed: b
       </div>
       {!isCollapsed && (
         <div className="flex flex-col animate-in fade-in duration-200">
-          <span className="text-sm font-bold tracking-tight text-slate-800 leading-tight">
-            Lakshay <span className="text-emerald-500 font-black">.IQ</span>
+          <span className="text-sm font-black tracking-tight text-slate-800 leading-tight" style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.02em" }}>
+            Lakshay<span className="text-emerald-500">.IQ</span>
           </span>
           <span className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mt-0.5">
             {variant === "admin" ? "Admin Console" : "Smart Platform"}
