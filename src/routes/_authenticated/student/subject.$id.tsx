@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { Button } from "@/components/ui/button";
 import { Calendar, Download, FileText, ArrowRight, Layers, Sparkles, Video, FileCheck, HelpCircle, AlertCircle } from "lucide-react";
+import { PageLoader } from "@/components/page-loader";
 
 export const Route = createFileRoute("/_authenticated/student/subject/$id")({
   loader: async ({ params }) => {
@@ -79,6 +80,8 @@ export const Route = createFileRoute("/_authenticated/student/subject/$id")({
   head: ({ loaderData }) => ({
     meta: [{ title: `${loaderData?.subject?.name || "Subject"} — Lakshay IQ` }],
   }),
+  pendingMs: 0,
+  pendingComponent: () => <PageLoader label="Loading Subject" />,
   component: SubjectPage,
 });
 

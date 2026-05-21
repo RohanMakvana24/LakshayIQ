@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { BookOpen, ArrowRight, Clock, Building2, MapPin, Sparkles } from "lucide-react";
+import { PageLoader } from "@/components/page-loader";
 
 // 🏛️ TanStack Router Loader Engine: ડેટાબેઝમાંથી પેરામીટર આઈડી પ્રાઈમ કરીને ડેટા લાવશે
 export const Route = createFileRoute("/_authenticated/student/university/$id")({
@@ -34,6 +35,8 @@ export const Route = createFileRoute("/_authenticated/student/university/$id")({
   head: ({ loaderData }) => ({
     meta: [{ title: `${loaderData?.university?.name || "University"} — Lakshay IQ` }],
   }),
+  pendingMs: 0,
+  pendingComponent: () => <PageLoader label="Loading University" />,
   component: UniversityPage,
 });
 

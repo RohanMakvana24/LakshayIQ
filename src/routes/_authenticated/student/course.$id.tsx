@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { ArrowRight, Clock, GraduationCap, Layers, Sparkles } from "lucide-react";
+import { PageLoader } from "@/components/page-loader";
 
 // 📚 TanStack Router Loader Engine: કોર્સ, યુનિવર્સિટી અને સેમેસ્ટરનો ડેટાબેઝ સિંક
 export const Route = createFileRoute("/_authenticated/student/course/$id")({
@@ -47,6 +48,8 @@ export const Route = createFileRoute("/_authenticated/student/course/$id")({
   head: ({ loaderData }) => ({
     meta: [{ title: `${loaderData?.course?.name || "Course"} — Lakshay IQ` }],
   }),
+  pendingMs: 0,
+  pendingComponent: () => <PageLoader label="Loading Course" />,
   component: CoursePage,
 });
 
