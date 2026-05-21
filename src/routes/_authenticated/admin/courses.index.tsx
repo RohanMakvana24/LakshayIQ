@@ -268,7 +268,7 @@ function ManageCourses() {
       </div>
 
       {/* Main Datatable Structure */}
-      <div className="flex-1 bg-white border border-slate-200/80 rounded-2xl shadow-[0_4px_24px_-4px_rgba(0,0,0,0.02)] overflow-hidden">
+     <div className="bg-white border border-slate-200/80 rounded-2xl shadow-[0_4px_24px_-4px_rgba(0,0,0,0.02)] overflow-hidden">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-2 text-slate-400">
             <div className="h-5 w-5 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin" />

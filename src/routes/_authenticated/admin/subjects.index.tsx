@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash2, Edit3, Loader2, UploadCloud, GraduationCap, BookOpen, Layers, X, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Edit3, Loader2, UploadCloud, GraduationCap, BookOpen, Layers, X, ShieldAlert } from "lucide-react";
 
 type Row = { 
   id: string; 
@@ -126,7 +126,7 @@ function ManageSubjects() {
     }
   };
 
-  // Corporate University Table Definition Matrix
+  // Clean, Standardized Flex-Safe Table Schema
   const columns: DataTableColumn<Row>[] = [
     {
       key: "name",
@@ -134,18 +134,20 @@ function ManageSubjects() {
       sortable: true,
       sortValue: (r) => r.name,
       accessor: (r) => (
-        <div className="flex items-center gap-4 py-1.5">
-          <div className="h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-200/80 flex-shrink-0 overflow-hidden flex items-center justify-center shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-200/60 flex-shrink-0 overflow-hidden flex items-center justify-center">
             {r.thumbnail_url ? (
               <img src={r.thumbnail_url} alt="" className="w-full h-full object-cover" />
             ) : (
               <BookOpen className="h-4 w-4 text-neutral-400 stroke-[1.5]" />
             )}
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="font-semibold text-neutral-900 text-[14px] tracking-tight leading-none mb-1">{r.name}</span>
-            <span className="text-[11px] font-mono text-neutral-400 flex items-center gap-1">
-              <span>/{r.slug}</span>
+          <div className="flex flex-col truncate">
+            <span className="font-semibold text-neutral-900 text-[13px] uppercase tracking-tight leading-normal">
+              {r.name}
+            </span>
+            <span className="text-[11px] font-mono text-neutral-400/90 lowercase">
+              /{r.slug}
             </span>
           </div>
         </div>
@@ -155,7 +157,7 @@ function ManageSubjects() {
       key: "code",
       header: "Registry Code",
       accessor: (r) => r.subject_code ? (
-        <span className="font-mono text-[11px] font-bold tracking-wider text-neutral-700 bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded-md">
+        <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-neutral-600 bg-neutral-100 border border-neutral-200/50 px-2 py-0.5 rounded-full">
           {r.subject_code}
         </span>
       ) : (
@@ -169,8 +171,12 @@ function ManageSubjects() {
         const details = getSemDetails(r.semester_id);
         return (
           <div className="flex flex-col">
-            <span className="text-xs font-semibold text-neutral-800 leading-none mb-1">{details.courseName}</span>
-            <span className="text-[10px] font-medium text-neutral-400 tracking-tight">{details.semNum}</span>
+            <span className="text-xs font-semibold text-neutral-700 uppercase tracking-tight">
+              {details.courseName}
+            </span>
+            <span className="text-[11px] font-medium text-neutral-400 mt-0.5">
+              {details.semNum}
+            </span>
           </div>
         );
       },
@@ -178,13 +184,13 @@ function ManageSubjects() {
     {
       key: "actions",
       header: "",
-      className: "text-right w-24",
+      className: "text-right",
       accessor: (r) => (
         <div className="flex items-center justify-end gap-1">
           <Button 
             size="icon" 
             variant="ghost" 
-            className="h-8 w-8 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors"
+            className="h-8 w-8 text-neutral-400 hover:text-neutral-900 rounded-lg transition-colors"
             onClick={() => handleEditInitialize(r)}
           >
             <Edit3 className="h-4 w-4 stroke-[1.8]" />
@@ -192,7 +198,7 @@ function ManageSubjects() {
           <Button 
             size="icon" 
             variant="ghost" 
-            className="h-8 w-8 text-neutral-400 hover:text-red-600 hover:bg-red-50/50 rounded-lg transition-colors"
+            className="h-8 w-8 text-neutral-400 hover:text-red-600 rounded-lg transition-colors"
             onClick={() => {
               if (confirm(`Are you sure you want to deprecate "${r.name}" from curriculum?`)) remove(r.id);
             }}
@@ -205,55 +211,53 @@ function ManageSubjects() {
   ];
 
   return (
-    <div className="space-y-6 max-w-full px-2">
-      {/* Premium Management Portal Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-200/60 pb-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="h-5 w-5 rounded bg-neutral-900 flex items-center justify-center text-[10px] text-white font-bold font-mono">U</div>
-            <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Academic Registry</span>
+    <div className="w-full space-y-5 px-4 pb-6 max-w-full antialiased">
+      {/* Upper Registry Panel Title Block */}
+      <div className="flex items-center justify-between border-b border-neutral-100 pb-5">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <div className="h-4 w-4 rounded bg-neutral-900 flex items-center justify-center text-[9px] text-white font-bold font-mono">U</div>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-400">University Management</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900">Curriculum Subjects</h1>
-          <p className="text-xs text-neutral-500">Configure core subjects, assign dynamic system keys, and track semester operational routes.</p>
+          <h1 className="text-xl font-bold tracking-tight text-neutral-900">Academic Subjects</h1>
         </div>
-        <Button asChild size="sm" className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-10 px-4 shadow-sm tracking-wide self-start sm:self-auto transition-all">
+        <Button asChild size="sm" className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-4 shadow-sm tracking-wide">
           <Link to="/admin/subjects/add">
-            <Plus className="mr-1.5 h-4 w-4 stroke-[2.5]" /> Add Subject
+            <Plus className="mr-1 h-3.5 w-3.5 stroke-[2.5]" /> Add Subject
           </Link>
         </Button>
       </div>
 
-      {/* Database Node Render Wrapper */}
+      {/* Grid Canvas Wrapper for Custom Component Injection */}
       {loading ? (
-        <div className="flex items-center justify-center py-28 border border-dashed border-neutral-200 rounded-2xl bg-neutral-50/30">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
-            <span className="text-xs font-medium text-neutral-400 tracking-wide">Syncing registry matrices...</span>
-          </div>
+        <div className="flex items-center justify-center py-24 border border-neutral-100 rounded-2xl bg-neutral-50/20">
+          <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
         </div>
-      ) : (
-        <Card className="border-neutral-200/80 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.02)] rounded-2xl overflow-hidden bg-white">
+      ) : data && data.length > 0 ? (
+        <div className="w-full">
           <DataTable<Row> 
             data={data} 
             columns={columns} 
             searchableKeys={["name", "slug", "subject_code"]} 
             rowKey={(r) => r.id} 
           />
-        </Card>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center py-16 border border-dashed border-neutral-200 rounded-2xl bg-white p-6">
+          <ShieldAlert className="h-5 w-5 text-neutral-400 mb-2" />
+          <h3 className="text-xs font-semibold text-neutral-950">No structural subject nodes deployed</h3>
+        </div>
       )}
 
       {/* Structural University Update Drawer Popover */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-2xl border-neutral-200 bg-white p-6 shadow-2xl overflow-hidden">
-          <DialogHeader className="space-y-1 pb-4 border-b border-neutral-100">
-            <div className="flex items-center gap-1.5 text-neutral-400 mb-1">
+        <DialogContent className="sm:max-w-[480px] w-[95vw] rounded-2xl border-neutral-200 bg-white p-5 shadow-2xl overflow-hidden focus:outline-none">
+          <DialogHeader className="space-y-1 pb-3 border-b border-neutral-100">
+            <div className="flex items-center gap-1.5 text-neutral-400 mb-0.5">
               <Layers className="h-3.5 w-3.5 stroke-[2]" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Modification Terminal</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">Registry System Terminal</span>
             </div>
-            <DialogTitle className="text-base font-bold text-neutral-900 tracking-tight">Edit Academic Subject</DialogTitle>
-            <DialogDescription className="text-xs text-neutral-400">
-              Update routing indices, institutional identifiers, and structural program alignments.
-            </DialogDescription>
+            <DialogTitle className="text-base font-bold text-neutral-900 tracking-tight">Edit Subject Specifications</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleCommitChanges} className="space-y-4 pt-4">
@@ -264,12 +268,12 @@ function ManageSubjects() {
                 <span>Structural Semester Alignment *</span>
               </Label>
               <Select value={semesterId} onValueChange={setSemesterId} required>
-                <SelectTrigger className="h-10 border-neutral-200 rounded-xl text-xs focus:ring-1 focus:ring-neutral-400/30 focus:border-neutral-400 bg-white transition-all">
-                  <SelectValue placeholder="Map programmatic sequence" />
+                <SelectTrigger className="h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all">
+                  <SelectValue placeholder="Select target node structural terminal" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-neutral-200 bg-white shadow-lg max-h-[220px]">
                   {sems?.map((s) => (
-                    <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50">
+                    <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 cursor-pointer">
                       {getSemDetails(s.id).fullString}
                     </SelectItem>
                   ))}
@@ -278,42 +282,42 @@ function ManageSubjects() {
             </div>
 
             {/* Split Data Row 1 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-neutral-700">Subject Name *</Label>
+                <Label className="text-xs font-bold text-neutral-700">Subject Title Name *</Label>
                 <Input 
                   required 
                   value={name} 
                   onChange={(e) => setName(e.target.value)} 
-                  className="h-10 border-neutral-200 rounded-xl text-xs focus-visible:ring-1 focus-visible:ring-neutral-400/30 focus-visible:border-neutral-400 transition-all bg-white"
+                  className="h-9 border-neutral-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-neutral-700">Course Link Slug *</Label>
+                <Label className="text-xs font-bold text-neutral-700">Link URI Route Slug *</Label>
                 <Input 
                   required 
                   value={slug} 
                   onChange={(e) => setSlug(e.target.value)} 
-                  className="h-10 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-1 focus-visible:ring-neutral-400/30 focus-visible:border-neutral-400 transition-all bg-white"
+                  className="h-9 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />
               </div>
             </div>
 
             {/* Split Data Row 2 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-neutral-700">Institutional System Code</Label>
+                <Label className="text-xs font-bold text-neutral-700">Registry Identifier Code</Label>
                 <Input 
                   value={code} 
                   onChange={(e) => setCode(e.target.value)} 
                   placeholder="e.g., PH102"
-                  className="h-10 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-1 focus-visible:ring-neutral-400/30 focus-visible:border-neutral-400 transition-all bg-white"
+                  className="h-9 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-neutral-700">Vector Banner Asset</Label>
+                <Label className="text-xs font-bold text-neutral-700">Thumbnail Cover Graphic</Label>
                 <input 
                   type="file" 
                   id="drawer-file-upload" 
@@ -324,16 +328,16 @@ function ManageSubjects() {
                 />
                 
                 {thumbnailUrl ? (
-                  <div className="flex items-center justify-between border border-neutral-200 bg-neutral-50 px-3 rounded-xl h-10 shadow-inner">
+                  <div className="flex items-center justify-between border border-neutral-200 bg-neutral-50 px-3 rounded-xl h-9">
                     <span className="text-[11px] text-neutral-600 font-bold flex items-center gap-1.5 truncate max-w-[140px]">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Asset Bound
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> File Target Linked
                     </span>
                     <Button 
                       type="button" 
                       variant="ghost" 
                       size="icon" 
                       onClick={() => setThumbnailUrl("")} 
-                      className="h-6 w-6 text-neutral-400 hover:text-neutral-900 rounded-md"
+                      className="h-5 w-5 text-neutral-400 hover:text-neutral-900 rounded-md"
                     >
                       <X className="h-3.5 w-3.5 stroke-[2.5]" />
                     </Button>
@@ -344,14 +348,14 @@ function ManageSubjects() {
                     variant="outline"
                     disabled={uploading}
                     onClick={() => document.getElementById("drawer-file-upload")?.click()}
-                    className="w-full h-10 border-neutral-200 rounded-xl text-xs text-neutral-600 hover:bg-neutral-50 hover:border-neutral-300 flex items-center justify-center gap-2 transition-all"
+                    className="w-full h-9 border-neutral-200 rounded-xl text-xs text-neutral-600 hover:bg-neutral-50 flex items-center justify-center gap-2 transition-all"
                   >
                     {uploading ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-neutral-400" />
                     ) : (
                       <UploadCloud className="h-4 w-4 text-neutral-400 stroke-[1.8]" />
                     )}
-                    <span className="font-medium">{uploading ? "Uploading Bundle..." : "Upload New Cover"}</span>
+                    <span className="font-medium">{uploading ? "Linking Bundle..." : "Replace Cover"}</span>
                   </Button>
                 )}
               </div>
@@ -359,32 +363,32 @@ function ManageSubjects() {
 
             {/* Description Area */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-neutral-700">Curriculum Abstract Summary</Label>
+              <Label className="text-xs font-bold text-neutral-700">Abstract Summary Catalog</Label>
               <Textarea 
                 rows={3}
                 value={description} 
                 onChange={(e) => setDescription(e.target.value)} 
-                placeholder="Provide a granular course scope or catalog details..."
-                className="border-neutral-200 rounded-xl text-xs focus-visible:ring-1 focus-visible:ring-neutral-400/30 focus-visible:border-neutral-400 transition-all resize-none p-3 bg-white"
+                placeholder="Granular syllabus overview context description..."
+                className="border-neutral-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-neutral-400 transition-all resize-none p-3 bg-white"
               />
             </div>
 
             {/* Footer Form Event Controls */}
-            <DialogFooter className="pt-4 border-t border-neutral-100 flex items-center justify-end gap-2">
+            <DialogFooter className="pt-3 border-t border-neutral-100 flex flex-row items-center justify-end gap-2">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-xl text-xs font-semibold h-10 px-4 border-neutral-200 hover:bg-neutral-50"
+                className="rounded-xl text-xs font-semibold h-9 px-4 border-neutral-200 hover:bg-neutral-50"
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
                 disabled={updating || uploading}
-                className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-10 px-5 shadow-sm transition-all"
+                className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-5 shadow-sm transition-all"
               >
-                {updating ? "Syncing System Matrix..." : "Save Subject Node"}
+                {updating ? "Syncing..." : "Update Specifications"}
               </Button>
             </DialogFooter>
           </form>

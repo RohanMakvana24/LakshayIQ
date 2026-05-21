@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Bookmark, FileText, Play } from "lucide-react";
+import { Bookmark, FileText, Play, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/student/bookmarks")({
   head: () => ({ meta: [{ title: "Bookmarks — Lakshay IQ" }] }),
@@ -8,30 +12,67 @@ export const Route = createFileRoute("/_authenticated/student/bookmarks")({
 });
 
 function Bookmarks() {
-  const items = [
-    { type: "video", title: "Lecture 3: Functions & Recursion", subject: "Programming Fundamentals" },
-    { type: "pdf", title: "OOP — Complete Notes.pdf", subject: "Programming Fundamentals" },
-    { type: "pdf", title: "PYQ End-Sem 2023", subject: "Discrete Mathematics" },
-  ];
+  // Supabase માંથી બુકમાર્ક કરેલી આઈટમ્સ ફેચ કરો
+  const { data: bookmarks, refetch } = useQuery({
+    queryKey: ["bookmarks"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      
+      const { data } = await supabase
+        .from("bookmarks")
+        .select(`
+          id,
+          unit_id,
+          unit_videos(id, title),
+          unit_materials(id, title, file_type)
+        `)
+        .eq("user_id", user.id);
+      return data || [];
+    },
+  });
+
+  const removeBookmark = async (id: string) => {
+    await supabase.from("bookmarks").delete().eq("id", id);
+    toast.success("Bookmark removed");
+    refetch();
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="max-w-3xl mx-auto space-y-8 py-8 px-4">
       <header>
-        <h1 className="font-display text-3xl font-bold">Bookmarks</h1>
-        <p className="text-sm text-muted-foreground">Everything you've saved, in one place.</p>
+        <h1 className="font-display text-3xl font-bold">Your Bookmarks</h1>
+        <p className="text-sm text-neutral-500">Quick access to your saved lectures and materials.</p>
       </header>
-      <div className="space-y-3">
-        {items.map((it, i) => (
-          <Card key={i} className="flex items-center gap-4 p-4 shadow-soft">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent text-accent-foreground">
-              {it.type === "video" ? <Play className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">{it.title}</p>
-              <p className="text-xs text-muted-foreground">{it.subject}</p>
-            </div>
-            <Bookmark className="h-4 w-4 fill-primary text-primary" />
-          </Card>
-        ))}
+
+      <div className="space-y-4">
+        {!bookmarks || bookmarks.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed rounded-3xl">
+            <Bookmark className="mx-auto h-12 w-12 text-neutral-300 mb-4" />
+            <p className="font-bold text-neutral-900">No bookmarks yet</p>
+            <p className="text-sm text-neutral-500">Start saving your favorite units to see them here.</p>
+          </div>
+        ) : (
+          bookmarks.map((bm: any) => {
+            const isVideo = !!bm.unit_videos;
+            const title = isVideo ? bm.unit_videos.title : bm.unit_materials?.title;
+            
+            return (
+              <Card key={bm.id} className="flex items-center gap-4 p-4 hover:shadow-lg transition-all border-neutral-200">
+                <div className={`grid h-12 w-12 place-items-center rounded-2xl ${isVideo ? "bg-indigo-50 text-indigo-600" : "bg-emerald-50 text-emerald-600"}`}>
+                  {isVideo ? <Play className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-sm">{title || "Untitled Item"}</p>
+                  <p className="text-[11px] font-mono text-neutral-400 uppercase tracking-wider">{isVideo ? "Video Lecture" : "Study Material"}</p>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => removeBookmark(bm.id)}>
+                  <Trash2 className="h-4 w-4 text-neutral-400 hover:text-red-500" />
+                </Button>
+              </Card>
+            );
+          })
+        )}
       </div>
     </div>
   );

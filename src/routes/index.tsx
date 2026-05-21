@@ -91,11 +91,8 @@ function Landing() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" className="text-slate-600 font-semibold hover:text-slate-950">
-              <Link to="/login">Log in</Link>
-            </Button>
             <Button asChild className="rounded-full bg-emerald-500 font-semibold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-600 transition-all hover:shadow-lg">
-              <Link to="/signup">Sign up now</Link>
+              <Link to="/login">Log In</Link>
             </Button>
           </div>
         </div>
