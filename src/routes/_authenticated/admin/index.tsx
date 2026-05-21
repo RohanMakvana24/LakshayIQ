@@ -53,10 +53,8 @@ function AdminHome() {
       try {
         setLoading(true);
 
-        // 1. Fetch Global Login Counter Aggregations
-        const { data: loginData } = await supabase.from("profiles").select("login_count");
-        const totalHits = (loginData ?? []).reduce((acc, curr) => acc + (curr.login_count || 0), 0);
-        setTotalSystemLogins(totalHits);
+        // 1. Login counter not tracked in schema; default to 0
+        setTotalSystemLogins(0);
 
         // 2. Fetch Live Dynamic Row Counts from respective tables parallelly
         const [
@@ -71,9 +69,8 @@ function AdminHome() {
           supabase.from("courses").select("*", { count: "exact", head: true }),
           supabase.from("subjects").select("*", { count: "exact", head: true }),
           supabase.from("units").select("*", { count: "exact", head: true }),
-          // Counting total students from roles or profiles schema
           supabase.from("user_roles").select("*", { count: "exact", head: true }).eq("role", "student"),
-          supabase.from("materials").select("*", { count: "exact", head: true }),
+          supabase.from("unit_materials").select("*", { count: "exact", head: true }),
         ]);
 
         setDbStats({

@@ -121,7 +121,7 @@ function CoursePage() {
         ) : (
           /* Primary Responsive Bento Cards Matrix Mapping */
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {semesters.map((s) => {
+            {semesters.map((s: any) => {
               // Safe extraction of deep aggregated subjects counts from query context
               const subjectsCount = Array.isArray(s.subjects) ? s.subjects.length : 0;
 

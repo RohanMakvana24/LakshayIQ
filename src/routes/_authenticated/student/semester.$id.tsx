@@ -125,7 +125,7 @@ function SemesterPage() {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {subjects.map((s) => {
+            {subjects.map((s: any) => {
               const unitsCount = Array.isArray(s.units) ? s.units.length : 0;
 
               return (
