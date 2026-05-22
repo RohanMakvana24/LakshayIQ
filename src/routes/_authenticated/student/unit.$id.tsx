@@ -35,6 +35,8 @@ function UnitPage() {
     url: string;
   }>({ type: null, title: "", url: "" });
 
+  const [bookmarkId, setBookmarkId] = useState<string | null>(null);
+
   useEffect(() => {
     checkBookmark();
   }, [unit.id]);
@@ -42,15 +44,41 @@ function UnitPage() {
   const checkBookmark = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    // Bookmarks schema supports video_id/material_id only; skip unit-level check
-    setIsBookmarked(false);
+    const { data } = await supabase
+      .from("bookmarks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("unit_id", unit.id)
+      .maybeSingle();
+    if (data) {
+      setBookmarkId(data.id);
+      setIsBookmarked(true);
+    } else {
+      setBookmarkId(null);
+      setIsBookmarked(false);
+    }
   };
 
   const toggleBookmark = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    // Unit-level bookmarks not supported by current schema
-    toast.info("Bookmark this unit's videos or materials directly");
+    if (isBookmarked && bookmarkId) {
+      const { error } = await supabase.from("bookmarks").delete().eq("id", bookmarkId);
+      if (error) return toast.error(error.message);
+      setIsBookmarked(false);
+      setBookmarkId(null);
+      toast.success("Bookmark removed");
+    } else {
+      const { data, error } = await supabase
+        .from("bookmarks")
+        .insert({ user_id: user.id, unit_id: unit.id })
+        .select("id")
+        .single();
+      if (error) return toast.error(error.message);
+      setBookmarkId(data.id);
+      setIsBookmarked(true);
+      toast.success("Unit bookmarked");
+    }
   };
 
   const formatEmbedUrl = (url: string, type: "video" | "material") => {
