@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
-import { Plus, Trash2, Edit3, Loader2, BookOpen, Calendar, Layers, FileText, ExternalLink, ShieldAlert, FileUp, X, CheckCircle } from "lucide-react";
+import { Plus, Trash2, Edit3, Loader2, BookOpen, Calendar, Layers, FileText, ExternalLink, ShieldAlert, FileUp, X, CheckCircle, School, GraduationCap, BookMarked } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +21,10 @@ type Row = {
   file_url: string; 
   created_at: string 
 };
-type Subject = { id: string; name: string; subject_code: string | null };
+type Subject = { id: string; semester_id: string; name: string; subject_code: string | null };
+type Sem = { id: string; course_id: string; semester_number: number };
+type Course = { id: string; university_id: string; name: string };
+type University = { id: string; name: string };
 
 export const Route = createFileRoute("/_authenticated/admin/papers/")({
   head: () => ({ meta: [{ title: "Previous Year Papers — Lakshay IQ" }] }),
@@ -30,7 +33,12 @@ export const Route = createFileRoute("/_authenticated/admin/papers/")({
 
 function ManagePapers() {
   const { data, loading, remove, update } = useSupabaseTable<Row>("previous_year_papers");
+  
+  // 🆕 રિલેશનલ ચેઇન માટે તમામ માસ્ટર ડેટા ટેબલ્સ પાઇપલાઇન
   const { data: subjects, loading: loadingSubjects } = useSupabaseTable<Subject>("subjects", { orderBy: "name", ascending: true });
+  const { data: semesters } = useSupabaseTable<Sem>("semesters");
+  const { data: courses } = useSupabaseTable<Course>("courses");
+  const { data: universities } = useSupabaseTable<University>("universities");
 
   // Modal and Sync State Machine
   const [selectedPaper, setSelectedPaper] = useState<Row | null>(null);
@@ -45,21 +53,37 @@ function ManagePapers() {
   const [semester, setSemester] = useState<number | "">("");
   const [fileUrl, setFileUrl] = useState("");
 
-  // Relational Mapper to fetch subject configurations cleanly
-  const getSubjectMeta = (subId: string) => {
-    const target = subjects?.find((s) => s.id === subId);
+  // 🏛️ 🛠️ CHAIN MAPPER: subject_id ના આધારે છેક યુનિવર્સિટી સુધીનો ડેટા સિંગલ શૉટમાં ફિલ્ટર કરવા માટે
+  const resolvePaperChain = (subId: string) => {
+    const fallback = { uni: "—", course: "—", sem: "—", subject: "—", code: "—", semNum: 0 };
+    if (!subjects || !semesters || !courses || !universities) return fallback;
+
+    const subjectObj = subjects.find(s => s.id === subId);
+    if (!subjectObj) return fallback;
+
+    const semObj = semesters.find(sem => sem.id === subjectObj.semester_id);
+    if (!semObj) return { ...fallback, subject: subjectObj.name, code: subjectObj.subject_code?.toUpperCase() ?? "—" };
+
+    const courseObj = courses.find(c => c.id === semObj.course_id);
+    if (!courseObj) return { ...fallback, sem: `Sem ${semObj.semester_number}`, semNum: semObj.semester_number, subject: subjectObj.name, code: subjectObj.subject_code?.toUpperCase() ?? "—" };
+
+    const uniObj = universities.find(u => u.id === courseObj.university_id);
+
     return {
-      name: target?.name ?? "Unregistered Course",
-      code: target?.subject_code ? target?.subject_code.toUpperCase() : "REG-CODE"
+      uni: uniObj?.name ?? "—",
+      course: courseObj.name,
+      sem: `Sem ${semObj.semester_number}`,
+      semNum: semObj.semester_number,
+      subject: subjectObj.name,
+      code: subjectObj.subject_code?.toUpperCase() ?? "—"
     };
   };
 
-  // 1. Storage File Extractor & Purge Pipeline (Delete functionality)
+  // Storage File Extractor & Purge Pipeline (Delete functionality)
   const handlePurgePaperAsset = async (paper: Row) => {
     if (!confirm(`Are you sure you want to permanently erase: "${paper.title}"? This will delete the database record and wipe the asset file from cloud buckets.`)) return;
 
     try {
-      // Extract cloud storage relative path from absolute public URL structure
       if (paper.file_url.includes("/storage/v1/object/public/university-assets/")) {
         const relativeStoragePath = paper.file_url.split("/storage/v1/object/public/university-assets/")[1];
         
@@ -73,15 +97,13 @@ function ManagePapers() {
           }
         }
       }
-      
-      // Clear row entry from database
       await remove(paper.id);
     } catch (err) {
       console.error("Critical block exception intercepted inside Purge Pipeline:", err);
     }
   };
 
-  // 2. Inline File Upload Handler for Edit Drawer
+  // Inline File Upload Handler for Edit Drawer
   const handleEditUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -124,7 +146,7 @@ function ManagePapers() {
     setIsModalOpen(true);
   };
 
-  // 3. Database Specification Update Handler
+  // Database Specification Update Handler
   const handleCommitUpdates = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPaper || !subjectId || !title.trim() || !fileUrl) return;
@@ -146,7 +168,7 @@ function ManagePapers() {
     }
   };
 
-  // High Performance DataTable Columns Grid configuration 
+  // 📊 કૉલમ્સ ગ્રીડ કોન્ફિગરેશન (તમામ રિલેશન્સ અલગ-અલગ કૉલમમાં સેટ કર્યા છે)
   const columns: DataTableColumn<Row>[] = [
     {
       key: "title",
@@ -154,7 +176,7 @@ function ManagePapers() {
       sortable: true,
       sortValue: (r) => r.title,
       accessor: (r) => (
-        <div className="flex flex-col truncate max-w-[260px] sm:max-w-xs">
+        <div className="flex flex-col truncate max-w-[200px] sm:max-w-xs">
           <span className="font-semibold text-neutral-900 text-[13px] tracking-tight leading-normal truncate">
             {r.title}
           </span>
@@ -165,39 +187,69 @@ function ManagePapers() {
       ),
     },
     {
+      key: "university",
+      header: "University",
+      sortable: true,
+      sortValue: (r) => resolvePaperChain(r.subject_id).uni,
+      accessor: (r) => (
+        <div className="flex items-center gap-1.5 max-w-[150px] py-0.5">
+          <School className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
+          <span className="font-semibold text-neutral-700 truncate text-xs">
+            {resolvePaperChain(r.subject_id).uni}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "course",
+      header: "Course",
+      sortable: true,
+      sortValue: (r) => resolvePaperChain(r.subject_id).course,
+      accessor: (r) => (
+        <div className="flex items-center gap-1.5 max-w-[150px] py-0.5">
+          <GraduationCap className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
+          <span className="font-medium text-neutral-600 truncate text-xs">
+            {resolvePaperChain(r.subject_id).course}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "semester",
+      header: "Sem",
+      sortable: true,
+      sortValue: (r) => r.semester ?? resolvePaperChain(r.subject_id).semNum,
+      accessor: (r) => (
+        <span className="text-xs font-bold text-neutral-800">
+          {r.semester ? `Sem ${r.semester}` : resolvePaperChain(r.subject_id).sem}
+        </span>
+      ),
+    },
+    {
       key: "subject",
       header: "Mapped Subject",
       sortable: true,
-      sortValue: (r) => getSubjectMeta(r.subject_id).name,
+      sortValue: (r) => resolvePaperChain(r.subject_id).subject,
       accessor: (r) => {
-        const meta = getSubjectMeta(r.subject_id);
+        const meta = resolvePaperChain(r.subject_id);
         return (
-          <div className="flex flex-col max-w-[180px]">
-            <span className="text-xs font-semibold text-neutral-700 truncate">{meta.name}</span>
-            <span className="text-[10px] font-mono font-bold text-neutral-400 mt-0.5">Code: {meta.code}</span>
+          <div className="flex flex-col max-w-[160px]">
+            <span className="text-xs font-semibold text-neutral-700 truncate">{meta.subject}</span>
+            {meta.code !== "—" && (
+              <span className="text-[10px] font-mono font-bold text-neutral-400 mt-0.5">Code: {meta.code}</span>
+            )}
           </div>
         );
       },
     },
     {
       key: "year",
-      header: "Term Year",
+      header: "Exam Year",
       sortable: true,
       sortValue: (r) => r.year,
       accessor: (r) => (
         <span className="font-mono text-xs font-bold text-neutral-800 bg-neutral-50 px-2 py-0.5 border border-neutral-200 rounded-md">
           {r.year}
-        </span>
-      ),
-    },
-    {
-      key: "semester",
-      header: "Semester",
-      sortable: true,
-      sortValue: (r) => r.semester ?? 0,
-      accessor: (r) => (
-        <span className="text-xs font-medium text-neutral-600">
-          {r.semester ? `Sem ${r.semester}` : "—"}
         </span>
       ),
     },
@@ -211,7 +263,7 @@ function ManagePapers() {
           rel="noreferrer" 
           className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline bg-blue-50 border border-blue-100/80 px-2 py-0.5 rounded-md shadow-sm transition-colors"
         >
-          <ExternalLink className="h-3 w-3 stroke-[2.5]" /> Launch Document
+          <ExternalLink className="h-3 w-3 stroke-[2.5]" /> Launch
         </a>
       ),
     },
@@ -310,7 +362,7 @@ function ManagePapers() {
                     <div className="flex items-center justify-center py-2"><Loader2 className="h-4 w-4 animate-spin text-neutral-400" /></div>
                   ) : (
                     subjects?.map((s) => (
-                      <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg cursor-pointer">
+                      <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 cursor-pointer">
                         {s.subject_code ? `[${s.subject_code.toUpperCase()}] ` : ""}{s.name}
                       </SelectItem>
                     ))
