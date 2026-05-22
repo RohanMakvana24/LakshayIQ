@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { useSupabaseTable } from "@/hooks/use-supabase-table";
-import { Plus, Trash2, Edit3, Loader2, Layers, FileText, ExternalLink, ShieldAlert, FileUp, X, CheckCircle, HardDrive } from "lucide-react";
+import { Plus, Trash2, Edit3, Loader2, Layers, FileText, ExternalLink, ShieldAlert, FileUp, X, CheckCircle, HardDrive, School, GraduationCap, Calendar, BookMarked } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,11 @@ type Row = {
   file_size: string | null; 
   created_at: string 
 };
-type Unit = { id: string; title: string; unit_number: number };
+type Unit = { id: string; title: string; unit_number: number; subject_id: string };
+type Subject = { id: string; semester_id: string; name: string };
+type Sem = { id: string; course_id: string; semester_number: number };
+type Course = { id: string; university_id: string; name: string };
+type University = { id: string; name: string };
 
 export const Route = createFileRoute("/_authenticated/admin/materials/")({
   head: () => ({ meta: [{ title: "Unit Materials — Lakshay IQ" }] }),
@@ -31,7 +35,13 @@ export const Route = createFileRoute("/_authenticated/admin/materials/")({
 
 function ManageMaterials() {
   const { data, loading, remove, update } = useSupabaseTable<Row>("unit_materials");
+  
+  // 🆕 રિલેશનલ ડેટા બતાવવા માટેના માસ્ટર ટેબલ્સ પાઇપલાઇન
   const { data: units } = useSupabaseTable<Unit>("units", { orderBy: "unit_number", ascending: true });
+  const { data: subjects } = useSupabaseTable<Subject>("subjects");
+  const { data: semesters } = useSupabaseTable<Sem>("semesters");
+  const { data: courses } = useSupabaseTable<Course>("courses");
+  const { data: universities } = useSupabaseTable<University>("universities");
 
   // Dialog, Processing, & Sync States
   const [selectedMaterial, setSelectedMaterial] = useState<Row | null>(null);
@@ -46,13 +56,35 @@ function ManageMaterials() {
   const [fileType, setFileType] = useState("pdf");
   const [fileSize, setFileSize] = useState("");
 
-  // Target Unit string builder mapping
-  const resolveUnitLabel = (id: string) => {
-    const u = units?.find((x) => x.id === id);
-    return u ? `U${u.unit_number} · ${u.title}` : "—";
+  // 🏛️ 🛠️ CHAIN MAPPER: unit_id પરથી છેક યુનિવર્સિટી સુધીનો આખો ડેટા શોધવા માટેનું હેલ્પર
+  const resolveMaterialChain = (uId: string) => {
+    const fallback = { uni: "—", course: "—", sem: "—", subject: "—", unit: "—", semNum: 0 };
+    if (!units || !subjects || !semesters || !courses || !universities) return fallback;
+
+    const unitObj = units.find(u => u.id === uId);
+    if (!unitObj) return fallback;
+
+    const subjectObj = subjects.find(s => s.id === unitObj.subject_id);
+    if (!subjectObj) return { ...fallback, unit: `Unit ${unitObj.unit_number} : ${unitObj.title}` };
+
+    const semObj = semesters.find(sem => sem.id === subjectObj.semester_id);
+    if (!semObj) return { ...fallback, subject: subjectObj.name, unit: `Unit ${unitObj.unit_number} : ${unitObj.title}` };
+
+    const courseObj = courses.find(c => c.id === semObj.course_id);
+    if (!courseObj) return { ...fallback, sem: `Sem ${semObj.semester_number}`, subject: subjectObj.name, unit: `Unit ${unitObj.unit_number} : ${unitObj.title}` };
+
+    const uniObj = universities.find(u => u.id === courseObj.university_id);
+
+    return {
+      uni: uniObj?.name ?? "—",
+      course: courseObj.name,
+      sem: `Sem ${semObj.semester_number}`,
+      semNum: semObj.semester_number,
+      subject: subjectObj.name,
+      unit: `Unit ${unitObj.unit_number} : ${unitObj.title}`
+    };
   };
 
-  // Helper extension mapping logic
   const detectFileTypeGroup = (extension: string): string => {
     const maps: Record<string, string> = {
       pdf: "pdf", png: "image", jpg: "image", jpeg: "image", svg: "image", webp: "image",
@@ -61,7 +93,6 @@ function ManageMaterials() {
     return maps[extension.toLowerCase()] || "doc";
   };
 
-  // 1. Cloud Storage Object Auto-Purge Pipeline (On Delete Action)
   const handlePurgeMaterialRecord = async (material: Row) => {
     if (!confirm(`Are you sure you want to permanently delete: "${material.title}"?\nThis wipes the database registry and completely clears the binary attachment from cloud storage.`)) return;
 
@@ -85,7 +116,6 @@ function ManageMaterials() {
     }
   };
 
-  // 2. Direct Drawer File Replacement Pipeline with Auto-extracted Metadata
   const handleEditReplacementUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -103,7 +133,6 @@ function ManageMaterials() {
 
         const { data: publicLink } = supabase.storage.from("university-assets").getPublicUrl(storageData.path);
         
-        // Auto-extract size & type and flush into active editing states instantly
         const parsedSize = (file.size / (1024 * 1024)).toFixed(2) + " MB";
         const resolvedType = detectFileTypeGroup(fileExt);
 
@@ -118,7 +147,6 @@ function ManageMaterials() {
     }
   };
 
-  // Hydrate states with exact target parameters when Drawer opens
   const handleEditInitialize = (material: Row) => {
     setSelectedMaterial(material);
     setUnitId(material.unit_id);
@@ -129,7 +157,6 @@ function ManageMaterials() {
     setIsModalOpen(true);
   };
 
-  // 3. Database Write Execution Trigger
   const handleCommitMaterialChanges = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMaterial || !unitId || !title.trim() || !fileUrl) return;
@@ -151,36 +178,89 @@ function ManageMaterials() {
     }
   };
 
-  // Modernized High Density DataTable Core Schema definition
+  // 📊 અહિયાં બધી કૉલમ્સ એડજસ્ટ કરી દીધી છે
   const columns: DataTableColumn<Row>[] = [
     {
       key: "title",
-      header: "Resource Title / Node ID",
+      header: "Resource Title",
       sortable: true,
       sortValue: (r) => r.title,
       accessor: (r) => (
-        <div className="flex flex-col truncate max-w-[240px] sm:max-w-xs">
+        <div className="flex flex-col truncate max-w-[200px] sm:max-w-xs">
           <span className="font-semibold text-neutral-900 text-[13px] tracking-tight leading-normal truncate">
             {r.title}
           </span>
           <span className="text-[10px] text-neutral-400 font-mono mt-0.5">
-            Resource Ref: {r.id.substring(0, 8)}
+            Ref: {r.id.substring(0, 8)}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "university",
+      header: "University",
+      sortable: true,
+      sortValue: (r) => resolveMaterialChain(r.unit_id).uni,
+      accessor: (r) => (
+        <div className="flex items-center gap-1.5 max-w-[140px] py-0.5">
+          <School className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
+          <span className="font-semibold text-neutral-700 truncate text-xs">
+            {resolveMaterialChain(r.unit_id).uni}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "course",
+      header: "Course",
+      sortable: true,
+      sortValue: (r) => resolveMaterialChain(r.unit_id).course,
+      accessor: (r) => (
+        <div className="flex items-center gap-1.5 max-w-[140px] py-0.5">
+          <GraduationCap className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
+          <span className="font-medium text-neutral-600 truncate text-xs">
+            {resolveMaterialChain(r.unit_id).course}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "semester",
+      header: "Sem",
+      sortable: true,
+      sortValue: (r) => resolveMaterialChain(r.unit_id).semNum,
+      accessor: (r) => (
+        <span className="text-xs font-bold text-neutral-800">
+          {resolveMaterialChain(r.unit_id).sem}
+        </span>
+      ),
+    },
+    {
+      key: "subject",
+      header: "Subject",
+      sortable: true,
+      sortValue: (r) => resolveMaterialChain(r.unit_id).subject,
+      accessor: (r) => (
+        <div className="flex items-center gap-1.5 max-w-[140px] py-0.5">
+          <BookMarked className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
+          <span className="font-medium text-neutral-700 truncate text-xs">
+            {resolveMaterialChain(r.unit_id).subject}
           </span>
         </div>
       ),
     },
     {
       key: "unit",
-      header: "Chapter Assignment Unit",
+      header: "Unit Chapter",
       accessor: (r) => (
-        <span className="text-xs font-semibold text-neutral-700 truncate max-w-[180px] block">
-          {resolveUnitLabel(r.unit_id)}
+        <span className="text-xs font-medium text-neutral-500 truncate max-w-[150px] block">
+          {resolveMaterialChain(r.unit_id).unit}
         </span>
       ),
     },
     {
       key: "type",
-      header: "Class Format",
+      header: "Format",
       sortable: true,
       sortValue: (r) => r.file_type,
       accessor: (r) => (
@@ -200,7 +280,7 @@ function ManageMaterials() {
     },
     {
       key: "size",
-      header: "Data Weight",
+      header: "Size",
       accessor: (r) => (
         <span className="text-[11px] font-mono font-bold text-neutral-500">
           {r.file_size ?? "—"}
@@ -209,7 +289,7 @@ function ManageMaterials() {
     },
     {
       key: "file_url",
-      header: "Attachment Link",
+      header: "Link",
       accessor: (r) => (
         <a 
           href={r.file_url} 
@@ -217,7 +297,7 @@ function ManageMaterials() {
           rel="noreferrer" 
           className="inline-flex items-center gap-1 text-[11px] font-bold text-neutral-900 hover:underline bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded-lg transition-colors"
         >
-          <ExternalLink className="h-3 w-3 stroke-[2.2]" /> Launch File
+          <ExternalLink className="h-3 w-3 stroke-[2.2]" /> Launch
         </a>
       ),
     },
