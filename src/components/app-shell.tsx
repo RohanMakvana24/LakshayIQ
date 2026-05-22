@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { LogOut, Search, Bell, ChevronRight, Menu, ChevronLeft, PanelLeftClose, PanelLeft, Sparkles, BookOpen, Brain } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,15 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
     });
     return init;
   });
+
+  // Auto open only the group containing current route, close others on navigation
+  useEffect(() => {
+    const next: Record<string, boolean> = {};
+    items.forEach((it) => {
+      if (it.children) next[it.label] = it.children.some((c) => pathname.startsWith(c.to));
+    });
+    setOpenGroups(next);
+  }, [pathname, items]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans antialiased selection:bg-emerald-500/10 selection:text-emerald-600">
