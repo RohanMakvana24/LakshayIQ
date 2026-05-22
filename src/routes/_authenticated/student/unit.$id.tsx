@@ -73,9 +73,9 @@ function UnitPage() {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-neutral-200">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="bg-neutral-100 text-neutral-800 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider border border-neutral-200">
-              Unit {unit.unit_number}
-            </span>
+         <span className="bg-neutral-100 text-neutral-800 text-[9px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider border border-neutral-200 whitespace-nowrap block w-fit">
+  Unit {unit.unit_number}
+</span>
             <span className="text-neutral-400 text-xs">•</span>
             <p className="text-neutral-500 text-xs font-medium truncate max-w-[300px] sm:max-w-md">{unit.description}</p>
           </div>
