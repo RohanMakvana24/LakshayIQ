@@ -71,7 +71,7 @@ function ManageSemesters() {
       title: editTitle.trim() || null,
     });
     
-    setIsSaveLoading(false);
+    setIsSaveLoading(false)
     if (success) {
       setIsEditOpen(false);
       setUpdatingId(null);
@@ -128,11 +128,11 @@ function ManageSemesters() {
     },
     { 
       key: "course", 
-      header: "Mapped Program Stream", 
+      header: "Connected Course", // 🆕 આ કૉલમ સ્પષ્ટ રીતે કોર્સનું નામ બતાવશે
       accessor: (r) => (
         <div className="flex items-center gap-2 max-w-xs py-0.5">
-          <BookOpen className="h-4 w-4 text-slate-400 flex-shrink-0" />
-          <span className="font-medium text-slate-600 truncate tracking-tight">
+          <BookOpen className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+          <span className="font-bold text-slate-800 truncate tracking-tight">
             {courseName(r.course_id)}
           </span>
         </div>
@@ -146,7 +146,6 @@ function ManageSemesters() {
       className: "text-right w-24", 
       accessor: (r) => (
         <div className="flex items-center justify-end gap-1.5">
-          {/* Functional Edit Terminal Launch button */}
           <Button
             size="icon"
             variant="ghost"
@@ -254,7 +253,6 @@ function ManageSemesters() {
             </SheetDescription>
           </SheetHeader>
 
-          {/* 🏛️ એડિટ મોડલની અંદર રિલેશન પ્રીવ્યૂ ઝોન */}
           {editCourseId && (
             <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-xl flex items-center gap-2.5 text-xs">
               <School className="h-4 w-4 text-slate-400 shrink-0" />
