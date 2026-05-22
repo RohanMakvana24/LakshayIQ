@@ -14,8 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Database Relations Types
 type University = { id: string; name: string };
-type Course = { id: string; name: string; university_id: string; total_semesters?: number };
-type Subject = { id: string; name: string; course_id: string; semester: string };
+type Course = { id: string; name: string; university_id: string; total_semesters: number };
+type Sem = { id: string; course_id: string; semester_number: number; title: string | null };
+type Subject = { id: string; semester_id: string; name: string; subject_code: string | null; slug: string };
 type Unit = { id: string; title: string; unit_number: number; subject_id: string };
 
 export const Route = createFileRoute("/_authenticated/admin/materials/add")({
@@ -44,12 +45,13 @@ function AddMaterial() {
   // Master Data Fetching from Supabase
   const { data: universities, loading: loadingUniversities } = useSupabaseTable<University>("universities", { orderBy: "name" });
   const { data: allCourses } = useSupabaseTable<Course>("courses", { orderBy: "name" });
+  const { data: allSemesters } = useSupabaseTable<Sem>("semesters"); 
   const { data: allSubjects } = useSupabaseTable<Subject>("subjects", { orderBy: "name" });
   const { data: allUnits } = useSupabaseTable<Unit>("units", { orderBy: "unit_number", ascending: true });
   
   // Dynamic Filtered States
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
-  const [availableSemesters, setAvailableSemesters] = useState<number[]>([]);
+  const [filteredSemesters, setFilteredSemesters] = useState<Sem[]>([]); // 🆕 નંબર એરેને બદલે આખા સેમેસ્ટર ઓબ્જેક્ટનું સ્ટેટ બનાવ્યું
   const [filteredSubjects, setFilteredSubjects] = useState<Subject[]>([]);
   const [filteredUnits, setFilteredUnits] = useState<Unit[]>([]);
 
@@ -62,7 +64,7 @@ function AddMaterial() {
     initialValues: {
       universityId: "",
       courseId: "",
-      semester: "",
+      semester: "", // આમાં આપણે પસંદ કરેલા સેમેસ્ટરનો નંબર (નહીં કે ID) સ્ટોર કરીએ છીએ કારણ કે આગળ ફિલ્ટરિંગમાં કામ લાગે
       subjectId: "",
       unitId: "",
       title: "",
@@ -107,35 +109,39 @@ function AddMaterial() {
     formik.setFieldValue("unitId", "");
   }, [formik.values.universityId, allCourses]);
 
-  // 2. Course બદલાય ત્યારે તેના લિમિટેડ સેમેસ્ટર જ જનરેટ કરો
+  // 2. 🛠️ FIX: Course બદલાય ત્યારે લૂપ ફેરવવાને બદલે, semesters ટેબલમાંથી ખરેખર એડ થયેલા સેમેસ્ટર જ ફિલ્ટર કરો
   useEffect(() => {
-    if (formik.values.courseId && allCourses) {
-      const selectedCourse = allCourses.find(c => c.id === formik.values.courseId);
-      const totalSem = selectedCourse?.total_semesters || 8; 
-      
-      const semArray = Array.from({ length: totalSem }, (_, i) => i + 1);
-      setAvailableSemesters(semArray);
+    if (formik.values.courseId && allSemesters) {
+      const filtered = allSemesters.filter(s => s.course_id === formik.values.courseId)
+        .sort((a, b) => a.semester_number - b.semester_number); // સિક્વન્સમાં ગોઠવવા માટે
+      setFilteredSemesters(filtered);
     } else {
-      setAvailableSemesters([]);
+      setFilteredSemesters([]);
     }
     formik.setFieldValue("semester", "");
     formik.setFieldValue("subjectId", "");
     formik.setFieldValue("unitId", "");
-  }, [formik.values.courseId, allCourses]);
+  }, [formik.values.courseId, allSemesters]);
 
-  // 3. Semester અથવા Course બદલાય ત્યારે જ સબ્જેક્ટ ફિલ્ટર કરો
+  // 3. Semester બદલાય ત્યારે તેના આધારે સબ્જેક્ટ ફિલ્ટર કરો
   useEffect(() => {
-    if (formik.values.courseId && formik.values.semester && allSubjects) {
-      const filtered = allSubjects.filter(
-        s => s.course_id === formik.values.courseId && String(s.semester) === String(formik.values.semester)
+    if (formik.values.courseId && formik.values.semester && allSemesters && allSubjects) {
+      const targetSem = allSemesters.find(
+        s => s.course_id === formik.values.courseId && s.semester_number === Number(formik.values.semester)
       );
-      setFilteredSubjects(filtered);
+
+      if (targetSem) {
+        const filtered = allSubjects.filter(s => s.semester_id === targetSem.id);
+        setFilteredSubjects(filtered);
+      } else {
+        setFilteredSubjects([]);
+      }
     } else {
       setFilteredSubjects([]);
     }
     formik.setFieldValue("subjectId", "");
     formik.setFieldValue("unitId", "");
-  }, [formik.values.courseId, formik.values.semester, allSubjects]);
+  }, [formik.values.courseId, formik.values.semester, allSemesters, allSubjects]);
 
   // 4. Subject બદલાય ત્યારે તેના આધારે યુનિટ્સ ફિલ્ટર કરો
   useEffect(() => {
@@ -337,15 +343,16 @@ function AddMaterial() {
                   <Select 
                     value={formik.values.semester} 
                     onValueChange={(val) => formik.setFieldValue("semester", val)}
-                    disabled={!formik.values.courseId || availableSemesters.length === 0}
+                    disabled={!formik.values.courseId || filteredSemesters.length === 0}
                   >
                     <SelectTrigger className="h-10 border-neutral-200 rounded-xl text-xs bg-white">
                       <SelectValue placeholder="Select Semester" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl bg-white shadow-md">
-                      {availableSemesters.map((sem) => (
-                        <SelectItem key={sem} value={String(sem)} className="text-xs cursor-pointer">
-                          Semester {sem}
+                      {/* 🛠️ FIX: હવે લૂપના બદલે ડેટાબેઝમાંથી ફિલ્ટર થયેલા સેમેસ્ટર જ મેપ થશે */}
+                      {filteredSemesters.map((sem) => (
+                        <SelectItem key={sem.id} value={String(sem.semester_number)} className="text-xs cursor-pointer">
+                          Semester {sem.semester_number} {sem.title ? `(${sem.title})` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
