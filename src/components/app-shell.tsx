@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { LogOut, Search, Bell, ChevronRight, Menu, ChevronLeft, PanelLeftClose, PanelLeft, Sparkles, BookOpen, Brain } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
