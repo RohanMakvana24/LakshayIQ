@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,7 @@ type Row = {
   created_at: string 
 };
 type Sem = { id: string; semester_number: number; course_id: string };
-type Course = { id: string; name: string };
+type Course = { id: string; name: string; university_id: string };
 type University = { id: string; name: string };
 
 export const Route = createFileRoute("/_authenticated/admin/subjects/")({
@@ -33,8 +33,14 @@ export const Route = createFileRoute("/_authenticated/admin/subjects/")({
 function ManageSubjects() {
   const { data, loading, remove, update, insert } = useSupabaseTable<Row>("subjects");
   const { data: sems } = useSupabaseTable<Sem>("semesters");
-  const { data: courses } = useSupabaseTable<Course>("courses");
-  const { data: universities } = useSupabaseTable<University>("universities");
+  // @ts-ignore (જો ટાઇપ ડેફિનેશનમાં યુનિવર્સિટી આઇડી મિસિંગ હોય તો)
+  const { data: courses } = useSupabaseTable<Course>("courses", { orderBy: "name", ascending: true });
+  const { data: universities } = useSupabaseTable<University>("universities", { orderBy: "name" });
+
+  // 🏛️ --- Main Table Toolbar Filter States ---
+  const [filterUniversityId, setFilterUniversityId] = useState<string>("all");
+  const [filterCourseId, setFilterCourseId] = useState<string>("all");
+  const [filterSemesterId, setFilterSemesterId] = useState<string>("all");
 
   // Core Dialog State Management
   const [selectedSubject, setSelectedSubject] = useState<Row | null>(null);
@@ -55,22 +61,74 @@ function ManageSubjects() {
   // Analytical Relational Helpers
   const getSemDetails = (semId: string) => {
     const sem = sems?.find(s => s.id === semId);
-    if (!sem) return { fullString: "Unallocated", courseName: "—", semNum: "—", uniName: "—", semRawNum: "—" };
+    if (!sem) return { fullString: "Unallocated", courseName: "—", semNum: "—", uniName: "—", semRawNum: "—", courseId: "", uniId: "" };
     
     const course = courses?.find(c => c.id === sem.course_id);
     const cName = course?.name ?? "—";
     
     // @ts-ignore
-    const uName = universities?.find(u => u.id === course?.university_id)?.name ?? "—";
+    const uId = course?.university_id || "";
+    const uName = universities?.find(u => u.id === uId)?.name ?? "—";
     
     return {
       fullString: `${uName} · ${cName} · Sem ${sem.semester_number}`,
       uniName: uName,
       courseName: cName,
       semNum: `Semester ${sem.semester_number}`,
-      semRawNum: sem.semester_number
+      semRawNum: sem.semester_number,
+      courseId: sem.course_id,
+      uniId: uId
     };
   };
+
+  // 🏛️ જ્યારે યુનિવર્સિટી ફિલ્ટર બદલાય, ત્યારે કોર્સ અને સેમેસ્ટર બંને રીસેટ કરવા
+  useEffect(() => {
+    setFilterCourseId("all");
+    setFilterSemesterId("all");
+  }, [filterUniversityId]);
+
+  // 🏛️ જ્યારે કોર્સ ફિલ્ટર બદલાય, ત્યારે સેમેસ્ટર રીસેટ કરવું
+  useEffect(() => {
+    setFilterSemesterId("all");
+  }, [filterCourseId]);
+
+  // 🏛️ ફિલ્ટર બાર માટે ડાયનેમિક કોર્સ લિસ્ટ (સિલેક્ટેડ યુનિવર્સિટી મુજબ)
+  const toolbarCourses = useMemo(() => {
+    if (!courses) return [];
+    if (filterUniversityId === "all") return courses;
+    // @ts-ignore
+    return courses.filter(c => c.university_id === filterUniversityId);
+  }, [filterUniversityId, courses]);
+
+  // 🏛️ ફિલ્ટર બાર માટે ડાયનેમિક સેમેસ્ટર લિસ્ટ (સિલેક્ટેડ કોર્સ મુજબ)
+  const toolbarSemesters = useMemo(() => {
+    if (!sems) return [];
+    
+    // જો યુનિવર્સિટી પણ સિલેક્ટ ના હોય તો બધા સેમેસ્ટર બતાવો
+    if (filterUniversityId === "all" && filterCourseId === "all") return sems;
+
+    return sems.filter(s => {
+      const courseObj = courses?.find(c => c.id === s.course_id);
+      // @ts-ignore
+      const matchesUni = filterUniversityId === "all" || courseObj?.university_id === filterUniversityId;
+      const matchesCourse = filterCourseId === "all" || s.course_id === filterCourseId;
+      return matchesUni && matchesCourse;
+    }).sort((a, b) => a.semester_number - b.semester_number);
+  }, [filterUniversityId, filterCourseId, sems, courses]);
+
+  // 🏛️ મેઈન ટેબલ માટે ત્રણેય ડ્રોપડાઉનના આધારે ફાઇનલ ફિલ્ટર થયેલો ડેટા
+  const filteredTableData = useMemo(() => {
+    if (!data) return [];
+    return data.filter((row) => {
+      const details = getSemDetails(row.semester_id);
+      
+      const matchesUniversity = filterUniversityId === "all" || details.uniId === filterUniversityId;
+      const matchesCourse = filterCourseId === "all" || details.courseId === filterCourseId;
+      const matchesSemester = filterSemesterId === "all" || row.semester_id === filterSemesterId;
+      
+      return matchesUniversity && matchesCourse && matchesSemester;
+    });
+  }, [data, filterUniversityId, filterCourseId, filterSemesterId, sems, courses, universities]);
 
   const resetFormFields = () => {
     setName("");
@@ -178,13 +236,17 @@ function ManageSubjects() {
       sortValue: (r) => r.name,
       accessor: (r) => (
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-200/60 flex-shrink-0 overflow-hidden flex items-center justify-center">
-            {r.thumbnail_url ? (
-              <img src={r.thumbnail_url} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <BookOpen className="h-4 w-4 text-neutral-400 stroke-[1.5]" />
-            )}
-          </div>
+      <div className="h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-200/60 flex-shrink-0 overflow-hidden flex items-center justify-center">
+  {r.thumbnail_url ? (
+    <img
+      src={r.thumbnail_url}
+      alt=""
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <BookOpen className="h-4 w-4 text-neutral-400 stroke-[1.5]" />
+  )}
+</div>
           <div className="flex flex-col truncate">
             <span className="font-semibold text-neutral-900 text-[13px] uppercase tracking-tight leading-normal">
               {r.name}
@@ -297,15 +359,100 @@ function ManageSubjects() {
         </Button>
       </div>
 
+      {/* 🏛️ 🆕 LIVE FILTER BAR PANEL */}
+      {!loading && data && data.length > 0 && (
+        <div className="flex flex-col md:flex-row gap-3 p-2 bg-neutral-50 rounded-xl border border-neutral-200/60 shadow-sm">
+          
+          {/* 1. University Filter */}
+          <div className="w-full md:w-56">
+            <Select value={filterUniversityId} onValueChange={setFilterUniversityId}>
+              <SelectTrigger className="h-9 border-neutral-200 rounded-lg text-xs bg-white focus:ring-0">
+                <div className="flex items-center gap-1.5 truncate text-neutral-700">
+                  <School className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                  <SelectValue placeholder="All Universities" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-lg border-neutral-200 bg-white shadow-md">
+                <SelectItem value="all" className="text-xs focus:bg-neutral-50 cursor-pointer">All Universities</SelectItem>
+                {universities?.map((u) => (
+                  <SelectItem key={u.id} value={u.id} className="text-xs focus:bg-neutral-50 cursor-pointer">
+                    {u.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 2. Course Filter */}
+          <div className="w-full md:w-56">
+            <Select value={filterCourseId} onValueChange={setFilterCourseId} disabled={toolbarCourses.length === 0}>
+              <SelectTrigger className="h-9 border-neutral-200 rounded-lg text-xs bg-white focus:ring-0">
+                <div className="flex items-center gap-1.5 truncate text-neutral-700">
+                  <GraduationCap className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                  <SelectValue placeholder="All Courses" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-lg border-neutral-200 bg-white shadow-md">
+                <SelectItem value="all" className="text-xs focus:bg-neutral-50 cursor-pointer">All Courses</SelectItem>
+                {toolbarCourses.map((c) => (
+                  <SelectItem key={c.id} value={c.id} className="text-xs focus:bg-neutral-50 cursor-pointer">
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 3. Semester Filter */}
+          <div className="w-full md:w-56">
+            <Select value={filterSemesterId} onValueChange={setFilterSemesterId} disabled={toolbarSemesters.length === 0}>
+              <SelectTrigger className="h-9 border-neutral-200 rounded-lg text-xs bg-white focus:ring-0">
+                <div className="flex items-center gap-1.5 truncate text-neutral-700">
+                  <Hash className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                  <SelectValue placeholder="All Semesters" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-lg border-neutral-200 bg-white shadow-md max-h-[200px]">
+                <SelectItem value="all" className="text-xs focus:bg-neutral-50 cursor-pointer">All Semesters</SelectItem>
+                {toolbarSemesters.map((s) => {
+                  const currentCourse = courses?.find(c => c.id === s.course_id);
+                  return (
+                    <SelectItem key={s.id} value={s.id} className="text-xs focus:bg-neutral-50 cursor-pointer">
+                      Sem {s.semester_number} {filterCourseId === "all" ? `(${currentCourse?.name || '—'})` : ''}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Clear Filters Button */}
+          {(filterUniversityId !== "all" || filterCourseId !== "all" || filterSemesterId !== "all") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setFilterUniversityId("all");
+                setFilterCourseId("all");
+                setFilterSemesterId("all");
+              }}
+              className="h-9 text-xs gap-1 text-neutral-500 hover:text-neutral-900 rounded-lg px-2 md:ml-auto"
+            >
+              <X className="h-3.5 w-3.5" /> Clear Filters
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Grid Canvas Wrapper */}
       {loading ? (
         <div className="flex items-center justify-center py-24 border border-neutral-100 rounded-2xl bg-neutral-50/20">
           <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
         </div>
-      ) : data && data.length > 0 ? (
+      ) : filteredTableData && filteredTableData.length > 0 ? (
         <div className="w-full">
           <DataTable<Row> 
-            data={data} 
+            data={filteredTableData} // 🏛️ ફિલ્ટર થયેલો ડેટા ટેબલમાં મોકલ્યો
             columns={columns} 
             searchableKeys={["name", "slug", "subject_code"]} 
             rowKey={(r) => r.id} 
@@ -314,7 +461,7 @@ function ManageSubjects() {
       ) : (
         <div className="flex flex-col items-center justify-center text-center py-16 border border-dashed border-neutral-200 rounded-2xl bg-white p-6">
           <ShieldAlert className="h-5 w-5 text-neutral-400 mb-2" />
-          <h3 className="text-xs font-semibold text-neutral-950">No structural subject nodes deployed</h3>
+          <h3 className="text-xs font-semibold text-neutral-950">No subject nodes match the selected criteria</h3>
         </div>
       )}
 

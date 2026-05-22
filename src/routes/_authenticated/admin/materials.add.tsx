@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/admin/materials/add")({
 const MaterialSchema = Yup.object().shape({
   universityId: Yup.string().required("University selection is required"),
   courseId: Yup.string().required("Course selection is required"),
-  semester: Yup.string().required("Semester selection is required"),
+  semesterId: Yup.string().required("Semester selection is required"), // 🛠️ Updated to ID validation
   subjectId: Yup.string().required("Subject selection is required"),
   unitId: Yup.string().required("Unit allocation is required"),
   title: Yup.string()
@@ -51,7 +51,7 @@ function AddMaterial() {
   
   // Dynamic Filtered States
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
-  const [filteredSemesters, setFilteredSemesters] = useState<Sem[]>([]); // 🆕 નંબર એરેને બદલે આખા સેમેસ્ટર ઓબ્જેક્ટનું સ્ટેટ બનાવ્યું
+  const [filteredSemesters, setFilteredSemesters] = useState<Sem[]>([]);
   const [filteredSubjects, setFilteredSubjects] = useState<Subject[]>([]);
   const [filteredUnits, setFilteredUnits] = useState<Unit[]>([]);
 
@@ -64,7 +64,7 @@ function AddMaterial() {
     initialValues: {
       universityId: "",
       courseId: "",
-      semester: "", // આમાં આપણે પસંદ કરેલા સેમેસ્ટરનો નંબર (નહીં કે ID) સ્ટોર કરીએ છીએ કારણ કે આગળ ફિલ્ટરિંગમાં કામ લાગે
+      semesterId: "", // 🛠️ હવે આપણે સીધું semesterId જ સ્ટોર કરીશું
       subjectId: "",
       unitId: "",
       title: "",
@@ -104,44 +104,37 @@ function AddMaterial() {
       setFilteredCourses([]);
     }
     formik.setFieldValue("courseId", "");
-    formik.setFieldValue("semester", "");
+    formik.setFieldValue("semesterId", "");
     formik.setFieldValue("subjectId", "");
     formik.setFieldValue("unitId", "");
   }, [formik.values.universityId, allCourses]);
 
-  // 2. 🛠️ FIX: Course બદલાય ત્યારે લૂપ ફેરવવાને બદલે, semesters ટેબલમાંથી ખરેખર એડ થયેલા સેમેસ્ટર જ ફિલ્ટર કરો
+  // 2. Course બદલાય ત્યારે તે કોર્સના સેમેસ્ટર ફિલ્ટર કરો
   useEffect(() => {
     if (formik.values.courseId && allSemesters) {
-      const filtered = allSemesters.filter(s => s.course_id === formik.values.courseId)
-        .sort((a, b) => a.semester_number - b.semester_number); // સિક્વન્સમાં ગોઠવવા માટે
+      const filtered = allSemesters
+        .filter(s => s.course_id === formik.values.courseId)
+        .sort((a, b) => a.semester_number - b.semester_number);
       setFilteredSemesters(filtered);
     } else {
       setFilteredSemesters([]);
     }
-    formik.setFieldValue("semester", "");
+    formik.setFieldValue("semesterId", "");
     formik.setFieldValue("subjectId", "");
     formik.setFieldValue("unitId", "");
   }, [formik.values.courseId, allSemesters]);
 
-  // 3. Semester બદલાય ત્યારે તેના આધારે સબ્જેક્ટ ફિલ્ટર કરો
+  // 3. SemesterId બદલાય ત્યારે તેના આધારે સબ્જેક્ટ ફિલ્ટર કરો
   useEffect(() => {
-    if (formik.values.courseId && formik.values.semester && allSemesters && allSubjects) {
-      const targetSem = allSemesters.find(
-        s => s.course_id === formik.values.courseId && s.semester_number === Number(formik.values.semester)
-      );
-
-      if (targetSem) {
-        const filtered = allSubjects.filter(s => s.semester_id === targetSem.id);
-        setFilteredSubjects(filtered);
-      } else {
-        setFilteredSubjects([]);
-      }
+    if (formik.values.semesterId && allSubjects) {
+      const filtered = allSubjects.filter(s => s.semester_id === formik.values.semesterId);
+      setFilteredSubjects(filtered);
     } else {
       setFilteredSubjects([]);
     }
     formik.setFieldValue("subjectId", "");
     formik.setFieldValue("unitId", "");
-  }, [formik.values.courseId, formik.values.semester, allSemesters, allSubjects]);
+  }, [formik.values.semesterId, allSubjects]);
 
   // 4. Subject બદલાય ત્યારે તેના આધારે યુનિટ્સ ફિલ્ટર કરો
   useEffect(() => {
@@ -341,17 +334,16 @@ function AddMaterial() {
                     <span>Semester *</span>
                   </Label>
                   <Select 
-                    value={formik.values.semester} 
-                    onValueChange={(val) => formik.setFieldValue("semester", val)}
+                    value={formik.values.semesterId} 
+                    onValueChange={(val) => formik.setFieldValue("semesterId", val)}
                     disabled={!formik.values.courseId || filteredSemesters.length === 0}
                   >
                     <SelectTrigger className="h-10 border-neutral-200 rounded-xl text-xs bg-white">
                       <SelectValue placeholder="Select Semester" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl bg-white shadow-md">
-                      {/* 🛠️ FIX: હવે લૂપના બદલે ડેટાબેઝમાંથી ફિલ્ટર થયેલા સેમેસ્ટર જ મેપ થશે */}
                       {filteredSemesters.map((sem) => (
-                        <SelectItem key={sem.id} value={String(sem.semester_number)} className="text-xs cursor-pointer">
+                        <SelectItem key={sem.id} value={sem.id} className="text-xs cursor-pointer">
                           Semester {sem.semester_number} {sem.title ? `(${sem.title})` : ""}
                         </SelectItem>
                       ))}
@@ -367,7 +359,7 @@ function AddMaterial() {
                   <Select 
                     value={formik.values.subjectId} 
                     onValueChange={(val) => formik.setFieldValue("subjectId", val)}
-                    disabled={!formik.values.semester}
+                    disabled={!formik.values.semesterId}
                   >
                     <SelectTrigger className="h-10 border-neutral-200 rounded-xl text-xs bg-white">
                       <SelectValue placeholder="Select Subject" />
@@ -513,7 +505,7 @@ function AddMaterial() {
             <div className="border-b border-neutral-100 pb-3 flex flex-col gap-1">
               <span className="text-[9px] font-mono font-bold uppercase text-neutral-400">Context Node</span>
               <span className="text-xs font-bold text-neutral-800 truncate">
-                {selectedUnit ? `Unit ${selectedUnit.unit_number} : ${selectedUnit.title}` : "Awaiting Selection Steps..."}
+                {selectedUnit ? `Unit {selectedUnit.unit_number} : {selectedUnit.title}` : "Awaiting Selection Steps..."}
               </span>
             </div>
 

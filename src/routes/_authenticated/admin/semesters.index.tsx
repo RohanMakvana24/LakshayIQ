@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import {
   SheetFooter,
   SheetClose
 } from "@/components/ui/sheet";
-import { Plus, Trash2, Layers, BookOpen, Hash, Milestone, Loader2, Edit2, Save, School } from "lucide-react";
+import { Plus, Trash2, Layers, BookOpen, Hash, Milestone, Loader2, Edit2, Save, School, X } from "lucide-react";
 
 type Row = { id: string; course_id: string; semester_number: number; title: string | null; created_at: string };
 type Course = { id: string; name: string; university_id: string };
@@ -30,17 +30,25 @@ function ManageSemesters() {
   // Supabase hooks data pipelines
   const { data, loading, remove, update } = useSupabaseTable<Row>("semesters");
   const { data: courses } = useSupabaseTable<Course>("courses", { orderBy: "name", ascending: true });
-  const { data: universities } = useSupabaseTable<University>("universities");
+  const { data: universities } = useSupabaseTable<University>("universities", { orderBy: "name" });
   
+  // 🏛️ --- Main Table Live Filter States ---
+  const [filterUniversityId, setFilterUniversityId] = useState<string>("all");
+  const [filterCourseId, setFilterCourseId] = useState<string>("all");
+
   // --- UI Update Overlay State Modules ---
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [editUniversityId, setEditUniversityId] = useState(""); 
   const [editCourseId, setEditCourseId] = useState("");
   const [editSemesterNumber, setEditSemesterNumber] = useState(1);
   const [editTitle, setEditTitle] = useState("");
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
-  // 🏛️ કોર્સ આઈડી પરથી કોર્સ અને યુનિવર્સિટીનું નામ મેળવવાના હેલ્પર્સ
+  // એડિટ પેનલ માટે ફિલ્ટર થયેલા કોર્સ રાખવાનું લોકલ સ્ટેટ
+  const [editFilteredCourses, setEditFilteredCourses] = useState<Course[]>([]);
+
+  // કોર્સ આઈડી પરથી કોર્સ અને યુનિવર્સિટીનું નામ મેળવવાના હેલ્પર્સ
   const getCourseObj = (cId: string) => courses?.find((c) => c.id === cId);
   const courseName = (cId: string) => getCourseObj(cId)?.name ?? "—";
   
@@ -49,9 +57,48 @@ function ManageSemesters() {
     return universities?.find((u) => u.id === uId)?.name ?? "—";
   };
 
+  // 🏛️ યુનિવર્સિટી ફિલ્ટર બદલાય ત્યારે મેઈન લિસ્ટના કોર્સ ડ્રોપડાઉનને રીસેટ કરવું
+  useEffect(() => {
+    setFilterCourseId("all");
+  }, [filterUniversityId]);
+
+  // મેઈન લિસ્ટના કોર્સ ડ્રોપડાઉન માટે ફિલ્ટર થયેલા કોર્સ
+  const toolbarCourses = useMemo(() => {
+    if (!courses) return [];
+    if (filterUniversityId === "all") return courses;
+    return courses.filter(c => c.university_id === filterUniversityId);
+  }, [filterUniversityId, courses]);
+
+  // 🏛️ મેઈન ટેબલ માટે યુનિવર્સિટી અને કોર્સના આધારે ડેટા ફિલ્ટર કરવાનું લોજિક
+  const filteredTableData = useMemo(() => {
+    if (!data) return [];
+    return data.filter((row) => {
+      const courseObj = getCourseObj(row.course_id);
+      const matchesUniversity = filterUniversityId === "all" || courseObj?.university_id === filterUniversityId;
+      const matchesCourse = filterCourseId === "all" || row.course_id === filterCourseId;
+      return matchesUniversity && matchesCourse;
+    });
+  }, [data, filterUniversityId, filterCourseId, courses]);
+
+  // એડિટ પેનલમાં યુનિવર્સિટી બદલાય ત્યારે તે મુજબ કોર્સ ફિલ્ટર કરવાનું લોજિક
+  useEffect(() => {
+    if (editUniversityId && courses) {
+      const filtered = courses.filter((c) => c.university_id === editUniversityId);
+      setEditFilteredCourses(filtered);
+    } else {
+      setEditFilteredCourses([]);
+    }
+  }, [editUniversityId, courses]);
+
   // Trigger setup for mounting specific values into form editing matrix
   const handleEditClick = (row: Row) => {
     setUpdatingId(row.id);
+    const currentCourse = courses?.find((c) => c.id === row.course_id);
+    if (currentCourse) {
+      setEditUniversityId(currentCourse.university_id);
+    } else {
+      setEditUniversityId("");
+    }
     setEditCourseId(row.course_id);
     setEditSemesterNumber(row.semester_number);
     setEditTitle(row.title || "");
@@ -61,10 +108,9 @@ function ManageSemesters() {
   // Process Update Form Trigger Engine
   const handleUpdateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!updatingId) return;
+    if (!updatingId || !editCourseId) return;
 
     setIsSaveLoading(true);
-    // Fires structural table update request pipeline
     const success = await update(updatingId, {
       course_id: editCourseId,
       semester_number: editSemesterNumber,
@@ -128,7 +174,7 @@ function ManageSemesters() {
     },
     { 
       key: "course", 
-      header: "Connected Course", // 🆕 આ કૉલમ સ્પષ્ટ રીતે કોર્સનું નામ બતાવશે
+      header: "Connected Course", 
       accessor: (r) => (
         <div className="flex items-center gap-2 max-w-xs py-0.5">
           <BookOpen className="h-4 w-4 text-indigo-500 flex-shrink-0" />
@@ -232,9 +278,69 @@ function ManageSemesters() {
             <span className="text-xs font-semibold tracking-wide">Syncing data pipeline...</span>
           </div>
         ) : (
-          <div className="p-2 sm:p-4">
+          <div className="p-2 sm:p-4 space-y-4">
+            
+            {/* 🏛️ 🆕 TABLE LIVE FILTER BAR (સર્ચ બારની બાજુમાં ગોઠવવા માટે) */}
+            <div className="flex flex-col sm:flex-row gap-3 p-1 bg-slate-50/60 rounded-xl border border-slate-100">
+              
+              {/* University Live Filter */}
+              <div className="w-full sm:w-64">
+                <Select value={filterUniversityId} onValueChange={setFilterUniversityId}>
+                  <SelectTrigger className="h-9 border-slate-200 rounded-lg text-xs bg-white focus:ring-slate-900/10">
+                    <div className="flex items-center gap-1.5 truncate text-slate-700">
+                      <School className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      <SelectValue placeholder="All Universities" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg border-slate-200 bg-white">
+                    <SelectItem value="all" className="text-xs py-1.5 focus:bg-slate-50">All Universities</SelectItem>
+                    {universities && universities.map((u) => (
+                      <SelectItem key={u.id} value={u.id} className="text-xs py-1.5 focus:bg-slate-50">
+                        {u.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Course Live Filter */}
+              <div className="w-full sm:w-64">
+                <Select value={filterCourseId} onValueChange={setFilterCourseId} disabled={toolbarCourses.length === 0}>
+                  <SelectTrigger className="h-9 border-slate-200 rounded-lg text-xs bg-white focus:ring-slate-900/10">
+                    <div className="flex items-center gap-1.5 truncate text-slate-700">
+                      <BookOpen className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      <SelectValue placeholder="All Courses" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg border-slate-200 bg-white">
+                    <SelectItem value="all" className="text-xs py-1.5 focus:bg-slate-50">All Courses</SelectItem>
+                    {toolbarCourses.map((c) => (
+                      <SelectItem key={c.id} value={c.id} className="text-xs py-1.5 focus:bg-slate-50">
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Clear Filters Quick Button */}
+              {(filterUniversityId !== "all" || filterCourseId !== "all") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setFilterUniversityId("all");
+                    setFilterCourseId("all");
+                  }}
+                  className="h-9 text-xs gap-1 text-slate-500 hover:text-slate-900 rounded-lg px-2 sm:ml-auto"
+                >
+                  <X className="h-3.5 w-3.5" /> Clear Filters
+                </Button>
+              )}
+            </div>
+
             <DataTable<Row> 
-              data={data || []} 
+              data={filteredTableData} // ફિલ્ટર થયેલો લાઈવ ડેટા પાસ કર્યો
               columns={columns} 
               searchableKeys={["title"]} 
               rowKey={(r) => r.id} 
@@ -253,28 +359,47 @@ function ManageSemesters() {
             </SheetDescription>
           </SheetHeader>
 
-          {editCourseId && (
-            <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-xl flex items-center gap-2.5 text-xs">
-              <School className="h-4 w-4 text-slate-400 shrink-0" />
-              <div className="truncate">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-0.5">Current University Connection</p>
-                <p className="font-semibold text-slate-700 truncate">{universityName(editCourseId)}</p>
-              </div>
-            </div>
-          )}
-
           <form onSubmit={handleUpdateSubmit} className="flex-1 flex flex-col justify-between h-full">
             <div className="space-y-4">
               
-              {/* Target Stream Link Selection */}
+              {/* University Selection Dropdown (Edit Panel) */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700">Course Stream *</Label>
-                <Select value={editCourseId} onValueChange={setEditCourseId} required>
+                <Label className="text-xs font-bold text-slate-700">University *</Label>
+                <Select 
+                  value={editUniversityId} 
+                  onValueChange={(val) => {
+                    setEditUniversityId(val);
+                    setEditCourseId(""); 
+                  }} 
+                  required
+                >
                   <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs focus:ring-slate-900/10">
-                    <SelectValue placeholder="Select parent course" />
+                    <SelectValue placeholder="Select University" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-200 bg-white">
-                    {courses && courses.map((c) => (
+                    {universities && universities.map((u) => (
+                      <SelectItem key={u.id} value={u.id} className="text-xs py-2 focus:bg-slate-50 rounded-lg">
+                        {u.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtered Course Stream Selection (Edit Panel) */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">Course Stream *</Label>
+                <Select 
+                  value={editCourseId} 
+                  onValueChange={setEditCourseId} 
+                  disabled={!editUniversityId} 
+                  required
+                >
+                  <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs focus:ring-slate-900/10">
+                    <SelectValue placeholder={editUniversityId ? "Select parent course" : "Select a university first"} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200 bg-white">
+                    {editFilteredCourses.map((c) => (
                       <SelectItem key={c.id} value={c.id} className="text-xs py-2 focus:bg-slate-50 rounded-lg">
                         {c.name}
                       </SelectItem>
@@ -320,7 +445,7 @@ function ManageSemesters() {
               <Button 
                 type="submit" 
                 size="sm" 
-                disabled={isSaveLoading}
+                disabled={isSaveLoading || !editCourseId}
                 className="bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-xs font-semibold px-4 flex-1 shadow-sm flex items-center justify-center gap-1.5"
               >
                 {isSaveLoading ? (
