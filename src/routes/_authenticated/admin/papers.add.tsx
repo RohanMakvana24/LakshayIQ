@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Card } from "@/components/ui/card";
@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, BookOpen, Calendar, Layers, FileText, UploadCloud, X, Eye, ShieldCheck, FileUp } from "lucide-react";
+import { ArrowLeft, Loader2, BookOpen, Calendar, Layers, FileText, UploadCloud, X, Eye, ShieldCheck, FileUp, School, GraduationCap, BookMarked } from "lucide-react";
 import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
-type Subject = { id: string; name: string; subject_code: string | null };
+// Database Relations Types
+type University = { id: string; name: string };
+type Course = { id: string; name: string; university_id: string; total_semesters: number };
+type Sem = { id: string; course_id: string; semester_number: number; title: string | null };
+type Subject = { id: string; semester_id: string; name: string; subject_code: string | null; slug: string };
 
 export const Route = createFileRoute("/_authenticated/admin/papers/add")({
   head: () => ({ meta: [{ title: "Add Previous Year Paper — Lakshay IQ" }] }),
@@ -21,6 +25,9 @@ export const Route = createFileRoute("/_authenticated/admin/papers/add")({
 
 // Robust Formik Validation Matrix using Yup
 const PaperSchema = Yup.object().shape({
+  universityId: Yup.string().required("University selection is required"),
+  courseId: Yup.string().required("Course selection is required"),
+  semester: Yup.string().required("Semester selection is required"),
   subjectId: Yup.string().required("Target course subject mapping is required"),
   title: Yup.string()
     .min(5, "Title should be descriptive (Min 5 characters)")
@@ -29,64 +36,37 @@ const PaperSchema = Yup.object().shape({
     .min(1990, "Year parameter must be valid")
     .max(2100, "Year parameter out of index range")
     .required("Examination year parameter is required"),
-  semester: Yup.number()
-    .min(1, "Minimum semester index is 1")
-    .max(12, "Maximum semester limit exceeded")
-    .nullable(),
   fileUrl: Yup.string().url("Invalid asset deployment URL detected").required("Academic asset resource required"),
 });
 
 function AddPaper() {
   const nav = useNavigate();
   const { insert } = useSupabaseTable("previous_year_papers");
-  const { data: subjects, loading: loadingSubjects } = useSupabaseTable<Subject>("subjects", { 
-    orderBy: "name", 
-    ascending: true 
-  });
   
+  // Master Data Fetching from Supabase
+  const { data: universities, loading: loadingUniversities } = useSupabaseTable<University>("universities", { orderBy: "name" });
+  const { data: allCourses } = useSupabaseTable<Course>("courses", { orderBy: "name" });
+  const { data: allSemesters } = useSupabaseTable<Sem>("semesters");
+  const { data: allSubjects } = useSupabaseTable<Subject>("subjects", { orderBy: "name", ascending: true });
+  
+  // Dynamic Filtered States
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [filteredSemesters, setFilteredSemesters] = useState<Sem[]>([]);
+  const [filteredSubjects, setFilteredSubjects] = useState<Subject[]>([]);
+
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [localFileMeta, setLocalFileMeta] = useState<{ name: string; size: string; type: string } | null>(null);
 
-  // Core Supabase Cloud Storage File Pipeline Manager
-  const uploadPaperAsset = async (file: File, subjectName: string): Promise<string | null> => {
-    try {
-      setUploading(true);
-      const fileExt = file.name.split(".").pop();
-      const cleanSubjectSlug = slugify(subjectName || "unallocated");
-      // Clean target pipeline layout routing: papers/object-oriented-1715893200.pdf
-      const fileName = `papers/${cleanSubjectSlug}-${Date.now()}.${fileExt}`;
-
-      const { data, error } = await supabase.storage
-        .from("university-assets")
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (error) throw error;
-
-      // Extract raw absolute transmission links
-      const { data: publicUrlData } = supabase.storage
-        .from("university-assets")
-        .getPublicUrl(data.path);
-
-      return publicUrlData.publicUrl;
-    } catch (err) {
-      console.error("Asset cloud stream interception failure inside [university-assets/papers]:", err);
-      return null;
-    } finally {
-      setUploading(false);
-    }
-  };
-
   // Formik Configuration Wrapper
   const formik = useFormik({
     initialValues: {
+      universityId: "",
+      courseId: "",
+      semester: "", // આ ડાયનેમિક ચેઇન માટે સેમેસ્ટર નંબર સ્ટોર કરશે
       subjectId: "",
       title: "",
       year: new Date().getFullYear(),
-      semester: "" as number | "",
       fileUrl: "",
     },
     validationSchema: PaperSchema,
@@ -98,7 +78,7 @@ function AddPaper() {
         const ok = await insert({
           subject_id: values.subjectId,
           year: values.year,
-          semester: values.semester === "" ? null : Number(values.semester),
+          semester: values.semester === "" ? null : Number(values.semester), // ડેટાબેઝના ઇન્ટિજર કૉલમ માટે
           title: values.title.trim(),
           file_url: values.fileUrl,
         });
@@ -114,19 +94,92 @@ function AddPaper() {
     },
   });
 
+  // 1. University બદલાય ત્યારે કોર્સ ફિલ્ટર કરો
+  useEffect(() => {
+    if (formik.values.universityId && allCourses) {
+      const filtered = allCourses.filter(c => c.university_id === formik.values.universityId);
+      setFilteredCourses(filtered);
+    } else {
+      setFilteredCourses([]);
+    }
+    formik.setFieldValue("courseId", "");
+    formik.setFieldValue("semester", "");
+    formik.setFieldValue("subjectId", "");
+  }, [formik.values.universityId, allCourses]);
+
+  // 2. Course બદલાય ત્યારે semesters ટેબલમાંથી એડ થયેલા સેમેસ્ટર જ ફિલ્ટર કરો
+  useEffect(() => {
+    if (formik.values.courseId && allSemesters) {
+      const filtered = allSemesters.filter(s => s.course_id === formik.values.courseId)
+        .sort((a, b) => a.semester_number - b.semester_number);
+      setFilteredSemesters(filtered);
+    } else {
+      setFilteredSemesters([]);
+    }
+    formik.setFieldValue("semester", "");
+    formik.setFieldValue("subjectId", "");
+  }, [formik.values.courseId, allSemesters]);
+
+  // 3. Semester બદલાય ત્યારે તેના આધારે સબ્જેક્ટ ફિલ્ટર કરો
+  useEffect(() => {
+    if (formik.values.courseId && formik.values.semester && allSemesters && allSubjects) {
+      const targetSem = allSemesters.find(
+        s => s.course_id === formik.values.courseId && s.semester_number === Number(formik.values.semester)
+      );
+
+      if (targetSem) {
+        const filtered = allSubjects.filter(s => s.semester_id === targetSem.id);
+        setFilteredSubjects(filtered);
+      } else {
+        setFilteredSubjects([]);
+      }
+    } else {
+      setFilteredSubjects([]);
+    }
+    formik.setFieldValue("subjectId", "");
+  }, [formik.values.courseId, formik.values.semester, allSemesters, allSubjects]);
+
+  // Core Supabase Cloud Storage File Pipeline Manager
+  const uploadPaperAsset = async (file: File, subjectName: string): Promise<string | null> => {
+    try {
+      setUploading(true);
+      const fileExt = file.name.split(".").pop();
+      const cleanSubjectSlug = slugify(subjectName || "unallocated");
+      const fileName = `papers/${cleanSubjectSlug}-${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from("university-assets")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: true,
+        });
+
+      if (error) throw error;
+
+      const { data: publicUrlData } = supabase.storage
+        .from("university-assets")
+        .getPublicUrl(data.path);
+
+      return publicUrlData.publicUrl;
+    } catch (err) {
+      console.error("Asset cloud stream interception failure inside [university-assets/papers]:", err);
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Local file change handler tracking raw metadata bytes
   const handleFileProcessPipeline = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const targetSubject = subjects?.find(s => s.id === formik.values.subjectId);
+      const targetSubject = filteredSubjects.find(s => s.id === formik.values.subjectId);
       
-      // Safety Block: Enforce subject mapping before processing stream allocations
       if (!formik.values.subjectId) {
         alert("Please select a target academic course subject before uploading raw asset payloads.");
         return;
       }
 
-      // Convert raw bytes safely into human readable strings
       const fileSizeString = (file.size / (1024 * 1024)).toFixed(2) + " MB";
       setLocalFileMeta({ name: file.name, size: fileSizeString, type: file.type });
 
@@ -142,7 +195,7 @@ function AddPaper() {
     setLocalFileMeta(null);
   };
 
-  const selectedSubjectData = subjects?.find(s => s.id === formik.values.subjectId);
+  const selectedSubjectData = filteredSubjects.find(s => s.id === formik.values.subjectId);
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col gap-6 w-full max-w-full px-2 antialiased">
@@ -155,7 +208,7 @@ function AddPaper() {
               <ArrowLeft className="h-4 w-4 stroke-[2.5]" /> Back to Papers Hub
             </Link>
           </Button>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Archive Previous Year Paper</h1>
+          <h1 className="text-2xl font-black tracking-tight text-neutral-900">Archive Previous Year Paper</h1>
           <p className="text-xs text-slate-500 mt-0.5">Index reference evaluation records, exam logs, and multi-format resource archives.</p>
         </div>
         
@@ -187,34 +240,106 @@ function AddPaper() {
           <Card className="p-6 border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] rounded-2xl bg-white">
             <form onSubmit={formik.handleSubmit} className="space-y-5">
               
-              {/* Dynamic Course Mapping Selection Entry */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                  <BookOpen className="h-3.5 w-3.5 text-slate-400" />
-                  <span>Target Course Subject <span className="text-rose-500">*</span></span>
-                </Label>
-                <Select 
-                  value={formik.values.subjectId} 
-                  onValueChange={(val) => formik.setFieldValue("subjectId", val)}
-                >
-                  <SelectTrigger className={cn(
-                    "h-10 border-slate-200 rounded-xl text-xs focus:ring-0 focus:border-slate-900 bg-white transition-all",
-                    formik.touched.subjectId && formik.errors.subjectId && "border-rose-400 focus:border-rose-500"
-                  )}>
-                    <SelectValue placeholder={loadingSubjects ? "Syncing data pipelines..." : "Map target subject record link"} />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-slate-200 bg-white shadow-lg max-h-[220px]">
-                    {subjects?.map((s) => (
-                      <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-slate-50 cursor-pointer">
-                        {s.subject_code ? `[${s.subject_code.toUpperCase()}] ` : ""}{s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {formik.touched.subjectId && formik.errors.subjectId && (
-                  <p className="text-[11px] font-medium text-rose-500">{formik.errors.subjectId}</p>
-                )}
+              {/* STEP 1: University & Course Dropdowns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    <School className="h-3.5 w-3.5 text-slate-400" />
+                    <span>University <span className="text-rose-500">*</span></span>
+                  </Label>
+                  <Select 
+                    value={formik.values.universityId} 
+                    onValueChange={(val) => formik.setFieldValue("universityId", val)}
+                  >
+                    <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs bg-white">
+                      <SelectValue placeholder={loadingUniversities ? "Loading..." : "Select University"} />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl bg-white shadow-md">
+                      {universities?.map((uni) => (
+                        <SelectItem key={uni.id} value={uni.id} className="text-xs cursor-pointer">{uni.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
+                    <span>Course <span className="text-rose-500">*</span></span>
+                  </Label>
+                  <Select 
+                    value={formik.values.courseId} 
+                    onValueChange={(val) => formik.setFieldValue("courseId", val)}
+                    disabled={!formik.values.universityId}
+                  >
+                    <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs bg-white">
+                      <SelectValue placeholder="Select Course" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl bg-white shadow-md">
+                      {filteredCourses.map((course) => (
+                        <SelectItem key={course.id} value={course.id} className="text-xs cursor-pointer">{course.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+
+              {/* STEP 2: DYNAMIC Semester & Subject Dropdowns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                    <span>Semester <span className="text-rose-500">*</span></span>
+                  </Label>
+                  <Select 
+                    value={formik.values.semester} 
+                    onValueChange={(val) => formik.setFieldValue("semester", val)}
+                    disabled={!formik.values.courseId || filteredSemesters.length === 0}
+                  >
+                    <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs bg-white">
+                      <SelectValue placeholder="Select Semester" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl bg-white shadow-md">
+                      {filteredSemesters.map((sem) => (
+                        <SelectItem key={sem.id} value={String(sem.semester_number)} className="text-xs cursor-pointer">
+                          Semester {sem.semester_number} {sem.title ? `(${sem.title})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    <BookMarked className="h-3.5 w-3.5 text-slate-400" />
+                    <span>Target Subject <span className="text-rose-500">*</span></span>
+                  </Label>
+                  <Select 
+                    value={formik.values.subjectId} 
+                    onValueChange={(val) => formik.setFieldValue("subjectId", val)}
+                    disabled={!formik.values.semester}
+                  >
+                    <SelectTrigger className={cn(
+                      "h-10 border-slate-200 rounded-xl text-xs focus:ring-0 focus:border-slate-900 bg-white transition-all",
+                      formik.touched.subjectId && formik.errors.subjectId && "border-rose-400 focus:border-rose-500"
+                    )}>
+                      <SelectValue placeholder="Select Filtered Subject" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-slate-200 bg-white shadow-lg max-h-[220px]">
+                      {filteredSubjects.map((s) => (
+                        <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-slate-50 cursor-pointer">
+                          {s.subject_code ? `[${s.subject_code.toUpperCase()}] ` : ""}{s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formik.touched.subjectId && formik.errors.subjectId && (
+                    <p className="text-[11px] font-medium text-rose-500">{formik.errors.subjectId}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 my-2 pt-2" />
 
               {/* Document Identity/Title Entry Field */}
               <div className="space-y-1.5">
@@ -238,54 +363,28 @@ function AddPaper() {
                 )}
               </div>
 
-              {/* Cron Counter Year and Semester Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Examination Term Year *</span>
-                  </Label>
-                  <Input 
-                    name="year"
-                    type="number" 
-                    min={1990} 
-                    max={2100} 
-                    value={formik.values.year} 
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className={cn(
-                      "h-10 border-slate-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-slate-900 transition-all bg-white",
-                      formik.touched.year && formik.errors.year && "border-rose-400 focus-visible:border-rose-500"
-                    )}
-                  />
-                  {formik.touched.year && formik.errors.year && (
-                    <p className="text-[11px] font-medium text-rose-500">{formik.errors.year}</p>
+              {/* Term Year Only Field */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Examination Term Year <span className="text-rose-500">*</span></span>
+                </Label>
+                <Input 
+                  name="year"
+                  type="number" 
+                  min={1990} 
+                  max={2100} 
+                  value={formik.values.year} 
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  className={cn(
+                    "h-10 border-slate-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-slate-900 transition-all bg-white",
+                    formik.touched.year && formik.errors.year && "border-rose-400 focus-visible:border-rose-500"
                   )}
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <Layers className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Academic Semester Index</span>
-                  </Label>
-                  <Input 
-                    name="semester"
-                    type="number" 
-                    min={1} 
-                    max={12} 
-                    placeholder="Optional index counter (e.g., 4)"
-                    value={formik.values.semester} 
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className={cn(
-                      "h-10 border-slate-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-slate-900 transition-all bg-white",
-                      formik.touched.semester && formik.errors.semester && "border-rose-400 focus-visible:border-rose-500"
-                    )}
-                  />
-                  {formik.touched.semester && formik.errors.semester && (
-                    <p className="text-[11px] font-medium text-rose-500">{formik.errors.semester}</p>
-                  )}
-                </div>
+                />
+                {formik.touched.year && formik.errors.year && (
+                  <p className="text-[11px] font-medium text-rose-500">{formik.errors.year}</p>
+                )}
               </div>
 
               {/* Multi-Format Asset Droploader Pipeline Workspace Container */}
