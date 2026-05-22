@@ -6,13 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, BookOpen, GraduationCap, Eye, Image as ImageIcon, UploadCloud, Loader2, X } from "lucide-react";
+import { ArrowLeft, BookOpen, GraduationCap, Eye, Image as ImageIcon, UploadCloud, Loader2, X, School } from "lucide-react";
 import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 type Sem = { id: string; semester_number: number; course_id: string };
-type Course = { id: string; name: string };
+type Course = { id: string; name: string; university_id: string };
+type University = { id: string; name: string };
 
 export const Route = createFileRoute("/_authenticated/admin/subjects/add")({
   head: () => ({ meta: [{ title: "Add Subject — Lakshay IQ" }] }),
@@ -24,9 +25,11 @@ function AddSubject() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
+  // Supabase hooks data pipelines
   const { insert } = useSupabaseTable("subjects");
   const { data: sems } = useSupabaseTable<Sem>("semesters");
   const { data: courses } = useSupabaseTable<Course>("courses");
+  const { data: universities } = useSupabaseTable<University>("universities");
 
   const [semesterId, setSemesterId] = useState("");
   const [name, setName] = useState(""); 
@@ -46,7 +49,14 @@ function AddSubject() {
     }
   }, [name]);
 
-  const courseName = (id: string) => courses?.find((c) => c.id === id)?.name ?? "Course";
+  // 🏛️ રિલેશન મેપિંગ હેલ્પર્સ (કોર્સ અને યુનિવર્સિટીના નામ શોધવા માટે)
+  const getCourseObj = (cId: string) => courses?.find((c) => c.id === cId);
+  const courseName = (cId: string) => getCourseObj(cId)?.name ?? "Course";
+  
+  const universityName = (cId: string) => {
+    const uId = getCourseObj(cId)?.university_id;
+    return universities?.find((u) => u.id === uId)?.name ?? "University";
+  };
 
   // Handle Local File Binary Selection to Supabase Storage Pipeline
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +71,7 @@ function AddSubject() {
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       const filePath = `subject-thumbnails/${fileName}`;
 
-      // ⚠️ વેલિડેટ કરેલી સ્ટોરેજ બકેટ: university-assets
+      // ⚠️ વેલિડેટ કરેલી સ્ટોરેજ બકેટો: university-assets
       const { data, error } = await supabase.storage
         .from("university-assets")
         .upload(filePath, file, { cacheControl: "3600", upsert: true });
@@ -89,6 +99,7 @@ function AddSubject() {
 
   const selectedSemDetails = sems?.find((s) => s.id === semesterId);
   const selectedCourseString = selectedSemDetails ? courseName(selectedSemDetails.course_id) : null;
+  const selectedUniversityString = selectedSemDetails ? universityName(selectedSemDetails.course_id) : null;
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col gap-6 w-full max-w-full px-2">
@@ -143,17 +154,21 @@ function AddSubject() {
               if (ok) nav({ to: "/admin/subjects" });
             }}>
               
-              {/* Semester Map */}
+              {/* Semester Map (અહીં યુનિવર્સિટી અને કોર્સ બંને ડ્રોપડાઉનમાં સાથે દેખાશે) */}
               <div className="space-y-1.5 sm:col-span-2">
                 <Label className="text-xs font-bold text-slate-700">Target Semester Map *</Label>
                 <Select value={semesterId} onValueChange={setSemesterId} required>
                   <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs focus:ring-slate-900/10 focus:border-slate-900">
-                    <SelectValue placeholder="Select course semester mapping" />
+                    <SelectValue placeholder="Select university course semester mapping" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-slate-200 bg-white">
+                  <SelectContent className="rounded-xl border-slate-200 bg-white max-h-72 overflow-y-auto">
                     {sems && sems.map((s) => (
                       <SelectItem key={s.id} value={s.id} className="text-xs focus:bg-slate-50 rounded-lg py-2">
-                        {courseName(s.course_id)} · Semester {s.semester_number}
+                        <span className="font-bold text-slate-900">{universityName(s.course_id)}</span>
+                        <span className="text-slate-400 mx-1.5">·</span>
+                        <span className="text-slate-600">{courseName(s.course_id)}</span>
+                        <span className="text-slate-400 mx-1.5">·</span>
+                        <span className="font-semibold text-indigo-600 bg-indigo-50/70 px-1.5 py-0.5 rounded text-[10px]">Sem {s.semester_number}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -317,12 +332,22 @@ function AddSubject() {
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-slate-500">
-                <BookOpen className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                <span className="truncate">
-                  {selectedCourseString || <span className="italic text-slate-300 font-normal">Course stream unmapped</span>}
-                </span>
+              {/* 🏛️ રિયલ ટાઇમ યુનિવર્સિટી અને કોર્સ કનેક્શન પ્રીવ્યૂ */}
+              <div className="pt-3 border-t border-slate-100 space-y-1.5 text-xs font-semibold text-slate-600">
+                <div className="flex items-center gap-2">
+                  <School className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                  <span className="truncate">
+                    {selectedUniversityString || <span className="italic text-slate-300 font-normal">University unmapped</span>}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                  <span className="truncate font-medium text-slate-500">
+                    {selectedCourseString || <span className="italic text-slate-300 font-normal">Course stream unmapped</span>}
+                  </span>
+                </div>
               </div>
+
             </div>
 
           </Card>

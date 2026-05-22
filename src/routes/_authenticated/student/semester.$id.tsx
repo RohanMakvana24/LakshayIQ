@@ -113,7 +113,7 @@ function SemesterPage() {
 
       <section className="space-y-5">
         <div className="border-b border-neutral-100 pb-3">
-          <h2 className="font-display text-xl font-bold tracking-tight text-neutral-900">Curriculum Subjects</h2>
+          <h2 className="font-display text-xl font-bold tracking-tight text-neutral-900">Core Subjects</h2>
           <p className="text-xs text-neutral-400 mt-0.5">Explore indexing, unit notes, exam resources, and videos for each subject module</p>
         </div>
 

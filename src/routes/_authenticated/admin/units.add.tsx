@@ -8,19 +8,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, BookOpen, Layers, FileText, Hash, CheckCircle2, Eye, HelpCircle } from "lucide-react";
+import { ArrowLeft, Loader2, BookOpen, Layers, FileText, Hash, Eye, HelpCircle, School, GraduationCap } from "lucide-react";
 import { useSupabaseTable } from "@/hooks/use-supabase-table";
 import { cn } from "@/lib/utils";
 
-type Subject = { id: string; name: string; subject_code: string | null };
+// Types matching structural requirements
+type University = { id: string; name: string };
+type Course = { id: string; name: string; university_id?: string };
+type Subject = { id: string; name: string; subject_code: string | null; semester_id?: string };
+type Semester = { id: string; course_id: string };
 
 export const Route = createFileRoute("/_authenticated/admin/units/add")({
   head: () => ({ meta: [{ title: "Add Academic Unit — Portal" }] }),
   component: AddUnit,
 });
 
-// Strict Validation Schema using Yup matching database structural requirements
+// Validation Schema matching database structural requirements
 const UnitSchema = Yup.object().shape({
+  universityId: Yup.string().required("University mapping is required"),
+  courseId: Yup.string().required("Course mapping is required"),
   subjectId: Yup.string().required("Target course subject mapping is required"),
   unitNumber: Yup.number()
     .min(1, "Unit counter index must be at least 1")
@@ -35,15 +41,19 @@ const UnitSchema = Yup.object().shape({
 function AddUnit() {
   const nav = useNavigate();
   const { insert } = useSupabaseTable("units");
-  const { data: subjects, loading: loadingSubjects } = useSupabaseTable<Subject>("subjects", { 
-    orderBy: "name", 
-    ascending: true 
-  });
   const [saving, setSaving] = useState(false);
+
+  // Fetching all relational data buckets
+  const { data: universities, loading: loadingUnis } = useSupabaseTable<University>("universities", { orderBy: "name", ascending: true });
+  const { data: courses, loading: loadingCourses } = useSupabaseTable<Course>("courses", { orderBy: "name", ascending: true });
+  const { data: semesters } = useSupabaseTable<Semester>("semesters");
+  const { data: subjects, loading: loadingSubjects } = useSupabaseTable<Subject>("subjects", { orderBy: "name", ascending: true });
 
   // Formik Configuration Core Engine
   const formik = useFormik({
     initialValues: {
+      universityId: "",
+      courseId: "",
       subjectId: "",
       unitNumber: 1,
       title: "",
@@ -73,7 +83,24 @@ function AddUnit() {
     },
   });
 
-  // Helper to extract selected subject details for the live reactive preview terminal
+  // 1. Filter courses based on selected University
+  const filteredCourses = courses?.filter(
+    (c) => c.university_id === formik.values.universityId
+  ) ?? [];
+
+  // 2. Filter subjects based on selected Course (via Semester tracking node)
+  const filteredSubjects = subjects?.filter((sub) => {
+    if (!formik.values.courseId) return false;
+    
+    // Find semesters belonging to the selected course
+    const targetSemesters = semesters?.filter(s => s.course_id === formik.values.courseId) ?? [];
+    const targetSemIds = targetSemesters.map(s => s.id);
+    
+    // Return true if subject is linked to any of these semesters
+    return sub.semester_id ? targetSemIds.includes(sub.semester_id) : false;
+  }) ?? [];
+
+  // Helper to extract selected subject details for the live preview
   const selectedSubjectData = subjects?.find(s => s.id === formik.values.subjectId);
 
   return (
@@ -119,7 +146,77 @@ function AddUnit() {
           <Card className="p-6 border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] rounded-2xl bg-white">
             <form onSubmit={formik.handleSubmit} className="space-y-5">
               
-              {/* Target Academic Subject Selector Field */}
+              {/* 1. Dynamic University Dropdown */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <School className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Select University <span className="text-rose-500">*</span></span>
+                </Label>
+                <Select 
+                  value={formik.values.universityId} 
+                  onValueChange={(val) => {
+                    formik.setFieldValue("universityId", val);
+                    formik.setFieldValue("courseId", ""); // Reset downstream course selection
+                    formik.setFieldValue("subjectId", "");  // Reset downstream subject selection
+                  }}
+                >
+                  <SelectTrigger className={cn(
+                    "h-10 border-slate-200 rounded-xl text-xs focus:ring-0 focus:border-slate-900 bg-white transition-all",
+                    formik.touched.universityId && formik.errors.universityId && "border-rose-400 focus:border-rose-500"
+                  )}>
+                    <SelectValue placeholder={loadingUnis ? "Fetching universities..." : "Select Target University Hub"} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200 bg-white shadow-lg max-h-[220px]">
+                    {universities?.map((u) => (
+                      <SelectItem key={u.id} value={u.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-slate-50 cursor-pointer">
+                        {u.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formik.touched.universityId && formik.errors.universityId && (
+                  <p className="text-[11px] font-medium text-rose-500">{formik.errors.universityId}</p>
+                )}
+              </div>
+
+              {/* 2. Dependent Course Dropdown */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Select Course Stream <span className="text-rose-500">*</span></span>
+                </Label>
+                <Select 
+                  value={formik.values.courseId} 
+                  disabled={!formik.values.universityId || loadingCourses}
+                  onValueChange={(val) => {
+                    formik.setFieldValue("courseId", val);
+                    formik.setFieldValue("subjectId", ""); // Reset downstream subject selection
+                  }}
+                >
+                  <SelectTrigger className={cn(
+                    "h-10 border-slate-200 rounded-xl text-xs focus:ring-0 focus:border-slate-900 bg-white transition-all disabled:bg-slate-50 disabled:text-slate-400",
+                    formik.touched.courseId && formik.errors.courseId && "border-rose-400 focus:border-rose-500"
+                  )}>
+                    <SelectValue placeholder={
+                      !formik.values.universityId 
+                        ? "Please select a university first" 
+                        : loadingCourses ? "Loading maps..." : "Select Mapped Academic Course"
+                    } />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200 bg-white shadow-lg max-h-[220px]">
+                    {filteredCourses.map((c) => (
+                      <SelectItem key={c.id} value={c.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-slate-50 cursor-pointer">
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formik.touched.courseId && formik.errors.courseId && (
+                  <p className="text-[11px] font-medium text-rose-500">{formik.errors.courseId}</p>
+                )}
+              </div>
+
+              {/* 3. Dependent Subject Selector Field */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
                   <BookOpen className="h-3.5 w-3.5 text-slate-400" />
@@ -127,16 +224,21 @@ function AddUnit() {
                 </Label>
                 <Select 
                   value={formik.values.subjectId} 
+                  disabled={!formik.values.courseId || loadingSubjects}
                   onValueChange={(val) => formik.setFieldValue("subjectId", val)}
                 >
                   <SelectTrigger className={cn(
-                    "h-10 border-slate-200 rounded-xl text-xs focus:ring-0 focus:border-slate-900 bg-white transition-all",
+                    "h-10 border-slate-200 rounded-xl text-xs focus:ring-0 focus:border-slate-900 bg-white transition-all disabled:bg-slate-50 disabled:text-slate-400",
                     formik.touched.subjectId && formik.errors.subjectId && "border-rose-400 focus:border-rose-500"
                   )}>
-                    <SelectValue placeholder={loadingSubjects ? "Fetching courses from data streams..." : "Select mapped academic course subject"} />
+                    <SelectValue placeholder={
+                      !formik.values.courseId 
+                        ? "Please select a course first" 
+                        : loadingSubjects ? "Fetching courses from data streams..." : "Select mapped academic course subject"
+                    } />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-200 bg-white shadow-lg max-h-[220px]">
-                    {subjects?.map((s) => (
+                    {filteredSubjects.map((s) => (
                       <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-slate-50 cursor-pointer">
                         {s.subject_code ? `[${s.subject_code.toUpperCase()}] ` : ""}{s.name}
                       </SelectItem>

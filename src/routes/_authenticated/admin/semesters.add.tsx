@@ -1,14 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, BookOpen, CalendarDays, Eye, Layers } from "lucide-react";
+import { ArrowLeft, BookOpen, CalendarDays, Eye, Layers, School } from "lucide-react";
 import { useSupabaseTable } from "@/hooks/use-supabase-table";
 
-type Course = { id: string; name: string };
+type University = { id: string; name: string };
+type Course = { id: string; name: string; university_id: string };
 
 export const Route = createFileRoute("/_authenticated/admin/semesters/add")({
   head: () => ({ meta: [{ title: "Add Semester — Lakshay IQ" }] }),
@@ -18,14 +19,34 @@ export const Route = createFileRoute("/_authenticated/admin/semesters/add")({
 function AddSemester() {
   const nav = useNavigate();
   const { insert } = useSupabaseTable("semesters");
+  
+  // 📚 Supabase માંથી યુનિવર્સિટી અને કોર્સનું લિસ્ટ લોડ કરવું
+  const { data: universities } = useSupabaseTable<University>("universities", { orderBy: "name", ascending: true });
   const { data: courses } = useSupabaseTable<Course>("courses", { orderBy: "name", ascending: true });
+  
   const formRef = useRef<HTMLFormElement>(null);
+  
+  // ⚙️ Reactive States
+  const [universityId, setUniversityId] = useState("");
   const [courseId, setCourseId] = useState("");
   const [semesterNumber, setSemesterNumber] = useState(1);
   const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Preview helper string to extract the real-time selected course nomenclature
+  // 🎯 1. યુનિવર્સિટી વાઈઝ કોર્સ ફિલ્ટર એન્જિન
+  const filteredCourses = useMemo(() => {
+    if (!universityId || !courses) return [];
+    return courses.filter((c) => c.university_id === universityId);
+  }, [universityId, courses]);
+
+  // 🔄 યુનિવર્સિટી ચેન્જ હેન્ડલર (જેથી જૂનો કોર્સ સ્ટેટમાંથી સાફ થઈ જાય)
+  const handleUniversityChange = (value: string) => {
+    setUniversityId(value);
+    setCourseId(""); // Reset course selection when university shifts
+  };
+
+  // 📝 પ્રીવ્યૂ કાર્ડ માટે લાઈવ નામ ટ્રેકર્સ
+  const selectedUniversityName = universities?.find((u) => u.id === universityId)?.name;
   const selectedCourseName = courses?.find((c) => c.id === courseId)?.name;
 
   return (
@@ -74,15 +95,32 @@ function AddSemester() {
               if (ok) nav({ to: "/admin/semesters" });
             }}>
               
-              {/* Linked Parent Course Pipeline Scope Selector */}
+              {/* 🏛️ STEP 1: University Selection Frame */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700">Parent Course Program *</Label>
-                <Select value={courseId} onValueChange={setCourseId} required>
+                <Label className="text-xs font-bold text-slate-700">Select University *</Label>
+                <Select value={universityId} onValueChange={handleUniversityChange} required>
                   <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs focus:ring-slate-900/10 focus:border-slate-900">
-                    <SelectValue placeholder="Select parent course" />
+                    <SelectValue placeholder="Select university to filter courses" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-200 bg-white">
-                    {courses && courses.map((c) => (
+                    {universities && universities.map((u) => (
+                      <SelectItem key={u.id} value={u.id} className="text-xs focus:bg-slate-50 rounded-lg py-2">
+                        {u.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 🎓 STEP 2: Linked Parent Course Selector (Filtered Dynamics) */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">Parent Course Program *</Label>
+                <Select value={courseId} onValueChange={setCourseId} disabled={!universityId} required>
+                  <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs focus:ring-slate-900/10 focus:border-slate-900 disabled:opacity-60 disabled:bg-slate-50">
+                    <SelectValue placeholder={universityId ? "Select parent course" : "First select a university..."} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200 bg-white">
+                    {filteredCourses.map((c) => (
                       <SelectItem key={c.id} value={c.id} className="text-xs focus:bg-slate-50 rounded-lg py-2">
                         {c.name}
                       </SelectItem>
@@ -121,7 +159,7 @@ function AddSemester() {
           </Card>
         </div>
 
-        {/* Live Visualization Interactive Sandbox Previews Container (5 Columns) */}
+        {/* Live Visualization Interactive Previews Container (5 Columns) */}
         <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-4">
           <div className="flex items-center gap-2 text-slate-400 px-1">
             <Eye className="h-4 w-4" />
@@ -145,14 +183,24 @@ function AddSemester() {
               </h3>
             </div>
 
-            {/* Relational Parent Course Information Tracker */}
-            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            {/* Relational Parent Mapping Trackers */}
+            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
+              {/* University Readout */}
+              <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                <School className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                <span className="truncate">
+                  {selectedUniversityName || <span className="italic text-slate-300">No university selected</span>}
+                </span>
+              </div>
+              
+              {/* Course Readout */}
               <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
                 <BookOpen className="h-4 w-4 text-slate-400 flex-shrink-0" />
                 <span className="truncate">
                   {selectedCourseName || <span className="italic text-slate-300">No course stream mapped yet</span>}
                 </span>
               </div>
+
               <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
                 <CalendarDays className="h-4 w-4 text-slate-300 flex-shrink-0" />
                 <span>Academic Stage Registry Slot</span>

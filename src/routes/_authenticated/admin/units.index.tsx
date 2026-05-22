@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { useSupabaseTable } from "@/hooks/use-supabase-table";
-import { Plus, Trash2, Edit3, Loader2, BookOpen, Layers, Hash, FileText, ShieldAlert } from "lucide-react";
+import { Plus, Trash2, Edit3, Loader2, BookOpen, Layers, Hash, FileText, ShieldAlert, School, GraduationCap } from "lucide-react";
 
 type Row = { 
   id: string; 
@@ -19,7 +19,10 @@ type Row = {
   description: string | null; 
   created_at: string 
 };
-type Subject = { id: string; name: string; subject_code: string | null };
+type Subject = { id: string; name: string; subject_code: string | null; semester_id?: string };
+type Semester = { id: string; course_id: string };
+type Course = { id: string; name: string; university_id?: string };
+type University = { id: string; name: string };
 
 export const Route = createFileRoute("/_authenticated/admin/units/")({
   head: () => ({ meta: [{ title: "Manage Academic Units — Portal" }] }),
@@ -28,10 +31,12 @@ export const Route = createFileRoute("/_authenticated/admin/units/")({
 
 function ManageUnits() {
   const { data, loading, remove, update } = useSupabaseTable<Row>("units");
-  const { data: subjects, loading: loadingSubjects } = useSupabaseTable<Subject>("subjects", { 
-    orderBy: "name", 
-    ascending: true 
-  });
+  
+  // Relational Buckets Fetching Engine
+  const { data: subjects, loading: loadingSubjects } = useSupabaseTable<Subject>("subjects", { orderBy: "name", ascending: true });
+  const { data: semesters } = useSupabaseTable<Semester>("semesters");
+  const { data: courses } = useSupabaseTable<Course>("courses");
+  const { data: universities } = useSupabaseTable<University>("universities");
 
   // Dialog State Management Framework
   const [selectedUnit, setSelectedUnit] = useState<Row | null>(null);
@@ -44,13 +49,20 @@ function ManageUnits() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  // Relational Data Helper
-  const getSubjectDetails = (subId: string) => {
-    const sub = subjects?.find((s) => s.id === subId);
-    if (!sub) return { name: "Unallocated Node", code: "—" };
+  // Upstream Relational Chain Lookup Resolver (Subject -> Semester -> Course -> University)
+  const getFullAncestry = (subId: string) => {
+    const subject = subjects?.find((s) => s.id === subId);
+    if (!subject) return { subjectName: "Unallocated Node", subjectCode: "—", courseName: "—", universityName: "—" };
+
+    const semester = semesters?.find((s) => s.id === subject.semester_id);
+    const course = courses?.find((c) => c.id === semester?.course_id);
+    const university = universities?.find((u) => u.id === course?.university_id);
+
     return {
-      name: sub.name,
-      code: sub.subject_code ? sub.subject_code.toUpperCase() : "REG-CODE"
+      subjectName: subject.name,
+      subjectCode: subject.subject_code ? subject.subject_code.toUpperCase() : "REG-CODE",
+      courseName: course?.name || "Unmapped Stream",
+      universityName: university?.name || "Unmapped Hub"
     };
   };
 
@@ -104,7 +116,7 @@ function ManageUnits() {
       sortable: true,
       sortValue: (r) => r.title,
       accessor: (r) => (
-        <div className="flex flex-col truncate max-w-[280px] sm:max-w-md">
+        <div className="flex flex-col truncate max-w-[220px] sm:max-w-xs">
           <span className="font-semibold text-neutral-900 text-[13px] uppercase tracking-tight leading-normal truncate">
             {r.title}
           </span>
@@ -117,19 +129,53 @@ function ManageUnits() {
       ),
     },
     {
+      key: "university",
+      header: "University Hub",
+      sortable: true,
+      sortValue: (r) => getFullAncestry(r.subject_id).universityName,
+      accessor: (r) => {
+        const ancestry = getFullAncestry(r.subject_id);
+        return (
+          <div className="flex items-center gap-1.5 max-w-[180px]">
+            <School className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
+            <span className="text-xs font-medium text-neutral-700 truncate">
+              {ancestry.universityName}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      key: "course",
+      header: "Course Stream",
+      sortable: true,
+      sortValue: (r) => getFullAncestry(r.subject_id).courseName,
+      accessor: (r) => {
+        const ancestry = getFullAncestry(r.subject_id);
+        return (
+          <div className="flex items-center gap-1.5 max-w-[180px]">
+            <GraduationCap className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
+            <span className="text-xs font-medium text-neutral-600 truncate">
+              {ancestry.courseName}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
       key: "subject",
       header: "Mapped Core Subject",
       sortable: true,
-      sortValue: (r) => getSubjectDetails(r.subject_id).name,
+      sortValue: (r) => getFullAncestry(r.subject_id).subjectName,
       accessor: (r) => {
-        const details = getSubjectDetails(r.subject_id);
+        const ancestry = getFullAncestry(r.subject_id);
         return (
           <div className="flex flex-col">
-            <span className="text-xs font-semibold text-neutral-700 truncate max-w-[200px]">
-              {details.name}
+            <span className="text-xs font-semibold text-neutral-700 truncate max-w-[180px]">
+              {ancestry.subjectName}
             </span>
             <span className="text-[10px] font-mono font-medium text-neutral-400 mt-0.5">
-              Code: {details.code}
+              Code: {ancestry.subjectCode}
             </span>
           </div>
         );
@@ -235,11 +281,14 @@ function ManageUnits() {
                       <Loader2 className="h-4 w-4 animate-spin text-neutral-400" />
                     </div>
                   ) : (
-                    subjects?.map((s) => (
-                      <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 cursor-pointer">
-                        {s.subject_code ? `[${s.subject_code.toUpperCase()}] ` : ""}{s.name}
-                      </SelectItem>
-                    ))
+                    subjects?.map((s) => {
+                      const details = getFullAncestry(s.id);
+                      return (
+                        <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 cursor-pointer">
+                          {s.subject_code ? `[${s.subject_code.toUpperCase()}] ` : ""}{s.name} ({details.courseName})
+                        </SelectItem>
+                      );
+                    })
                   )}
                 </SelectContent>
               </Select>

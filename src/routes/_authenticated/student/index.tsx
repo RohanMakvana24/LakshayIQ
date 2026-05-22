@@ -92,7 +92,7 @@ function StudentDashboard() {
   }, [universities]);
 
   return (
-    <div className="space-y-8 p-1 max-w-7xl mx-auto antialiased animate-in fade-in duration-500">
+    <div className="space-y-8 p-1 max-w-8xl mx-auto antialiased animate-in fade-in duration-500">
       
       {/* 🌌 NEX-GEN IMMERSIVE HERO BANNER */}
       <div className="relative rounded-3xl bg-gradient-to-br from-slate-950 via-neutral-900 to-zinc-950 p-8 md:p-12 text-white shadow-2xl overflow-hidden border border-white/5 group">

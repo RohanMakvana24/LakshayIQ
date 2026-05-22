@@ -1,12 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,15 +30,18 @@ export const Route = createFileRoute("/_authenticated/admin/subjects/")({
 });
 
 function ManageSubjects() {
-  const { data, loading, remove, update } = useSupabaseTable<Row>("subjects");
+  // insert ફંક્શનને પણ અહીંથી ડીસ્ટ્રક્ચર કરી લીધું
+  const { data, loading, remove, update, insert } = useSupabaseTable<Row>("subjects");
   const { data: sems } = useSupabaseTable<Sem>("semesters");
   const { data: courses } = useSupabaseTable<Course>("courses");
 
   // Core Dialog State Management
   const [selectedSubject, setSelectedSubject] = useState<Row | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // નવું Add મોડલ સ્ટેટ
   const [uploading, setUploading] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [creating, setCreating] = useState(false); // નવું ક્રિએટિંગ સ્ટેટ
 
   // Strictly bound schema fields
   const [name, setName] = useState("");
@@ -61,6 +63,23 @@ function ManageSubjects() {
       courseName: cName,
       semNum: `Semester ${sem.semester_number}`
     };
+  };
+
+  // ફોર્મના સ્ટેટ્સ ખાલી કરવા માટેનું હેલ્પર ફંક્શન
+  const resetFormFields = () => {
+    setName("");
+    setSlug("");
+    setCode("");
+    setDescription("");
+    setSemesterId("");
+    setThumbnailUrl("");
+    setSelectedSubject(null);
+  };
+
+  // Add બટન ક્લિક હેન્ડલર
+  const handleAddInitialize = () => {
+    resetFormFields();
+    setIsAddModalOpen(true);
   };
 
   // Initialize Modal Context on Action Trigger
@@ -100,6 +119,30 @@ function ManageSubjects() {
       console.error("Asset Pipeline Failure:", err);
     } finally {
       setUploading(false);
+    }
+  };
+
+  // નવો સબ્જેક્ટ સબમિટ કરવા માટેનું ફંક્શન
+  const handleCreateSubject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setCreating(true);
+      const isInserted = await insert({
+        name,
+        slug: slug || slugify(name),
+        subject_code: code || null,
+        description: description || null,
+        semester_id: semesterId,
+        thumbnail_url: thumbnailUrl || null
+      });
+      if (isInserted) {
+        setIsAddModalOpen(false);
+        resetFormFields();
+      }
+    } catch (err) {
+      console.error("Database Insertion Refusal:", err);
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -221,14 +264,18 @@ function ManageSubjects() {
           </div>
           <h1 className="text-xl font-bold tracking-tight text-neutral-900">Academic Subjects</h1>
         </div>
-        <Button asChild size="sm" className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-4 shadow-sm tracking-wide">
-          <Link to="/admin/subjects/add">
-            <Plus className="mr-1 h-3.5 w-3.5 stroke-[2.5]" /> Add Subject
-          </Link>
+        
+        {/* Link ને બદલે સીધું બટન રાખીને મોડલ ઓપન કરાવ્યું */}
+        <Button 
+          onClick={handleAddInitialize} 
+          size="sm" 
+          className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-4 shadow-sm tracking-wide"
+        >
+          <Plus className="mr-1 h-3.5 w-3.5 stroke-[2.5]" /> Add Subject
         </Button>
       </div>
 
-      {/* Grid Canvas Wrapper for Custom Component Injection */}
+      {/* Grid Canvas Wrapper */}
       {loading ? (
         <div className="flex items-center justify-center py-24 border border-neutral-100 rounded-2xl bg-neutral-50/20">
           <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
@@ -249,19 +296,18 @@ function ManageSubjects() {
         </div>
       )}
 
-      {/* Structural University Update Drawer Popover */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      {/* 1. NEW Add Subject Drawer Popover */}
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
         <DialogContent className="sm:max-w-[480px] w-[95vw] rounded-2xl border-neutral-200 bg-white p-5 shadow-2xl overflow-hidden focus:outline-none">
           <DialogHeader className="space-y-1 pb-3 border-b border-neutral-100">
             <div className="flex items-center gap-1.5 text-neutral-400 mb-0.5">
               <Layers className="h-3.5 w-3.5 stroke-[2]" />
               <span className="text-[10px] uppercase font-bold tracking-wider">Registry System Terminal</span>
             </div>
-            <DialogTitle className="text-base font-bold text-neutral-900 tracking-tight">Edit Subject Specifications</DialogTitle>
+            <DialogTitle className="text-base font-bold text-neutral-900 tracking-tight">Add New Subject</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleCommitChanges} className="space-y-4 pt-4">
-            {/* Master Department Selection */}
+          <form onSubmit={handleCreateSubject} className="space-y-4 pt-4">
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-neutral-700 flex items-center gap-1">
                 <GraduationCap className="h-3.5 w-3.5 text-neutral-400" />
@@ -281,7 +327,147 @@ function ManageSubjects() {
               </Select>
             </div>
 
-            {/* Split Data Row 1 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-neutral-700">Subject Title Name *</Label>
+                <Input 
+                  required 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  className="h-9 border-neutral-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-neutral-700">Link URI Route Slug</Label>
+                <Input 
+                  value={slug} 
+                  placeholder={slugify(name) || "auto-generated"}
+                  onChange={(e) => setSlug(e.target.value)} 
+                  className="h-9 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-neutral-700">Registry Identifier Code</Label>
+                <Input 
+                  value={code} 
+                  onChange={(e) => setCode(e.target.value)} 
+                  placeholder="e.g., PH102"
+                  className="h-9 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-neutral-700">Thumbnail Cover Graphic</Label>
+                <input 
+                  type="file" 
+                  id="add-file-upload" 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={handleAssetUpload} 
+                  disabled={uploading} 
+                />
+                
+                {thumbnailUrl ? (
+                  <div className="flex items-center justify-between border border-neutral-200 bg-neutral-50 px-3 rounded-xl h-9">
+                    <span className="text-[11px] text-neutral-600 font-bold flex items-center gap-1.5 truncate max-w-[140px]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> File Target Linked
+                    </span>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => setThumbnailUrl("")} 
+                      className="h-5 w-5 text-neutral-400 hover:text-neutral-900 rounded-md"
+                    >
+                      <X className="h-3.5 w-3.5 stroke-[2.5]" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploading}
+                    onClick={() => document.getElementById("add-file-upload")?.click()}
+                    className="w-full h-9 border-neutral-200 rounded-xl text-xs text-neutral-600 hover:bg-neutral-50 flex items-center justify-center gap-2 transition-all"
+                  >
+                    {uploading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-neutral-400" />
+                    ) : (
+                      <UploadCloud className="h-4 w-4 text-neutral-400 stroke-[1.8]" />
+                    )}
+                    <span className="font-medium">{uploading ? "Linking Bundle..." : "Upload Cover"}</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-neutral-700">Abstract Summary Catalog</Label>
+              <Textarea 
+                rows={3}
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                placeholder="Granular syllabus overview context description..."
+                className="border-neutral-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-neutral-400 transition-all resize-none p-3 bg-white"
+              />
+            </div>
+
+            <DialogFooter className="pt-3 border-t border-neutral-100 flex flex-row items-center justify-end gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsAddModalOpen(false)}
+                className="rounded-xl text-xs font-semibold h-9 px-4 border-neutral-200 hover:bg-neutral-50"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={creating || uploading}
+                className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-5 shadow-sm transition-all"
+              >
+                {creating ? "Creating..." : "Save Subject"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 2. Existing Edit Subject Drawer Popover */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[480px] w-[95vw] rounded-2xl border-neutral-200 bg-white p-5 shadow-2xl overflow-hidden focus:outline-none">
+          <DialogHeader className="space-y-1 pb-3 border-b border-neutral-100">
+            <div className="flex items-center gap-1.5 text-neutral-400 mb-0.5">
+              <Layers className="h-3.5 w-3.5 stroke-[2]" />
+              <span className="text-[10px] uppercase font-bold tracking-wider">Registry System Terminal</span>
+            </div>
+            <DialogTitle className="text-base font-bold text-neutral-900 tracking-tight">Edit Subject Specifications</DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleCommitChanges} className="space-y-4 pt-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-neutral-700 flex items-center gap-1">
+                <GraduationCap className="h-3.5 w-3.5 text-neutral-400" />
+                <span>Structural Semester Alignment *</span>
+              </Label>
+              <Select value={semesterId} onValueChange={setSemesterId} required>
+                <SelectTrigger className="h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all">
+                  <SelectValue placeholder="Select target node structural terminal" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-neutral-200 bg-white shadow-lg max-h-[220px]">
+                  {sems?.map((s) => (
+                    <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 cursor-pointer">
+                      {getSemDetails(s.id).fullString}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Subject Title Name *</Label>
@@ -304,7 +490,6 @@ function ManageSubjects() {
               </div>
             </div>
 
-            {/* Split Data Row 2 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Registry Identifier Code</Label>
@@ -361,7 +546,6 @@ function ManageSubjects() {
               </div>
             </div>
 
-            {/* Description Area */}
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-neutral-700">Abstract Summary Catalog</Label>
               <Textarea 
@@ -373,7 +557,6 @@ function ManageSubjects() {
               />
             </div>
 
-            {/* Footer Form Event Controls */}
             <DialogFooter className="pt-3 border-t border-neutral-100 flex flex-row items-center justify-end gap-2">
               <Button 
                 type="button" 

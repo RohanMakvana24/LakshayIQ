@@ -15,10 +15,11 @@ import {
   SheetFooter,
   SheetClose
 } from "@/components/ui/sheet";
-import { Plus, Trash2, Layers, BookOpen, Hash, Milestone, Loader2, Edit2, Save } from "lucide-react";
+import { Plus, Trash2, Layers, BookOpen, Hash, Milestone, Loader2, Edit2, Save, School } from "lucide-react";
 
 type Row = { id: string; course_id: string; semester_number: number; title: string | null; created_at: string };
-type Course = { id: string; name: string };
+type Course = { id: string; name: string; university_id: string };
+type University = { id: string; name: string };
 
 export const Route = createFileRoute("/_authenticated/admin/semesters/")({
   head: () => ({ meta: [{ title: "Manage Semesters — Lakshay IQ" }] }),
@@ -29,6 +30,7 @@ function ManageSemesters() {
   // Supabase hooks data pipelines
   const { data, loading, remove, update } = useSupabaseTable<Row>("semesters");
   const { data: courses } = useSupabaseTable<Course>("courses", { orderBy: "name", ascending: true });
+  const { data: universities } = useSupabaseTable<University>("universities");
   
   // --- UI Update Overlay State Modules ---
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -38,7 +40,14 @@ function ManageSemesters() {
   const [editTitle, setEditTitle] = useState("");
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
-  const courseName = (id: string) => courses?.find((c) => c.id === id)?.name ?? "—";
+  // 🏛️ કોર્સ આઈડી પરથી કોર્સ અને યુનિવર્સિટીનું નામ મેળવવાના હેલ્પર્સ
+  const getCourseObj = (cId: string) => courses?.find((c) => c.id === cId);
+  const courseName = (cId: string) => getCourseObj(cId)?.name ?? "—";
+  
+  const universityName = (cId: string) => {
+    const uId = getCourseObj(cId)?.university_id;
+    return universities?.find((u) => u.id === uId)?.name ?? "—";
+  };
 
   // Trigger setup for mounting specific values into form editing matrix
   const handleEditClick = (row: Row) => {
@@ -78,7 +87,7 @@ function ManageSemesters() {
     { 
       key: "number", 
       header: "Academic Block", 
-      className: "w-44",
+      className: "w-40",
       accessor: (r) => (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-slate-950 text-white shadow-sm tracking-wide uppercase">
           <Hash className="h-3 w-3 stroke-[2.5]" />
@@ -102,6 +111,20 @@ function ManageSemesters() {
         )
       ), 
       sortable: false 
+    },
+    { 
+      key: "university", 
+      header: "Connected University", 
+      accessor: (r) => (
+        <div className="flex items-center gap-2 max-w-xs py-0.5">
+          <School className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+          <span className="font-semibold text-slate-700 truncate tracking-tight">
+            {universityName(r.course_id)}
+          </span>
+        </div>
+      ), 
+      sortValue: (r) => universityName(r.course_id), 
+      sortable: true 
     },
     { 
       key: "course", 
@@ -230,6 +253,17 @@ function ManageSemesters() {
               Update configuration metrics, streams mappings, and operational metadata.
             </SheetDescription>
           </SheetHeader>
+
+          {/* 🏛️ એડિટ મોડલની અંદર રિલેશન પ્રીવ્યૂ ઝોન */}
+          {editCourseId && (
+            <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-xl flex items-center gap-2.5 text-xs">
+              <School className="h-4 w-4 text-slate-400 shrink-0" />
+              <div className="truncate">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-0.5">Current University Connection</p>
+                <p className="font-semibold text-slate-700 truncate">{universityName(editCourseId)}</p>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleUpdateSubmit} className="flex-1 flex flex-col justify-between h-full">
             <div className="space-y-4">
