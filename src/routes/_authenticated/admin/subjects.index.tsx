@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash2, Edit3, Loader2, UploadCloud, GraduationCap, BookOpen, Layers, X, ShieldAlert } from "lucide-react";
+import { Plus, Trash2, Edit3, Loader2, UploadCloud, GraduationCap, BookOpen, Layers, X, ShieldAlert, School, Hash } from "lucide-react";
 
 type Row = { 
   id: string; 
@@ -23,6 +23,7 @@ type Row = {
 };
 type Sem = { id: string; semester_number: number; course_id: string };
 type Course = { id: string; name: string };
+type University = { id: string; name: string };
 
 export const Route = createFileRoute("/_authenticated/admin/subjects/")({
   head: () => ({ meta: [{ title: "Academic Subjects — Portal" }] }),
@@ -30,18 +31,18 @@ export const Route = createFileRoute("/_authenticated/admin/subjects/")({
 });
 
 function ManageSubjects() {
-  // insert ફંક્શનને પણ અહીંથી ડીસ્ટ્રક્ચર કરી લીધું
   const { data, loading, remove, update, insert } = useSupabaseTable<Row>("subjects");
   const { data: sems } = useSupabaseTable<Sem>("semesters");
   const { data: courses } = useSupabaseTable<Course>("courses");
+  const { data: universities } = useSupabaseTable<University>("universities");
 
   // Core Dialog State Management
   const [selectedSubject, setSelectedSubject] = useState<Row | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // નવું Add મોડલ સ્ટેટ
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [creating, setCreating] = useState(false); // નવું ક્રિએટિંગ સ્ટેટ
+  const [creating, setCreating] = useState(false);
 
   // Strictly bound schema fields
   const [name, setName] = useState("");
@@ -52,20 +53,25 @@ function ManageSubjects() {
   const [thumbnailUrl, setThumbnailUrl] = useState("");
 
   // Analytical Relational Helpers
-  const getCourseName = (courseId: string) => courses?.find(c => c.id === courseId)?.name ?? "Global Program";
-  
   const getSemDetails = (semId: string) => {
     const sem = sems?.find(s => s.id === semId);
-    if (!sem) return { fullString: "Unallocated", courseName: "—", semNum: "—" };
-    const cName = getCourseName(sem.course_id);
+    if (!sem) return { fullString: "Unallocated", courseName: "—", semNum: "—", uniName: "—", semRawNum: "—" };
+    
+    const course = courses?.find(c => c.id === sem.course_id);
+    const cName = course?.name ?? "—";
+    
+    // @ts-ignore
+    const uName = universities?.find(u => u.id === course?.university_id)?.name ?? "—";
+    
     return {
-      fullString: `${cName} · Sem ${sem.semester_number}`,
+      fullString: `${uName} · ${cName} · Sem ${sem.semester_number}`,
+      uniName: uName,
       courseName: cName,
-      semNum: `Semester ${sem.semester_number}`
+      semNum: `Semester ${sem.semester_number}`,
+      semRawNum: sem.semester_number
     };
   };
 
-  // ફોર્મના સ્ટેટ્સ ખાલી કરવા માટેનું હેલ્પર ફંક્શન
   const resetFormFields = () => {
     setName("");
     setSlug("");
@@ -76,13 +82,11 @@ function ManageSubjects() {
     setSelectedSubject(null);
   };
 
-  // Add બટન ક્લિક હેન્ડલર
   const handleAddInitialize = () => {
     resetFormFields();
     setIsAddModalOpen(true);
   };
 
-  // Initialize Modal Context on Action Trigger
   const handleEditInitialize = (subject: Row) => {
     setSelectedSubject(subject);
     setName(subject.name);
@@ -94,7 +98,6 @@ function ManageSubjects() {
     setIsModalOpen(true);
   };
 
-  // Secure File Pipeline for University Assets Bucket
   const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -122,7 +125,6 @@ function ManageSubjects() {
     }
   };
 
-  // નવો સબ્જેક્ટ સબમિટ કરવા માટેનું ફંક્શન
   const handleCreateSubject = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -146,7 +148,6 @@ function ManageSubjects() {
     }
   };
 
-  // Data Sync Submission Layer
   const handleCommitChanges = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSubject) return;
@@ -169,7 +170,6 @@ function ManageSubjects() {
     }
   };
 
-  // Clean, Standardized Flex-Safe Table Schema
   const columns: DataTableColumn<Row>[] = [
     {
       key: "name",
@@ -208,21 +208,44 @@ function ManageSubjects() {
       ),
     },
     {
+      key: "university",
+      header: "University",
+      sortable: true,
+      sortValue: (r) => getSemDetails(r.semester_id).uniName,
+      accessor: (r) => (
+        <div className="flex items-center gap-2 max-w-xs py-0.5">
+          <School className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
+          <span className="font-semibold text-neutral-700 truncate tracking-tight text-xs">
+            {getSemDetails(r.semester_id).uniName}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "course",
+      header: "Connected Course",
+      sortable: true,
+      sortValue: (r) => getSemDetails(r.semester_id).courseName,
+      accessor: (r) => (
+        <div className="flex items-center gap-2 max-w-xs py-0.5">
+          <GraduationCap className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
+          <span className="font-medium text-neutral-600 truncate tracking-tight text-xs">
+            {getSemDetails(r.semester_id).courseName}
+          </span>
+        </div>
+      ),
+    },
+    {
       key: "semester",
-      header: "Department Map",
-      accessor: (r) => {
-        const details = getSemDetails(r.semester_id);
-        return (
-          <div className="flex flex-col">
-            <span className="text-xs font-semibold text-neutral-700 uppercase tracking-tight">
-              {details.courseName}
-            </span>
-            <span className="text-[11px] font-medium text-neutral-400 mt-0.5">
-              {details.semNum}
-            </span>
-          </div>
-        );
-      },
+      header: "Semester",
+      sortable: true,
+      sortValue: (r) => getSemDetails(r.semester_id).semRawNum,
+      accessor: (r) => (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-neutral-900 text-white shadow-sm tracking-wide">
+          <Hash className="h-2.5 w-2.5 stroke-[2.5]" />
+          Sem {getSemDetails(r.semester_id).semRawNum}
+        </span>
+      ),
     },
     {
       key: "actions",
@@ -265,7 +288,6 @@ function ManageSubjects() {
           <h1 className="text-xl font-bold tracking-tight text-neutral-900">Academic Subjects</h1>
         </div>
         
-        {/* Link ને બદલે સીધું બટન રાખીને મોડલ ઓપન કરાવ્યું */}
         <Button 
           onClick={handleAddInitialize} 
           size="sm" 
