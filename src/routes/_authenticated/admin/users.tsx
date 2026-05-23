@@ -185,7 +185,7 @@ function UsersPage() {
   );
 
   return (
-    <div className="w-full space-y-5 px-4 pb-6 max-w-full antialiased">
+    <div className="w-full space-y-5 pb-6 max-w-full antialiased">
       
       {/* Top Header Layout Block */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-neutral-100 pb-5 gap-4">
@@ -199,12 +199,12 @@ function UsersPage() {
         </div>
 
         {/* Live Counters Micro Bento-Widget */}
-        <div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200/60 p-1.5 rounded-xl text-[11px] font-medium font-mono text-neutral-500">
+        <div className="flex flex-wrap items-center gap-2 bg-neutral-50 border border-neutral-200/60 p-1.5 rounded-xl text-[11px] font-medium font-mono text-neutral-500">
           <span className="px-2 py-0.5 bg-white border border-neutral-100 shadow-sm rounded-lg text-neutral-800 font-bold">
             Total: {rows.length}
           </span>
           <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-lg font-bold flex items-center gap-1 animate-pulse">
-            <Radio className="h-3 w-3 text-emerald-600" /> Active Now: {activeUserIds.length}
+            <Radio className="h-3 w-3 text-emerald-600" /> Active: {activeUserIds.length}
           </span>
         </div>
       </div>
@@ -229,8 +229,8 @@ function UsersPage() {
             <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-neutral-100/80">
-            <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto rounded-xl border border-neutral-100/80 -mx-1">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-neutral-50/70 border-b border-neutral-100 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                   <th className="py-3 px-4 font-bold">User Identity Profile</th>

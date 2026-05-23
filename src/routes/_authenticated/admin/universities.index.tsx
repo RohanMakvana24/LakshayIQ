@@ -249,7 +249,7 @@ function ManageUniversities() {
       ) : (
         <Card className="overflow-hidden border-slate-200 shadow-sm rounded-2xl bg-white">
           <div className="w-full overflow-x-auto">
-            <Table>
+            <Table className="min-w-[600px]">
               <TableHeader className="bg-slate-50/70 border-b border-slate-100">
                 <TableRow>
                   <TableHead onClick={() => handleSort("name")} className="cursor-pointer select-none text-xs font-bold text-slate-700 h-11 hover:bg-slate-100/50 transition-colors">
@@ -297,7 +297,7 @@ function ManageUniversities() {
                       </TableCell>
                       <TableCell className="py-3 text-xs font-medium text-slate-500">{new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</TableCell>
                       <TableCell className="py-3 pr-6 text-right">
-                        <div className="flex justify-end gap-1.5 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex justify-end gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button size="icon" variant="outline" onClick={() => triggerEditModal(row)} className="h-8 w-8 rounded-lg border-slate-200 text-slate-600 hover:text-slate-900 bg-white shadow-sm">
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>

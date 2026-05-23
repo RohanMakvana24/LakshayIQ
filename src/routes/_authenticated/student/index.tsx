@@ -120,6 +120,20 @@ function StudentDashboard() {
             Your entire university ecosystem simplified. Dive straight into courses, branches, and meticulously organized study grids.
           </p>
 
+          {/* 🚀 PREMIUM INTERACTIVE TEST LINK BUTTON */}
+          <div className="pt-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <a 
+              href="https://shrinkme.click/react-notes" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-xs px-5 py-3 shadow-[0_10px_20px_rgba(16,185,129,0.15)] active:scale-95 transition-all duration-200 border border-emerald-400/20 group hover:shadow-[0_15px_25px_rgba(16,185,129,0.25)]"
+            >
+              <Compass className="h-4 w-4 text-emerald-100 group-hover:rotate-45 transition-transform duration-300" />
+              <span>Test React Notes</span>
+              <span className="h-1.5 w-1.5 bg-emerald-300 rounded-full animate-ping" />
+            </a>
+          </div>
+
           {/* Quick Stats Integrated directly into Hero for premium micro bento vibe */}
           <div className="pt-4 flex items-center gap-6 border-t border-white/5 max-w-md">
             <div className="flex items-center gap-2.5">

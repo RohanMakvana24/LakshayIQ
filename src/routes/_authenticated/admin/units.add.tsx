@@ -139,7 +139,7 @@ function AddUnit() {
       </div>
 
       {/* Two Column Workspace Grid Pipeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start flex-1 w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-1 w-full">
         
         {/* Left Control Column: Form Input Architecture (7 Columns) */}
         <div className="lg:col-span-7 space-y-6">

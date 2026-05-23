@@ -18,6 +18,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedStudentIndexRouteImport } from './routes/_authenticated/student/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedStudentSearchRouteImport } from './routes/_authenticated/student/search'
+import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/student/profile'
 import { Route as AuthenticatedStudentBookmarksRouteImport } from './routes/_authenticated/student/bookmarks'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin/content'
@@ -91,6 +92,12 @@ const AuthenticatedStudentSearchRoute =
   AuthenticatedStudentSearchRouteImport.update({
     id: '/search',
     path: '/search',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
+const AuthenticatedStudentProfileRoute =
+  AuthenticatedStudentProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 const AuthenticatedStudentBookmarksRoute =
@@ -270,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/admin/content': typeof AuthenticatedAdminContentRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
+  '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/search': typeof AuthenticatedStudentSearchRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/student/': typeof AuthenticatedStudentIndexRoute
@@ -306,6 +314,7 @@ export interface FileRoutesByTo {
   '/admin/content': typeof AuthenticatedAdminContentRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
+  '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/search': typeof AuthenticatedStudentSearchRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/student': typeof AuthenticatedStudentIndexRoute
@@ -346,6 +355,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/content': typeof AuthenticatedAdminContentRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
+  '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
   '/_authenticated/student/search': typeof AuthenticatedStudentSearchRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/student/': typeof AuthenticatedStudentIndexRoute
@@ -386,6 +396,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/users'
     | '/student/bookmarks'
+    | '/student/profile'
     | '/student/search'
     | '/admin/'
     | '/student/'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/users'
     | '/student/bookmarks'
+    | '/student/profile'
     | '/student/search'
     | '/admin'
     | '/student'
@@ -461,6 +473,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/content'
     | '/_authenticated/admin/users'
     | '/_authenticated/student/bookmarks'
+    | '/_authenticated/student/profile'
     | '/_authenticated/student/search'
     | '/_authenticated/admin/'
     | '/_authenticated/student/'
@@ -561,6 +574,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/student/search'
       preLoaderRoute: typeof AuthenticatedStudentSearchRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
+    '/_authenticated/student/profile': {
+      id: '/_authenticated/student/profile'
+      path: '/profile'
+      fullPath: '/student/profile'
+      preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/student/bookmarks': {
@@ -822,6 +842,7 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedStudentRouteChildren {
   AuthenticatedStudentBookmarksRoute: typeof AuthenticatedStudentBookmarksRoute
+  AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
   AuthenticatedStudentSearchRoute: typeof AuthenticatedStudentSearchRoute
   AuthenticatedStudentIndexRoute: typeof AuthenticatedStudentIndexRoute
   AuthenticatedStudentCourseIdRoute: typeof AuthenticatedStudentCourseIdRoute
@@ -833,6 +854,7 @@ interface AuthenticatedStudentRouteChildren {
 
 const AuthenticatedStudentRouteChildren: AuthenticatedStudentRouteChildren = {
   AuthenticatedStudentBookmarksRoute: AuthenticatedStudentBookmarksRoute,
+  AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
   AuthenticatedStudentSearchRoute: AuthenticatedStudentSearchRoute,
   AuthenticatedStudentIndexRoute: AuthenticatedStudentIndexRoute,
   AuthenticatedStudentCourseIdRoute: AuthenticatedStudentCourseIdRoute,

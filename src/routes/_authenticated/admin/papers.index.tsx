@@ -298,7 +298,7 @@ function ManagePapers() {
     <div className="w-full space-y-5 px-4 pb-6 max-w-full antialiased">
       
       {/* Action System Header Controls */}
-      <div className="flex items-center justify-between border-b border-neutral-100 pb-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-100 pb-5">
         <div className="space-y-0.5">
           <div className="flex items-center gap-1.5 mb-0.5">
             <div className="h-4 w-4 rounded bg-neutral-900 flex items-center justify-center text-[9px] text-white font-bold font-mono">P</div>
@@ -306,7 +306,7 @@ function ManagePapers() {
           </div>
           <h1 className="text-xl font-bold tracking-tight text-neutral-900">Previous Year Papers (PYQs)</h1>
         </div>
-        <Button asChild size="sm" className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-4 shadow-sm">
+        <Button asChild size="sm" className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-4 shadow-sm self-start sm:self-auto">
           <Link to="/admin/papers/add">
             <Plus className="mr-1 h-3.5 w-3.5 stroke-[2.5]" /> Archive Paper
           </Link>
