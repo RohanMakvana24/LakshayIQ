@@ -18,7 +18,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
   const { user, signOut, profile } = useAuth();
   const nav = useNavigate();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -40,13 +40,13 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-zinc-600 font-sans antialiased selection:bg-emerald-50 selection:text-emerald-700">
-      
+
       {/* --- MOBILE SIDEBAR DRAWER --- */}
       <div className={cn(
         "fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-md md:hidden transition-opacity duration-300",
         mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       )} onClick={() => setMobileMenuOpen(false)}>
-        <aside 
+        <aside
           className={cn(
             "fixed inset-y-0 left-0 w-66 bg-white p-4 flex flex-col border-r border-zinc-100/80 transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) shadow-xl",
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
@@ -56,7 +56,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
           <div className="pb-4">
             <BrandHeader variant={variant} isCollapsed={false} />
           </div>
-          
+
           <nav className="flex-1 space-y-1 overflow-y-auto py-2">
             {renderNavItems({ items, pathname, openGroups, setOpenGroups, isCollapsed: false, setMobileMenuOpen })}
           </nav>
@@ -66,7 +66,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
       </div>
 
       {/* --- DESKTOP SIDEBAR --- */}
-      <aside 
+      <aside
         className={cn(
           "fixed inset-y-0 left-0 z-30 hidden md:flex md:flex-col bg-white border-r border-zinc-100/80 transition-all duration-300 ease-in-out p-4 justify-between shadow-[1px_0_10px_rgba(0,0,0,0.005)]",
           isCollapsed ? "w-20" : "w-66"
@@ -87,8 +87,8 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
           {!isCollapsed && variant === "student" && (
             <div className="my-2 relative group px-1 animate-in fade-in duration-300">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-700 transition-colors" />
-              <Input 
-                placeholder="Search device" 
+              <Input
+                placeholder="Search device"
                 className="pl-9 h-9 bg-zinc-50 border-none focus-visible:ring-1 focus-visible:ring-zinc-200 focus-visible:bg-white rounded-xl text-xs placeholder:text-zinc-400 font-medium transition-all"
               />
             </div>
@@ -104,10 +104,10 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
 
       {/* --- MAIN CONTENT BAR --- */}
       <div className={cn("transition-all duration-300 ease-in-out", isCollapsed ? "md:pl-20" : "md:pl-66")}>
-        
+
         {/* Header Bar */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-zinc-100/60 bg-white/80 px-4 md:px-8 backdrop-blur-md">
-          
+
           {/* Mobile Menu Toggle */}
           <Button
             variant="ghost"
@@ -121,10 +121,10 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
           {/* --- ULTRA UNIQUE LETTER-WAVE TEXT ANIMATION (MOBILE ONLY) --- */}
           <div className="flex md:hidden flex-1 justify-center items-center">
             <div className="flex items-center text-sm font-black tracking-widest uppercase select-none relative px-4 py-1">
-              
+
               {/* Soft Ambient Background Light Effect */}
               <div className="absolute inset-0 bg-emerald-400/5 blur-xl rounded-full animate-pulse" />
-              
+
               {/* LAKSHAY TEXT WITH STAGGERED WAVE ANIMATION */}
               <div className="flex text-zinc-900 font-extrabold mr-1">
                 <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out]" style={{ animationDelay: '0.1s' }}>L</span>
@@ -140,7 +140,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
               <div className="flex text-emerald-500 font-black relative">
                 <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out] drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]" style={{ animationDelay: '0.8s' }}>I</span>
                 <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out] drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]" style={{ animationDelay: '0.9s' }}>Q</span>
-                
+
                 {/* Live Micro Status Radar Dot */}
                 <span className="absolute -top-0.5 -right-2 h-1.5 w-1.5 bg-emerald-400 rounded-full animate-ping" />
                 <span className="absolute -top-0.5 -right-2 h-1.5 w-1.5 bg-emerald-500 rounded-full shadow-sm" />
@@ -154,12 +154,12 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
               <h2 className="font-bold text-xs uppercase tracking-wider text-zinc-400">Admin Workspace</h2>
             )}
           </div>
-          
+
           {/* Action Buttons */}
           <div className="flex items-center gap-2 relative z-10">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="h-9 w-9 rounded-xl border border-zinc-100 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 relative"
             >
               <Bell className="h-4 w-4" />
@@ -169,7 +169,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
         </header>
 
         {/* --- MAIN ROUTE VIEW --- */}
-        <main className="p-4 md:p-8 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+        <main className="p-2 md:p-1 max-w-[1600px] mx-auto animate-in fade-in duration-500">
           {children}
         </main>
       </div>
@@ -274,7 +274,7 @@ interface RenderProps {
 
 function renderNavItems({ items, pathname, openGroups, setOpenGroups, isCollapsed, setMobileMenuOpen }: RenderProps) {
   return items.map((item, idx) => {
-    const showDivider = idx === 3; 
+    const showDivider = idx === 3;
 
     if (item.children) {
       const isOpen = openGroups[item.label];
@@ -319,20 +319,20 @@ function renderNavItems({ items, pathname, openGroups, setOpenGroups, isCollapse
             <span className="flex-1 text-left">{item.label}</span>
             <ChevronRight className={cn("h-3.5 w-3.5 transition-transform duration-200 text-zinc-400", isOpen && "rotate-90 text-zinc-600")} />
           </button>
-          
+
           {isOpen && (
             <div className="ml-5 mt-0.5 space-y-0.5 border-l border-zinc-100 pl-3 animate-in fade-in slide-in-from-top-1 duration-200">
               {item.children.map((c) => {
                 const active = pathname === c.to || pathname.startsWith(c.to + "/");
                 return (
-                  <Link 
-                    key={c.to} 
-                    to={c.to as never} 
+                  <Link
+                    key={c.to}
+                    to={c.to as never}
                     onClick={() => setMobileMenuOpen?.(false)}
                     className={cn(
                       "block rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
-                      active 
-                        ? "text-zinc-950 bg-zinc-100/80 font-bold" 
+                      active
+                        ? "text-zinc-950 bg-zinc-100/80 font-bold"
                         : "text-zinc-400 hover:text-zinc-800 hover:bg-zinc-50/50"
                     )}
                   >
@@ -348,12 +348,12 @@ function renderNavItems({ items, pathname, openGroups, setOpenGroups, isCollapse
 
     const to = item.to!;
     const active = pathname === to || (to !== "/student" && to !== "/admin" && pathname.startsWith(to));
-    
+
     if (isCollapsed) {
       return (
         <div key={to} className="relative flex justify-center group/tooltip py-1">
-          <Link 
-            to={to as never} 
+          <Link
+            to={to as never}
             className={cn(
               "h-10 w-10 flex items-center justify-center rounded-xl transition-all relative",
               active ? "bg-zinc-100 text-zinc-950 font-bold" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
@@ -375,19 +375,19 @@ function renderNavItems({ items, pathname, openGroups, setOpenGroups, isCollapse
             Workspace
           </div>
         )}
-        <Link 
-          to={to as never} 
+        <Link
+          to={to as never}
           onClick={() => setMobileMenuOpen?.(false)}
           className={cn(
             "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150 relative group",
-            active 
-              ? "bg-zinc-100 text-zinc-950 font-bold" 
+            active
+              ? "bg-zinc-100 text-zinc-950 font-bold"
               : "text-zinc-500 hover:bg-zinc-50/80 hover:text-zinc-900"
           )}
         >
           <item.icon className={cn("h-[18px] w-[18px] transition-colors", active ? "text-zinc-950" : "text-zinc-400 group-hover:text-zinc-600")} />
           <span className="flex-1 text-left">{item.label}</span>
-          
+
           {/* Notification Counter Badge */}
           {item.label.toLowerCase().includes("notification") && (
             <span className="bg-[#78cc3b] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-md min-w-4 text-center">
@@ -462,13 +462,13 @@ function UserFooter({ user, profile, variant, isCollapsed, signOut, nav }: Foote
         </div>
       )}
 
-      <Button 
-        variant="ghost" 
-        size="sm" 
+      <Button
+        variant="ghost"
+        size="sm"
         className={cn("w-full text-zinc-400 hover:text-rose-600 hover:bg-rose-50/60 rounded-xl transition-all font-medium text-xs mt-0.5", isCollapsed ? "justify-center px-0" : "justify-start px-2.5")}
         onClick={async () => { await signOut(); nav({ to: "/login" }); }}
       >
-        <LogOut className={cn("h-4 w-4", isCollapsed ? "" : "mr-2")} /> 
+        <LogOut className={cn("h-4 w-4", isCollapsed ? "" : "mr-2")} />
         {!isCollapsed && <span>Sign out</span>}
       </Button>
     </div>
