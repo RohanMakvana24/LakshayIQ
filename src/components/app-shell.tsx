@@ -169,7 +169,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
         </header>
 
         {/* --- MAIN ROUTE VIEW --- */}
-        <main className="p-2 md:p-1 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+        <main className="p-1 md:p-2 max-w-[1600px] mx-auto animate-in fade-in duration-500">
           {children}
         </main>
       </div>
@@ -226,7 +226,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
 /* ==========================================================================
    HELPERS & SUB-COMPONENTS
    ========================================================================== */
-function BrandHeader({ variant, isCollapsed }: { variant: string; isCollapsed: boolean }) {
+export function BrandHeader({ variant, isCollapsed }: { variant: string; isCollapsed: boolean }) {
   return (
     <Link
       to="/"
