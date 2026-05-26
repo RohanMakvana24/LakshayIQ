@@ -76,29 +76,31 @@ function UniversityPage() {
   }, [courses, searchQuery, sortBy]);
 
   return (
-    <div className="space-y-8 p-1 antialiased animate-fade-in">
-      
-      {/* 🗺️ PRECISE BREADCRUMB NAVIGATION */}
-      <BreadcrumbNav 
-        items={[
-          { label: "Dashboard", to: "/student" }, 
-          { label: university.name }
-        ]} 
-      />
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      <div className="w-full px-4 py-6 md:px-6 lg:px-8">
+        <div className="space-y-8 antialiased animate-fade-in max-w-7xl mx-auto">
 
-      {/* 🌌 CINEMATIC HERO BANNER HEADER FRAME */}
-      <header className="relative rounded-2xl border border-neutral-200/60 bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 shadow-[0_15px_40px_rgba(0,0,0,0.12)] overflow-hidden group">
-        <div className="absolute inset-0 z-0 opacity-40">
-          {university.banner_url ? (
-            <img 
-              src={university.banner_url} 
-              alt={university.name} 
-              className="w-full h-full object-cover filter brightness-75 contrast-125"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-r from-neutral-950 to-neutral-900" />
-          )}
-        </div>
+          {/* 🗺️ PRECISE BREADCRUMB NAVIGATION */}
+          <BreadcrumbNav 
+            items={[
+              { label: "Dashboard", to: "/student" }, 
+              { label: university.name }
+            ]} 
+          />
+
+          {/* 🌌 CINEMATIC HERO BANNER HEADER FRAME */}
+          <header className="relative rounded-[1rem] border border-slate-200/70 bg-slate-950 shadow-lg overflow-hidden group">
+            <div className="absolute inset-0 z-0 opacity-40">
+              {university.banner_url ? (
+                <img 
+                  src={university.banner_url} 
+                  alt={university.name} 
+                  className="w-full h-full object-cover filter brightness-75 contrast-125"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-r from-slate-950 to-slate-900" />
+              )}
+            </div>
 
         <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6 text-white">
           <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-white text-neutral-950 border-2 border-white/20 shadow-xl overflow-hidden font-mono font-bold text-xl">
@@ -219,6 +221,8 @@ function UniversityPage() {
         )}
       </section>
 
+        </div>
+      </div>
     </div>
   );
 }

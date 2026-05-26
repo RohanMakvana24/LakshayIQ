@@ -33,7 +33,24 @@ const MaterialSchema = Yup.object().shape({
   title: Yup.string()
     .min(3, "Title should be descriptive (Min 3 characters)")
     .required("Material structural title name is required"),
-  fileUrl: Yup.string().url("Invalid binary cloud URL stream").required("Material source attachment file is required"),
+  fileUrl: Yup.string()
+    .test("is-valid-url", "Invalid binary cloud URL stream", (value) => {
+      if (!value) return true;
+      const cleanValue = value.trim();
+      try {
+        if (/^https?:\/\//i.test(cleanValue)) {
+          new URL(cleanValue);
+          return true;
+        }
+        const domainPart = cleanValue.split("/")[0];
+        if (!domainPart.includes(".")) return false;
+        new URL(`https://${cleanValue}`);
+        return true;
+      } catch {
+        return false;
+      }
+    })
+    .required("Material source attachment file is required"),
   fileType: Yup.string().required("File extension type mapping is required"),
   fileSize: Yup.string().nullable(),
 });
@@ -76,10 +93,15 @@ function AddMaterial() {
     onSubmit: async (values) => {
       try {
         setSaving(true);
+        let finalFileUrl = values.fileUrl.trim();
+        if (finalFileUrl && !/^https?:\/\//i.test(finalFileUrl)) {
+          finalFileUrl = `https://${finalFileUrl}`;
+        }
+
         const ok = await insert({
           unit_id: values.unitId,
           title: values.title.trim(),
-          file_url: values.fileUrl,
+          file_url: finalFileUrl,
           file_type: values.fileType,
           file_size: values.fileSize || null,
         });
@@ -205,13 +227,14 @@ function AddMaterial() {
     }
   };
 
-  const handleUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const urlValue = e.target.value;
-    formik.setFieldValue("fileUrl", urlValue);
-    
+  const updateUrlMetadata = (urlValue: string) => {
     if (urlValue) {
+      let urlWithProtocol = urlValue.trim();
+      if (!/^https?:\/\//i.test(urlWithProtocol)) {
+        urlWithProtocol = `https://${urlWithProtocol}`;
+      }
       try {
-        const parsedUrl = new URL(urlValue);
+        const parsedUrl = new URL(urlWithProtocol);
         const pathName = parsedUrl.pathname;
         const fileExt = pathName.split(".").pop() || "";
         if (fileExt && fileExt.length < 5) {
@@ -228,6 +251,12 @@ function AddMaterial() {
     } else {
       setLocalFileName("");
     }
+  };
+
+  const handleUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const urlValue = e.target.value.trim();
+    formik.setFieldValue("fileUrl", urlValue);
+    updateUrlMetadata(urlValue);
   };
 
   const clearUploadedFileNode = () => {
@@ -409,9 +438,16 @@ function AddMaterial() {
                   name="title"
                   value={formik.values.title} 
                   onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   placeholder="e.g., Chapter 2 Handouts - Database Normalization"
-                  className="h-10 border-neutral-200 rounded-xl text-xs bg-white"
+                  className={cn(
+                    "h-10 border-neutral-200 rounded-xl text-xs bg-white",
+                    formik.touched.title && formik.errors.title && "border-rose-400 focus-visible:border-rose-500"
+                  )}
                 />
+                {formik.touched.title && formik.errors.title && (
+                  <p className="text-[11px] font-medium text-rose-500 mt-1">{formik.errors.title}</p>
+                )}
               </div>
 
               {/* Meta Format Controls */}
@@ -483,9 +519,37 @@ function AddMaterial() {
                       </div>
                     )
                   ) : (
-                    <div className="relative flex items-center">
-                      <Link2 className="absolute left-3.5 h-4 w-4 text-neutral-400" />
-                      <Input name="fileUrl" type="url" value={formik.values.fileUrl} onChange={handleUrlInputChange} placeholder="https://example.com/file.pdf" disabled={!formik.values.unitId} className="h-11 pl-10 pr-10 border-neutral-200 rounded-xl text-xs bg-white w-full" />
+                    <div className="space-y-1.5 flex-1">
+                      <div className="relative flex items-center">
+                        <Link2 className="absolute left-3.5 h-4 w-4 text-neutral-400" />
+                        <Input 
+                          name="fileUrl" 
+                          type="url" 
+                          value={formik.values.fileUrl} 
+                          onChange={handleUrlInputChange} 
+                          onBlur={(e) => {
+                            formik.handleBlur(e);
+                            let val = e.target.value.trim();
+                            if (val) {
+                              let formattedUrl = val;
+                              if (!/^https?:\/\//i.test(val)) {
+                                formattedUrl = `https://${val}`;
+                              }
+                              formik.setFieldValue("fileUrl", formattedUrl);
+                              updateUrlMetadata(formattedUrl);
+                            }
+                          }}
+                          placeholder="https://example.com/file.pdf" 
+                          disabled={!formik.values.unitId} 
+                          className={cn(
+                            "h-11 pl-10 pr-10 border-neutral-200 rounded-xl text-xs bg-white w-full",
+                            formik.touched.fileUrl && formik.errors.fileUrl && "border-rose-400 focus-visible:border-rose-500"
+                          )} 
+                        />
+                      </div>
+                      {formik.touched.fileUrl && formik.errors.fileUrl && (
+                        <p className="text-[11px] font-medium text-rose-500 mt-1">{formik.errors.fileUrl}</p>
+                      )}
                     </div>
                   )}
                 </div>

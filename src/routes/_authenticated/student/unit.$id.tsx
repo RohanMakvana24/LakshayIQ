@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword } from "lucide-react";
+import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword, X, Shield, Lock } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -77,10 +77,106 @@ function UnitPage() {
     title: string;
     url: string;
   }>({ type: null, title: "", url: "" });
+  const [isWindowBlurred, setIsWindowBlurred] = useState(false);
+  const [isFullscreenSecure, setIsFullscreenSecure] = useState(false);
 
   useEffect(() => {
     checkBookmark();
   }, [unit.id]);
+
+  // Security listener to block screenshots and handle blur state
+  useEffect(() => {
+    let focusInterval: NodeJS.Timeout | null = null;
+
+    const handleBlur = () => {
+      // Small timeout to allow activeElement to stabilize
+      setTimeout(() => {
+        if (
+          document.activeElement &&
+          document.activeElement.tagName === "IFRAME" &&
+          document.hasFocus()
+        ) {
+          // Focus is inside the iframe, and the window still has focus. This is safe.
+          return;
+        }
+        setIsWindowBlurred(true);
+      }, 100);
+    };
+
+    const handleFocus = () => {
+      setIsWindowBlurred(false);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        setIsWindowBlurred(true);
+      }
+    };
+
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // If a secure material is active, run a fast polling check to catch Alt-Tab,
+    // window minimization, and Snipping Tool activations when the focus is inside the iframe
+    if (activePreview.type === "material") {
+      focusInterval = setInterval(() => {
+        if (!document.hasFocus()) {
+          setIsWindowBlurred(true);
+        } else {
+          // If the parent document has focus, but we were blurred (e.g. back to iframe)
+          // ensure we keep it visible
+          if (document.activeElement && document.activeElement.tagName === "IFRAME") {
+            setIsWindowBlurred(false);
+          }
+        }
+      }, 250);
+    }
+
+    // Prevent shortcut keys & developer tools
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.ctrlKey && e.key === "p") || // Ctrl + P
+        (e.ctrlKey && e.key === "s") || // Ctrl + S
+        (e.ctrlKey && e.shiftKey && e.key === "I") || // Ctrl + Shift + I
+        (e.ctrlKey && e.shiftKey && e.key === "J") || // Ctrl + Shift + J
+        (e.ctrlKey && e.key === "u") || // Ctrl + U
+        e.key === "F12"
+      ) {
+        e.preventDefault();
+        toast.warning("🔒 Security policy: Screen operations and source inspections are disabled.");
+      }
+      
+      // Block PrintScreen keyup / keydown to discourage screenshot attempts
+      if (e.key === "PrintScreen") {
+        navigator.clipboard.writeText(""); // clear clipboard
+        e.preventDefault();
+        toast.error("🔒 Screenshots are disabled for security!");
+      }
+    };
+
+    const handleContextMenu = (e: MouseEvent) => {
+      // Allow standard clicks but restrict right click options on materials
+      if (activePreview.type === "material") {
+        e.preventDefault();
+        toast.warning("🔒 Right-click options are restricted in Secure Mode.");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("contextmenu", handleContextMenu);
+
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("contextmenu", handleContextMenu);
+      if (focusInterval) {
+        clearInterval(focusInterval);
+      }
+    };
+  }, [activePreview.type]);
 
   const checkBookmark = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -121,7 +217,17 @@ function UnitPage() {
 
   const formatEmbedUrl = (url: string, type: "video" | "material") => {
     if (!url) return "";
-    if (type === "material") return url;
+    if (type === "material") {
+      // Auto-convert standard private application notion.so URLs to public notion.site domain
+      if (url.includes("notion.so")) {
+        return url.replace(/(www\.)?notion\.so/i, "notion.site");
+      }
+      // Auto-convert standard Coda URLs to Coda embed format
+      if (url.includes("coda.io") && url.includes("/d/")) {
+        return url.replace("/d/", "/embed/");
+      }
+      return url;
+    }
     if (url.includes("youtube.com/watch?v=")) {
       return url.replace("youtube.com/watch?v=", "youtube.com/embed/");
     }
@@ -267,15 +373,6 @@ function UnitPage() {
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
-                          <a
-                            href={material.file_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors"
-                          >
-                            <Download className="h-3.5 w-3.5" />
-                          </a>
                           <ChevronRight className="h-4 w-4 text-slate-400" />
                         </div>
                       </Card>
@@ -342,34 +439,80 @@ function UnitPage() {
           {/* Right Column - Preview Panel */}
           <div className="lg:col-span-7">
             <div className="sticky top-6">
-              <Card className="overflow-hidden border border-slate-200 bg-white shadow-lg rounded-2xl flex flex-col h-[400px] md:h-[500px] lg:h-[550px]">
+              <Card className="overflow-hidden border border-slate-200 bg-white shadow-lg rounded-2xl flex flex-col h-[400px] md:h-[500px] lg:h-[550px] relative">
                 {activePreview.type && activePreview.url ? (
                   <>
                     <div className="bg-slate-100 px-4 py-3 flex items-center justify-between border-b border-slate-200 shrink-0">
                       <div className="flex items-center gap-2 truncate">
-                        <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
-                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Now Playing</span>
+                        <Sparkles className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          {activePreview.type === "material" ? "🔒 Secure View" : "Now Playing"}
+                        </span>
                         <span className="text-sm font-medium text-slate-800 truncate">{activePreview.title}</span>
                       </div>
-                      <a
-                        href={activePreview.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1"
-                      >
-                        <span>Open</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
+                      
+                      {activePreview.type === "material" ? (
+                        <div className="flex items-center gap-2">
+                          <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-200/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                            <Lock className="h-2.5 w-2.5" /> Security Mode
+                          </span>
+                          <Button
+                            onClick={() => setIsFullscreenSecure(true)}
+                            size="sm"
+                            className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2.5"
+                          >
+                            <Shield className="h-3 w-3" /> Maximize
+                          </Button>
+                        </div>
+                      ) : (
+                        <a
+                          href={activePreview.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1"
+                        >
+                          <span>Open</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
                     </div>
-                    <div className="flex-1 bg-slate-900 relative">
+                    <div className="flex-1 bg-slate-900 relative overflow-hidden">
                       <iframe
                         title={activePreview.title}
                         src={formatEmbedUrl(activePreview.url, activePreview.type)}
-                        className="w-full h-full border-0 absolute inset-0"
+                        className="w-full border-0 absolute"
+                        style={
+                          activePreview.type === "material" && activePreview.url.includes("notion")
+                            ? { top: "-50px", height: "calc(100% + 50px)", left: 0, right: 0 }
+                            : { top: 0, height: "100%", left: 0, right: 0 }
+                        }
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
+                        allowFullScreen={activePreview.type !== "material"}
                       />
+                      
+                      {/* Screenshot Shield in normal preview */}
+                      {isWindowBlurred && activePreview.type === "material" && (
+                        <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 transition-all duration-300">
+                          <div className="h-16 w-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4">
+                            <Sword className="h-7 w-7 text-rose-500 animate-pulse" />
+                          </div>
+                          <h3 className="text-white font-bold text-lg uppercase tracking-wider">🔒 Security Mode Active</h3>
+                          <p className="text-slate-400 text-xs max-w-sm mt-2 leading-relaxed">
+                            Screen capture and background viewing are restricted to protect intellectual property and academic integrity.
+                          </p>
+                        </div>
+                      )}
                     </div>
+                    {activePreview.type === "material" && activePreview.url.includes("notion") && (
+                      <div className="bg-emerald-50 border-t border-emerald-100/50 px-4 py-3 flex items-center justify-between gap-4 shrink-0 text-[10px] text-emerald-800 font-medium">
+                        <span className="flex items-center gap-1.5 leading-snug">
+                          <Sparkles className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0 animate-pulse" />
+                          <span>
+                            <strong>Notion Setup Tip:</strong> Ensure this page is published to the web in Notion (<strong>Share &gt; Publish &gt; Publish to web</strong>) for seamless viewing.
+                          </span>
+                        </span>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3 bg-gradient-to-br from-slate-50 to-slate-100">
@@ -389,6 +532,70 @@ function UnitPage() {
           </div>
         </div>
       </div>
+
+      {/* High Security Distraction-Free Fullscreen Viewer */}
+      {isFullscreenSecure && activePreview.type === "material" && (
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-950 flex flex-col w-screen h-screen select-none transition-all duration-300"
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          {/* Secure Header */}
+          <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                <Sparkles className="h-3 w-3 text-emerald-400 animate-pulse" /> Secure Reader Arena
+              </span>
+              <h2 className="text-sm font-bold text-white truncate max-w-xl">
+                {activePreview.title}
+              </h2>
+            </div>
+            
+            <Button
+              onClick={() => setIsFullscreenSecure(false)}
+              className="rounded-xl h-9 px-4 text-xs font-black bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all flex items-center gap-1.5 animate-pulse"
+            >
+              <X className="h-4 w-4" /> Close Secure View
+            </Button>
+          </div>
+
+          {/* Iframe Workspace */}
+          <div className="flex-1 bg-slate-900 relative overflow-hidden">
+            <iframe
+              title={activePreview.title}
+              src={formatEmbedUrl(activePreview.url, activePreview.type)}
+              className="w-full border-0 absolute"
+              style={
+                activePreview.type === "material" && activePreview.url.includes("notion")
+                  ? { top: "-50px", height: "calc(100% + 50px)", left: 0, right: 0 }
+                  : { top: 0, height: "100%", left: 0, right: 0 }
+              }
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+            
+            {/* Screenshot Shield in Fullscreen */}
+            {isWindowBlurred && (
+              <div className="absolute inset-0 z-[101] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6 transition-all duration-300">
+                <div className="h-20 w-20 rounded-full bg-rose-500/10 border border-rose-500/35 flex items-center justify-center mb-6 shadow-2xl">
+                  <Sword className="h-10 w-10 text-rose-500 animate-pulse" />
+                </div>
+                <h3 className="text-white font-black text-2xl uppercase tracking-widest">🔒 Security Mode Active</h3>
+                <p className="text-slate-400 text-sm max-w-md mt-3 leading-relaxed">
+                  Screen capture, background windows, and screenshot utility hooks have been intercepted to protect resource integrity.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Inject Print and Selection Safeguards */}
+      <style>{`
+        @media print {
+          body {
+            display: none !important;
+          }
+        }
+      `}</style>
 
     </div>
   );

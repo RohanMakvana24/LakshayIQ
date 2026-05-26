@@ -191,7 +191,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
         </header>
 
         {/* --- MAIN ROUTE VIEW --- */}
-        <main className="p-4 md:p-6 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+        <main className="p-4 md:p-6 max-w-[1600px] bg-gradient-to-br from-slate-50 via-white to-slate-100  mx-auto animate-in fade-in duration-500">
           {children}
         </main>
       </div>
