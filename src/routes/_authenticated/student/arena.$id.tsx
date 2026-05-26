@@ -7,7 +7,6 @@ import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import {
   HelpCircle,
   ArrowLeft,
-  BookOpen,
   Sparkles,
   Star,
   Trophy,
@@ -34,47 +33,55 @@ export const Route = createFileRoute("/_authenticated/student/arena/$id")({
   component: ArenaPage,
 });
 
-interface ArenaQuestion {
+interface DynamicQuestion {
   id: string;
-  question: string;
+  question_text: string;
+  category: string;
+  marks: number;
+  year: number | null;
+  question_file_url: string | null;
 }
-
-const QUESTION_BANK: Record<number, ArenaQuestion[]> = {
-  1: [
-    { id: "q1-1", question: "What is the primary objective of Encapsulation in OOP?" },
-    { id: "q1-2", question: "Define the term 'Abstract Class'." },
-  ],
-  2: [
-    { id: "q2-1", question: "Compare Method Overloading and Method Overriding with respect to polymorphism lookup." },
-    { id: "q2-2", question: "What is the 'super' keyword? Explain its two primary usages in inheritance structures." },
-  ],
-  3: [
-    { id: "q3-1", question: "Explain the concept of Dynamic Binding with a suitable OOP programming scenario." },
-    { id: "q3-2", question: "Why is Multiple Inheritance not supported in Java classes? How is it achieved?" },
-  ],
-  5: [
-    { id: "q5-1", question: "Elaborate on the Four Pillars of OOP with concrete real-world software engineering examples." },
-    { id: "q5-2", question: "Design an Abstract Schema representing University Course Structure using Object-Oriented principles." },
-  ],
-};
 
 function ArenaPage() {
   const { unit } = Route.useLoaderData();
   const [activeMarksTab, setActiveMarksTab] = useState<number>(1);
   const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null);
 
-  const activeQuestions = QUESTION_BANK[activeMarksTab] || [];
+  const dynamicQuestions = (unit.important_questions || []) as DynamicQuestion[];
 
-  const totalQuestions = Object.values(QUESTION_BANK).reduce(
+  // Group dynamic questions by marks: 1, 2, 3, 5
+  const groupedQuestions: Record<number, { id: string; question: string; category: string; year: number | null; fileUrl: string | null }[]> = {
+    1: [],
+    2: [],
+    3: [],
+    5: [],
+  };
+
+  dynamicQuestions.forEach((q) => {
+    const m = q.marks || 1;
+    if (groupedQuestions[m] !== undefined) {
+      groupedQuestions[m].push({
+        id: q.id,
+        question: q.question_text,
+        category: q.category,
+        year: q.year,
+        fileUrl: q.question_file_url,
+      });
+    }
+  });
+
+  const activeQuestions = groupedQuestions[activeMarksTab] || [];
+
+  const totalQuestions = Object.values(groupedQuestions).reduce(
     (acc, qs) => acc + qs.length,
     0
   );
 
   const marksOptions = [
-    { value: 1, label: "Beginner", emoji: "🌱", color: "emerald", icon: Star, questionCount: QUESTION_BANK[1]?.length || 0 },
-    { value: 2, label: "Intermediate", emoji: "⚡", color: "blue", icon: Zap, questionCount: QUESTION_BANK[2]?.length || 0 },
-    { value: 3, label: "Advanced", emoji: "🎯", color: "purple", icon: Target, questionCount: QUESTION_BANK[3]?.length || 0 },
-    { value: 5, label: "Expert", emoji: "🏆", color: "amber", icon: Trophy, questionCount: QUESTION_BANK[5]?.length || 0 },
+    { value: 1, label: "Beginner", emoji: "🌱", color: "emerald", icon: Star, questionCount: groupedQuestions[1]?.length || 0 },
+    { value: 2, label: "Intermediate", emoji: "⚡", color: "blue", icon: Zap, questionCount: groupedQuestions[2]?.length || 0 },
+    { value: 3, label: "Advanced", emoji: "🎯", color: "purple", icon: Target, questionCount: groupedQuestions[3]?.length || 0 },
+    { value: 5, label: "Expert", emoji: "🏆", color: "amber", icon: Trophy, questionCount: groupedQuestions[5]?.length || 0 },
   ];
 
   const getActiveColorStyles = (color: string, isActive: boolean) => {
@@ -184,14 +191,13 @@ function ArenaPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {marksOptions.map((option) => {
             const isActive = activeMarksTab === option.value;
-            const Icon = option.icon;
 
             return (
               <button
                 key={option.value}
                 onClick={() => setActiveMarksTab(option.value)}
                 className={cn(
-                  "relative p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-center group",
+                  "relative p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-center group cursor-pointer",
                   getBorderColorClass(option.color, isActive),
                   isActive ? "shadow-lg scale-[1.02]" : "bg-white hover:shadow-md"
                 )}
@@ -217,7 +223,7 @@ function ArenaPage() {
                   "text-base sm:text-lg font-bold",
                   getTextColorClass(option.color, isActive)
                 )}>
-                  {option.value}
+                  {option.value} {option.value === 1 ? "Mark" : "Marks"}
                 </h3>
 
                 <p className={cn(
@@ -282,18 +288,37 @@ function ArenaPage() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <Badge
                             variant="outline"
                             className={cn(
-                              "text-[8px] sm:text-[9px] font-mono",
+                              "text-[8px] sm:text-[9px] font-mono capitalize",
                               selectedQuestion === q.id
-                                ? "border-emerald-500 text-emerald-600"
-                                : "border-slate-200 text-slate-400"
+                                ? "border-emerald-500 text-emerald-600 bg-emerald-50/20"
+                                : "border-slate-200 text-slate-500 bg-slate-50"
                             )}
                           >
-                            {activeMarksTab} {activeMarksTab === 1 ? "Mark" : "Marks"}
+                            {q.category}
                           </Badge>
+                          {q.year && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[8px] sm:text-[9px] font-mono bg-slate-100 text-slate-600 hover:bg-slate-100"
+                            >
+                              Year {q.year}
+                            </Badge>
+                          )}
+                          {q.fileUrl && (
+                            <a 
+                              href={q.fileUrl} 
+                              target="_blank" 
+                              rel="noreferrer" 
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 text-[8px] sm:text-[9px] font-bold text-emerald-600 hover:text-emerald-700 underline"
+                            >
+                              View Attachment
+                            </a>
+                          )}
                         </div>
                         <p className="font-semibold text-slate-800 text-xs sm:text-sm leading-relaxed">
                           {q.question}
@@ -302,10 +327,13 @@ function ArenaPage() {
                         {selectedQuestion === q.id && (
                           <div className="mt-3 pt-3 border-t border-slate-100">
                             <div className="flex items-start gap-2">
-                              <Award className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />
+                              <Award className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
                               <p className="text-[10px] sm:text-xs text-slate-500">
-                                <span className="font-semibold text-emerald-600">Hint:</span>{" "}
-                                Think about core OOP concepts and their practical applications.
+                                <span className="font-semibold text-emerald-600">Context:</span>{" "}
+                                This question is marked as a <strong className="capitalize">{q.category}</strong> level query worth <strong>{activeMarksTab} {activeMarksTab === 1 ? "mark" : "marks"}</strong>. 
+                                {q.year ? ` It appeared in the examination for the year ${q.year}.` : ""}
+                                {q.fileUrl ? " Please open the attachment above for details." : ""}
+                                {" Make sure to review the core concepts thoroughly for optimal exam readiness."}
                               </p>
                             </div>
                           </div>
@@ -332,7 +360,7 @@ function ArenaPage() {
                 No questions available
               </h3>
               <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto px-4">
-                Questions for {activeMarksTab} marks haven't been added yet. Try selecting a different difficulty level.
+                Questions for {activeMarksTab} {activeMarksTab === 1 ? "mark" : "marks"} haven't been added yet. Try selecting a different level.
               </p>
             </div>
           )}

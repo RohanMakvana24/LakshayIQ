@@ -166,6 +166,7 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          marks: number
           question_file_url: string | null
           question_text: string
           unit_id: string
@@ -175,6 +176,7 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          marks?: number
           question_file_url?: string | null
           question_text: string
           unit_id: string
@@ -184,6 +186,7 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          marks?: number
           question_file_url?: string | null
           question_text?: string
           unit_id?: string
