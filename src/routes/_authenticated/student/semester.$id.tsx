@@ -3,8 +3,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { ArrowRight, BookMarked, GraduationCap, Layers, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  ArrowRight,
+  BookMarked,
+  GraduationCap,
+  Layers,
+  Sparkles,
+  Search,
+  SlidersHorizontal,
+  BookOpen,
+} from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
+import { useState, useMemo } from "react";
 
 export const Route = createFileRoute("/_authenticated/student/semester/$id")({
   loader: async ({ params }) => {
@@ -64,136 +75,219 @@ export const Route = createFileRoute("/_authenticated/student/semester/$id")({
 
 function SemesterPage() {
   const { semester, course, university, subjects } = Route.useLoaderData();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"name-asc" | "units-desc" | "units-asc">("name-asc");
+
+  const totalUnits = useMemo(() => {
+    return subjects.reduce((acc, s) => acc + (s.units?.length || 0), 0);
+  }, [subjects]);
+
+  const filteredAndSortedSubjects = useMemo(() => {
+    let result = [...subjects];
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (s) =>
+          s.name.toLowerCase().includes(query) ||
+          (s.subject_code && s.subject_code.toLowerCase().includes(query)) ||
+          (s.description && s.description.toLowerCase().includes(query))
+      );
+    }
+
+    if (sortBy === "name-asc") {
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === "units-desc") {
+      result.sort((a, b) => (b.units?.length || 0) - (a.units?.length || 0));
+    } else if (sortBy === "units-asc") {
+      result.sort((a, b) => (a.units?.length || 0) - (b.units?.length || 0));
+    }
+
+    return result;
+  }, [subjects, searchQuery, sortBy]);
 
   return (
-    <div className="space-y-8 p-1 antialiased animate-fade-in">
-      
-      <BreadcrumbNav
-        items={[
-          { label: "Dashboard", to: "/student" },
-          {
-            label: university.name,
-            to: "/student/university/$id",
-            params: { id: university.id },
-          },
-          {
-            label: course.slug || "Course",
-            to: "/student/course/$id",
-            params: { id: course.id },
-          },
-          { label: semester.title || `Semester ${semester.semester_number}` },
-        ]}
-      />
-
-      <header className="relative rounded-3xl border border-neutral-200/60 bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 p-6 md:p-8 text-white shadow-[0_15px_40px_rgba(0,0,0,0.12)] overflow-hidden group">
-        <div className="absolute -right-6 -bottom-6 text-neutral-800/20 pointer-events-none">
-          <GraduationCap className="h-48 w-48 stroke-[0.8]" />
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      <div className="w-full px-4 py-4 md:px-6 lg:px-8">
+        
+        {/* Breadcrumb */}
+        <div className="mb-4">
+          <BreadcrumbNav
+            items={[
+              { label: "Dashboard", to: "/student" },
+              { label: university.name, to: "/student/university/$id", params: { id: university.id } },
+              { label: course.slug || "Course", to: "/student/course/$id", params: { id: course.id } },
+              { label: semester.title || `Semester ${semester.semester_number}` },
+            ]}
+          />
         </div>
 
-        <div className="relative z-10 space-y-3">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold font-mono tracking-wider text-emerald-400 border border-white/5 backdrop-blur-md">
-            <Sparkles className="h-3 w-3" /> ACADEMIC TIMELINE
-          </div>
-          
-          <h1 className="font-display text-2xl md:text-3xl font-extrabold tracking-tight max-w-4xl leading-tight">
-            {semester.title || `Semester ${semester.semester_number}`}
-          </h1>
+        {/* Hero Section */}
+        <div className="relative rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden mb-6 shadow-lg">
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute top-0 -right-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-2xl" />
+          <div className="absolute bottom-0 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl" />
+          <div className="absolute inset-0 opacity-10 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.1)_75%)] bg-[length:16px_16px]" />
 
-          <p className="text-xs md:text-sm text-neutral-400 font-medium max-w-2xl leading-relaxed">
-            Curriculum mapping framework for <span className="text-white font-semibold">{course.name}</span>. Select any core module below to extract dynamic units, videos, and study papers.
+          <div className="relative z-10 px-5 py-5 md:px-7 md:py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex-1 space-y-2">
+                <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 rounded-full px-2.5 py-0.5 border border-emerald-500/30">
+                  <Sparkles className="h-3 w-3 text-emerald-300" />
+                  <span className="text-[10px] font-semibold tracking-wide text-emerald-200">
+                    ACADEMIC TIMELINE
+                  </span>
+                </div>
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">
+                  {semester.title || `Semester ${semester.semester_number}`}
+                </h1>
+                <p className="text-slate-300 text-xs md:text-sm max-w-2xl">
+                  Curriculum mapping framework for <span className="text-white font-semibold">{course.name}</span>. Select any core module below to extract dynamic units, videos, and study papers.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 shrink-0">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/20 flex items-center gap-1.5">
+                  <BookOpen className="h-3.5 w-3.5 text-emerald-300" />
+                  <span className="text-xs font-medium text-white">{subjects.length} Subjects</span>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/20 flex items-center gap-1.5">
+                  <Layers className="h-3.5 w-3.5 text-emerald-300" />
+                  <span className="text-xs font-medium text-white">{totalUnits} Units</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Controls Bar */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex flex-col sm:flex-row items-center gap-3 mb-5">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Search subjects by name, code, or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 border-slate-200 rounded-lg text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5">
+              <SlidersHorizontal className="h-3 w-3 text-slate-500" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-transparent text-xs font-medium text-slate-600 focus:outline-none"
+              >
+                <option value="name-asc">Alphabetical (A-Z)</option>
+                <option value="units-desc">Units: High to Low</option>
+                <option value="units-asc">Units: Low to High</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Info */}
+        <div className="flex justify-between items-center mb-3">
+          <p className="text-xs text-slate-500">
+            Showing {filteredAndSortedSubjects.length} of {subjects.length} subjects
           </p>
-
-          <div className="pt-1">
-            <span className="inline-flex items-center font-mono text-xs font-bold bg-black/30 border border-white/5 px-3 py-1 rounded-xl backdrop-blur-sm text-neutral-300">
-              {subjects.length} Core Registered {subjects.length === 1 ? "Subject" : "Subjects"}
-            </span>
-          </div>
-        </div>
-      </header>
-
-      <section className="space-y-5">
-        <div className="border-b border-neutral-100 pb-3">
-          <h2 className="font-display text-xl font-bold tracking-tight text-neutral-900">Core Subjects</h2>
-          <p className="text-xs text-neutral-400 mt-0.5">Explore indexing, unit notes, exam resources, and videos for each subject module</p>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="text-xs text-emerald-600 hover:text-emerald-700"
+            >
+              Clear search
+            </button>
+          )}
         </div>
 
-        {subjects.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-neutral-200 rounded-2xl bg-neutral-50/50">
-            <BookMarked className="h-8 w-8 text-neutral-300 mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-neutral-500">No subjects cataloged</h3>
-            <p className="text-xs text-neutral-400 mt-1">Modules for this semester branch haven't been mapped into the schema framework yet.</p>
+        {/* Subjects Grid - Icon based, no cover images */}
+        {filteredAndSortedSubjects.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+            <div className="inline-flex p-2.5 bg-slate-100 rounded-full mb-2">
+              <BookMarked className="h-5 w-5 text-slate-400" />
+            </div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-0.5">
+              No subjects match your criteria
+            </h3>
+            <p className="text-xs text-slate-500">
+              Try adjusting your search terms or filters.
+            </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {subjects.map((s: any) => {
-              const unitsCount = Array.isArray(s.units) ? s.units.length : 0;
-
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredAndSortedSubjects.map((subject) => {
+              const unitsCount = subject.units?.length || 0;
               return (
-                <Link key={s.id} to="/student/subject/$id" params={{ id: s.id }} className="block group h-full">
-                  <Card className="h-full border border-neutral-200/80 bg-white p-5 rounded-2xl shadow-[0_4px_15px_-3px_rgba(0,0,0,0.01)] transition-all duration-300 hover:-translate-y-1 hover:border-neutral-900 hover:shadow-[0_12px_25px_-6px_rgba(0,0,0,0.05)] flex flex-col justify-between overflow-hidden relative">
-                    
-                    <div>
-                      <div className="flex items-start justify-between gap-4">
-                        {/* 🎯 SUBJECT LOGO FRAME (DYNAMICS IMAGES FROM URL WITH FALLBACK ICON) */}
-                        {s.thumbnail_url ? (
-                          <div className="h-12 w-12 shrink-0 rounded-xl border border-neutral-100 bg-neutral-50 p-1 flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105 shadow-sm">
-                            <img 
-                              src={s.thumbnail_url} 
-                              alt={s.name}
-                              className="h-full w-full object-contain rounded-lg"
-                              loading="lazy"
+                <Link
+                  key={subject.id}
+                  to="/student/subject/$id"
+                  params={{ id: subject.id }}
+                  className="group block"
+                >
+                  <Card className="h-full border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 overflow-hidden bg-white">
+                    <div className="p-4">
+                      {/* Top row: Icon + Subject Code */}
+                      <div className="flex items-start justify-between gap-3">
+                        {/* Icon (thumbnail_url as small icon, not cover) */}
+                        <div className="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 transition-transform group-hover:scale-105">
+                          {subject.thumbnail_url ? (
+                            <img
+                              src={subject.thumbnail_url}
+                              alt={subject.name}
+                              className="h-full w-full object-cover"
                               onError={(e) => {
-                                // જો ક્યારેય ઈમેજ લિંક બ્રોકન હોય તો આ આઈકોન પ્લેસહોલ્ડર બની જશે
                                 e.currentTarget.style.display = "none";
                                 const parent = e.currentTarget.parentElement;
                                 if (parent) {
-                                  parent.className = "grid h-10 w-10 place-items-center rounded-xl bg-neutral-900 text-white shadow-sm";
-                                  parent.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers"><path d="m12 3-10 5 10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>';
+                                  parent.className =
+                                    "h-12 w-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center";
+                                  const icon = document.createElement("div");
+                                  icon.innerHTML =
+                                    '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M2 13l10 5 10-5"/><path d="M2 18l10 5 10-5"/></svg>';
+                                  parent.appendChild(icon);
                                 }
                               }}
                             />
-                          </div>
-                        ) : (
-                          <div className="grid h-10 w-10 place-items-center rounded-xl bg-neutral-900 text-white shadow-sm transition-transform duration-300 group-hover:scale-105">
-                            <Layers className="h-4 w-4 stroke-[2.2]" />
-                          </div>
-                        )}
-                        
-                        {s.subject_code && (
-                          <Badge variant="secondary" className="text-[10px] font-mono font-bold uppercase tracking-wider bg-neutral-50 border border-neutral-200 rounded-md text-neutral-500">
-                            {s.subject_code}
+                          ) : (
+                            <Layers className="h-5 w-5 text-slate-500" />
+                          )}
+                        </div>
+                        {subject.subject_code && (
+                          <Badge variant="secondary" className="text-[10px] font-mono bg-slate-100 text-slate-600 border-slate-200">
+                            {subject.subject_code}
                           </Badge>
                         )}
                       </div>
 
-                      <div className="mt-4 space-y-1.5">
-                        <h3 className="font-display text-base font-bold text-neutral-900 group-hover:text-neutral-950 transition-colors line-clamp-2 leading-tight">
-                          {s.name}
+                      {/* Content */}
+                      <div className="mt-3 space-y-1.5">
+                        <h3 className="font-semibold text-slate-800 group-hover:text-emerald-600 transition-colors text-sm line-clamp-2">
+                          {subject.name}
                         </h3>
-                        <p className="text-xs text-neutral-400 font-medium line-clamp-2 leading-relaxed">
-                          {s.description || "Access tailored core syllabus content, quick-review PDFs, and high-priority examination materials."}
+                        <p className="text-xs text-slate-500 line-clamp-2">
+                          {subject.description ||
+                            "Access tailored core syllabus content, quick-review PDFs, and high-priority examination materials."}
                         </p>
                       </div>
-                    </div>
 
-                    <div className="mt-6 flex items-center justify-between border-t border-neutral-100 pt-3 text-xs font-medium">
-                      <p className="font-mono text-[11px] text-neutral-500 bg-neutral-50 border border-neutral-200/40 px-2 py-0.5 rounded-md">
-                        {unitsCount} {unitsCount === 1 ? "Unit Mapped" : "Units Mapped"}
-                      </p>
-                      
-                      <div className="h-7 w-7 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center text-neutral-900 group-hover:bg-neutral-900 group-hover:text-white transition-all duration-300 shadow-sm">
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 stroke-[2.5]" />
+                      {/* Footer */}
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <BookOpen className="h-3 w-3" />
+                          <span>{unitsCount} {unitsCount === 1 ? "Unit" : "Units"}</span>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                       </div>
                     </div>
-
                   </Card>
                 </Link>
               );
             })}
           </div>
         )}
-      </section>
-
+      </div>
     </div>
   );
 }

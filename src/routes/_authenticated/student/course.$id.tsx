@@ -3,13 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { ArrowRight, Clock, GraduationCap, Layers, Sparkles } from "lucide-react";
+import { ArrowRight, Clock, GraduationCap, Layers, Sparkles, BookOpen, Star, Zap } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 
-// 📚 TanStack Router Loader Engine: કોર્સ, યુનિવર્સિટી અને સેમેસ્ટરનો ડેટાબેઝ સિંક
 export const Route = createFileRoute("/_authenticated/student/course/$id")({
   loader: async ({ params }) => {
-    // 1. કોર્સની બેઝિક વિગતો મેળવો
     const { data: course, error: courseError } = await supabase
       .from("courses")
       .select("id, university_id, name, slug, duration, total_semesters, description")
@@ -20,14 +18,12 @@ export const Route = createFileRoute("/_authenticated/student/course/$id")({
       throw notFound();
     }
 
-    // 2. આ કોર્સ સાથે લિંક્ડ યુનિવર્સિટીનો ડેટા મેળવો (બ્રેડક્રમ્પ અને ટાઇટલ માટે)
     const { data: university } = await supabase
       .from("universities")
       .select("id, name, slug")
       .eq("id", course.university_id)
       .single();
 
-    // 3. આ કોર્સના તમામ સેમેસ્ટર્સ લોડ કરો અને સાથે સબજેક્ટ્સનો કાઉન્ટ લાવવા રિલેશન ક્વેરી સેટ કરો
     const { data: semesters, error: semError } = await supabase
       .from("semesters")
       .select(`
@@ -54,120 +50,179 @@ export const Route = createFileRoute("/_authenticated/student/course/$id")({
 });
 
 function CoursePage() {
-  // Loader માંથી ડાયનેમિકલી હાઈડ્રેટ થયેલો સાચો ડેટા એક્સટ્રેક્ટ કરો
   const { course, university, semesters } = Route.useLoaderData();
 
-  return (
-    <div className="space-y-6 md:space-y-8 p-4 md:p-1 antialiased animate-fade-in">
-      
-      {/* 🗺️ PRECISE BREADCRUMB NAVIGATION */}
-      <div className="overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
-        <BreadcrumbNav 
-          items={[
-            { label: "Dashboard", to: "/student" },
-            { 
-              label: university.name, 
-              to: "/student/university/$id", 
-              params: { id: university.id } 
-            },
-            { label: course.slug || "Course" },
-          ]} 
-        />
-      </div>
+  // Calculate total subjects across all semesters for additional stats
+  const totalSubjects = semesters.reduce((acc, s) => acc + (s.subjects?.length || 0), 0);
 
-      {/* 🌌 CINEMATIC MODERN COURSE HEADER */}
-      <header className="relative rounded-2xl md:rounded-3xl border border-neutral-200/60 bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 p-5 md:p-8 text-white shadow-[0_15px_40px_rgba(0,0,0,0.12)] overflow-hidden group">
-        <div className="absolute -right-6 -bottom-6 text-neutral-800/20 pointer-events-none hidden sm:block">
-          <Layers className="h-48 w-48 stroke-[0.8]" />
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      <div className="w-full px-4 py-4 md:px-6 lg:px-8">
+        
+        {/* Breadcrumb - Compact */}
+        <div className="mb-4">
+          <BreadcrumbNav 
+            items={[
+              { label: "Dashboard", to: "/student" },
+              { label: university.name, to: "/student/university/$id", params: { id: university.id } },
+              { label: course.slug || "Course" },
+            ]} 
+          />
         </div>
 
-        <div className="relative z-10 space-y-3.5">
-          <div>
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold font-mono tracking-wider text-emerald-400 border border-white/5 backdrop-blur-md">
-              <Sparkles className="h-3 w-3" /> {course.slug?.toUpperCase() || "DEGREE PROGRAM"}
+        {/* Hero Section - Compact & Modern with Unique Gradient Accent */}
+        <div className="relative rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden mb-6 shadow-lg">
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute top-0 -right-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-2xl" />
+          <div className="absolute bottom-0 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl" />
+          {/* Unique decorative diagonal lines */}
+          <div className="absolute inset-0 opacity-10 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.1)_75%)] bg-[length:16px_16px]" />
+
+          <div className="relative z-10 px-5 py-5 md:px-7 md:py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              {/* Left Content */}
+              <div className="flex-1 space-y-2">
+                <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 rounded-full px-2.5 py-0.5 border border-emerald-500/30">
+                  <Sparkles className="h-3 w-3 text-emerald-300" />
+                  <span className="text-[10px] font-semibold tracking-wide text-emerald-200">
+                    {course.slug?.toUpperCase() || "DEGREE PROGRAM"}
+                  </span>
+                </div>
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">
+                  {course.name}
+                </h1>
+                <p className="text-slate-300 text-xs md:text-sm max-w-2xl line-clamp-2">
+                  {course.description || "Explore curated modular semesters, core textbook topics, and structured examination blueprints."}
+                </p>
+              </div>
+
+              {/* Right: Stats Badges */}
+              <div className="flex flex-wrap gap-2 shrink-0">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/20 flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-emerald-300" />
+                  <span className="text-xs font-medium text-white">{course.duration || "3 Years"}</span>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/20 flex items-center gap-1.5">
+                  <GraduationCap className="h-3.5 w-3.5 text-emerald-300" />
+                  <span className="text-xs font-medium text-white">{course.total_semesters} Semesters</span>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/20 flex items-center gap-1.5">
+                  <BookOpen className="h-3.5 w-3.5 text-emerald-300" />
+                  <span className="text-xs font-medium text-white">{totalSubjects} Subjects</span>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <h1 className="font-display text-xl md:text-3xl font-extrabold tracking-tight max-w-4xl leading-tight">
-            {course.name}
-          </h1>
+        </div>
 
-          <p className="text-xs md:text-sm text-neutral-400 font-medium max-w-2xl leading-relaxed">
-            {course.description || "Explore curated modular semesters, core textbook topics, and structured examination blueprints."}
-          </p>
-
-          {/* Core Analytics Badges Line */}
-          <div className="pt-1 flex flex-wrap items-center gap-3 text-[11px] md:text-xs font-mono text-neutral-300">
-            <span className="flex items-center gap-1.5 bg-black/30 border border-white/5 px-2.5 py-1 rounded-lg backdrop-blur-sm">
-              <Clock className="h-3.5 w-3.5 text-neutral-400" /> {course.duration || "3 Years"}
-            </span>
-            <span className="flex items-center gap-1.5 bg-black/30 border border-white/5 px-2.5 py-1 rounded-lg backdrop-blur-sm">
-              <GraduationCap className="h-3.5 w-3.5 text-neutral-400" /> {course.total_semesters} Semesters
-            </span>
+        {/* Section Header */}
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <Layers className="h-5 w-5 text-emerald-500" />
+              Academic Semesters
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">Step through the timeline to unlock indexed subjects and study materials</p>
           </div>
-        </div>
-      </header>
-
-      {/* 🏛️ SEMESTERS TIMELINE BENTO GRID */}
-      <section className="space-y-5">
-        <div className="border-b border-neutral-100 pb-3">
-          <h2 className="font-display text-lg md:text-xl font-bold tracking-tight text-neutral-900">Academic Semesters</h2>
-          <p className="text-xs text-neutral-400 mt-0.5">Step through the timeline to unlock indexed subjects and study materials</p>
+          <Badge variant="outline" className="text-xs bg-white">
+            {semesters.length} Semesters
+          </Badge>
         </div>
 
+        {/* Semesters Grid - Unique Hover Effects */}
         {semesters.length === 0 ? (
-          /* Empty Database Fallback Frame */
-          <div className="text-center py-16 border border-dashed border-neutral-200 rounded-2xl bg-neutral-50/50 p-4">
-            <Layers className="h-8 w-8 text-neutral-300 mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-neutral-500">No semesters mapped</h3>
-            <p className="text-xs text-neutral-400 mt-1">Curriculum structures for this course model are pending administrative validation.</p>
+          <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+            <div className="inline-flex p-2.5 bg-slate-100 rounded-full mb-2">
+              <Layers className="h-5 w-5 text-slate-400" />
+            </div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-0.5">No semesters mapped</h3>
+            <p className="text-xs text-slate-500">Curriculum structures are pending administrative validation.</p>
           </div>
         ) : (
-          /* Primary Responsive Bento Cards Matrix Mapping */
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {semesters.map((s: any) => {
-              const subjectsCount = Array.isArray(s.subjects) ? s.subjects.length : 0;
-
+            {semesters.map((semester, idx) => {
+              const subjectsCount = semester.subjects?.length || 0;
+              // Alternate gradient for visual variety
+              const gradientClass = idx % 2 === 0 
+                ? "from-slate-50 to-white" 
+                : "from-white to-slate-50";
+              
               return (
-                <Link key={s.id} to="/student/semester/$id" params={{ id: s.id }} className="block group">
-                  <Card className="h-full border border-neutral-200/80 bg-white p-4 md:p-5 rounded-2xl shadow-[0_4px_15px_-3px_rgba(0,0,0,0.01)] transition-all duration-300 hover:-translate-y-1 hover:border-neutral-900 hover:shadow-[0_12px_25px_-6px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row items-start sm:items-center gap-4 overflow-hidden relative">
+                <Link
+                  key={semester.id}
+                  to="/student/semester/$id"
+                  params={{ id: semester.id }}
+                  className="group block"
+                >
+                  <Card className={`h-full border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-gradient-to-br ${gradientClass}`}>
+                    <div className="p-4 flex items-start gap-3 relative">
+                      {/* Semester Number - Unique Design */}
+                      <div className="relative">
+                        <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300">
+                          <span className="text-lg font-bold text-white">{semester.semester_number}</span>
+                        </div>
+                        {/* Decorative dot */}
+                        <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-slate-800 group-hover:text-emerald-600 transition-colors text-sm line-clamp-1">
+                          {semester.title || `Semester ${semester.semester_number}`}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex items-center gap-1 text-xs text-slate-500">
+                            <BookOpen className="h-3 w-3" />
+                            <span>{subjectsCount} {subjectsCount === 1 ? "Subject" : "Subjects"}</span>
+                          </div>
+                          {subjectsCount > 5 && (
+                            <div className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                              <Zap className="h-2.5 w-2.5" />
+                              <span>Popular</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Action Arrow with unique hover animation */}
+                      <div className="h-7 w-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 transition-all duration-300 shrink-0">
+                        <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                    </div>
                     
-                    {/* Top Row for Mobile (Index + Arrow Alignment) */}
-                    <div className="flex sm:contents items-center justify-between w-full">
-                      {/* Dark Minimalistic Index Block */}
-                      <div className="grid h-12 w-12 md:h-14 md:w-14 shrink-0 place-items-center rounded-xl bg-neutral-900 text-lg md:text-xl font-bold font-mono text-white shadow-sm transition-transform duration-300 group-hover:scale-105">
-                        {s.semester_number}
-                      </div>
-
-                      {/* Action Arrow (Only Visible on Mobile in this flex block) */}
-                      <div className="h-7 w-7 rounded-xl bg-neutral-50 border border-neutral-100 flex sm:hidden items-center justify-center text-neutral-900 group-hover:bg-neutral-900 group-hover:text-white transition-all duration-300 shadow-sm">
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 stroke-[2.5]" />
-                      </div>
+                    {/* Unique progress bar at bottom (visual flair) */}
+                    <div className="h-0.5 bg-slate-100 w-full">
+                      <div 
+                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500 group-hover:w-full" 
+                        style={{ width: `${(subjectsCount / (Math.max(...semesters.map(s => s.subjects?.length || 0), 1))) * 100}%` }}
+                      />
                     </div>
-
-                    {/* Metadata Content Framework Inside Block */}
-                    <div className="flex-1 min-w-0 space-y-1 w-full">
-                      <h3 className="font-display text-base font-bold text-neutral-900 group-hover:text-neutral-950 transition-colors truncate">
-                        {s.title || `Semester ${s.semester_number}`}
-                      </h3>
-                      <p className="text-xs font-mono font-medium text-neutral-400 flex items-center gap-1">
-                        <span>{subjectsCount} Core {subjectsCount === 1 ? "Subject" : "Subjects"}</span>
-                      </p>
-                    </div>
-
-                    {/* Action Arrow Wrapper Frame (Hidden on Mobile, Visible on Desktop) */}
-                    <div className="hidden sm:flex h-7 w-7 rounded-xl bg-neutral-50 border border-neutral-100 items-center justify-center text-neutral-900 group-hover:bg-neutral-900 group-hover:text-white transition-all duration-300 shadow-sm shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 stroke-[2.5]" />
-                    </div>
-
                   </Card>
                 </Link>
               );
             })}
           </div>
         )}
-      </section>
 
+        {/* Additional Unique Section: Quick Stats or Featured */}
+        {semesters.length > 0 && (
+          <div className="mt-8 pt-4 border-t border-slate-200">
+            <div className="bg-white/50 rounded-xl p-4 border border-slate-200 flex flex-wrap justify-between items-center gap-3">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <Star className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Total Learning Resources</p>
+                  <p className="text-sm font-bold text-slate-800">{totalSubjects} Subjects Across {semesters.length} Semesters</p>
+                </div>
+              </div>
+              <div className="text-xs text-slate-400">
+                Last updated: {new Date().toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

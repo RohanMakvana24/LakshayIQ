@@ -68,7 +68,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
       {/* --- DESKTOP SIDEBAR --- */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden md:flex md:flex-col bg-white border-r border-zinc-100/80 transition-all duration-300 ease-in-out p-4 justify-between shadow-[1px_0_10px_rgba(0,0,0,0.005)]",
+          "fixed inset-y-0 left-0 z-30 hidden md:flex md:flex-col bg-white border-r border-zinc-100/80 transition-[width] duration-300 ease-in-out will-change-[width] p-4 justify-between shadow-[1px_0_10px_rgba(0,0,0,0.005)]",
           isCollapsed ? "w-20" : "w-66"
         )}
       >
@@ -103,7 +103,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
       </aside>
 
       {/* --- MAIN CONTENT BAR --- */}
-      <div className={cn("transition-all duration-300 ease-in-out", isCollapsed ? "md:pl-20" : "md:pl-66")}>
+      <div className={cn("transition-[padding-left] duration-300 ease-in-out will-change-[padding-left]", isCollapsed ? "md:pl-20" : "md:pl-66")}>
 
         {/* Header Bar */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-zinc-100/60 bg-white/80 px-4 md:px-8 backdrop-blur-md">
@@ -169,7 +169,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
         </header>
 
         {/* --- MAIN ROUTE VIEW --- */}
-        <main className="p-1 md:p-2 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+        <main className="p-4 md:p-6 max-w-[1600px] mx-auto animate-in fade-in duration-500">
           {children}
         </main>
       </div>
