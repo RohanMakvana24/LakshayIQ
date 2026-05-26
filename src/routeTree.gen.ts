@@ -37,6 +37,7 @@ import { Route as AuthenticatedStudentUnitIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedStudentSubjectIdRouteImport } from './routes/_authenticated/student/subject.$id'
 import { Route as AuthenticatedStudentSemesterIdRouteImport } from './routes/_authenticated/student/semester.$id'
 import { Route as AuthenticatedStudentCourseIdRouteImport } from './routes/_authenticated/student/course.$id'
+import { Route as AuthenticatedStudentArenaIdRouteImport } from './routes/_authenticated/student/arena.$id'
 import { Route as AuthenticatedAdminVideosAddRouteImport } from './routes/_authenticated/admin/videos.add'
 import { Route as AuthenticatedAdminUniversitiesAddRouteImport } from './routes/_authenticated/admin/universities.add'
 import { Route as AuthenticatedAdminUnitsAddRouteImport } from './routes/_authenticated/admin/units.add'
@@ -207,6 +208,12 @@ const AuthenticatedStudentCourseIdRoute =
     path: '/course/$id',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
+const AuthenticatedStudentArenaIdRoute =
+  AuthenticatedStudentArenaIdRouteImport.update({
+    id: '/arena/$id',
+    path: '/arena/$id',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
 const AuthenticatedAdminVideosAddRoute =
   AuthenticatedAdminVideosAddRouteImport.update({
     id: '/videos/add',
@@ -291,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/admin/units/add': typeof AuthenticatedAdminUnitsAddRoute
   '/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
   '/admin/videos/add': typeof AuthenticatedAdminVideosAddRoute
+  '/student/arena/$id': typeof AuthenticatedStudentArenaIdRoute
   '/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
   '/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
@@ -328,6 +336,7 @@ export interface FileRoutesByTo {
   '/admin/units/add': typeof AuthenticatedAdminUnitsAddRoute
   '/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
   '/admin/videos/add': typeof AuthenticatedAdminVideosAddRoute
+  '/student/arena/$id': typeof AuthenticatedStudentArenaIdRoute
   '/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
   '/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
@@ -369,6 +378,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/units/add': typeof AuthenticatedAdminUnitsAddRoute
   '/_authenticated/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
   '/_authenticated/admin/videos/add': typeof AuthenticatedAdminVideosAddRoute
+  '/_authenticated/student/arena/$id': typeof AuthenticatedStudentArenaIdRoute
   '/_authenticated/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
   '/_authenticated/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/_authenticated/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/admin/units/add'
     | '/admin/universities/add'
     | '/admin/videos/add'
+    | '/student/arena/$id'
     | '/student/course/$id'
     | '/student/semester/$id'
     | '/student/subject/$id'
@@ -447,6 +458,7 @@ export interface FileRouteTypes {
     | '/admin/units/add'
     | '/admin/universities/add'
     | '/admin/videos/add'
+    | '/student/arena/$id'
     | '/student/course/$id'
     | '/student/semester/$id'
     | '/student/subject/$id'
@@ -487,6 +499,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/units/add'
     | '/_authenticated/admin/universities/add'
     | '/_authenticated/admin/videos/add'
+    | '/_authenticated/student/arena/$id'
     | '/_authenticated/student/course/$id'
     | '/_authenticated/student/semester/$id'
     | '/_authenticated/student/subject/$id'
@@ -709,6 +722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentCourseIdRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
+    '/_authenticated/student/arena/$id': {
+      id: '/_authenticated/student/arena/$id'
+      path: '/arena/$id'
+      fullPath: '/student/arena/$id'
+      preLoaderRoute: typeof AuthenticatedStudentArenaIdRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
     '/_authenticated/admin/videos/add': {
       id: '/_authenticated/admin/videos/add'
       path: '/videos/add'
@@ -845,6 +865,7 @@ interface AuthenticatedStudentRouteChildren {
   AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
   AuthenticatedStudentSearchRoute: typeof AuthenticatedStudentSearchRoute
   AuthenticatedStudentIndexRoute: typeof AuthenticatedStudentIndexRoute
+  AuthenticatedStudentArenaIdRoute: typeof AuthenticatedStudentArenaIdRoute
   AuthenticatedStudentCourseIdRoute: typeof AuthenticatedStudentCourseIdRoute
   AuthenticatedStudentSemesterIdRoute: typeof AuthenticatedStudentSemesterIdRoute
   AuthenticatedStudentSubjectIdRoute: typeof AuthenticatedStudentSubjectIdRoute
@@ -857,6 +878,7 @@ const AuthenticatedStudentRouteChildren: AuthenticatedStudentRouteChildren = {
   AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
   AuthenticatedStudentSearchRoute: AuthenticatedStudentSearchRoute,
   AuthenticatedStudentIndexRoute: AuthenticatedStudentIndexRoute,
+  AuthenticatedStudentArenaIdRoute: AuthenticatedStudentArenaIdRoute,
   AuthenticatedStudentCourseIdRoute: AuthenticatedStudentCourseIdRoute,
   AuthenticatedStudentSemesterIdRoute: AuthenticatedStudentSemesterIdRoute,
   AuthenticatedStudentSubjectIdRoute: AuthenticatedStudentSubjectIdRoute,

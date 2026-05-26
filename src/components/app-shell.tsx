@@ -21,6 +21,14 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchVal, setSearchVal] = useState("");
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchVal.trim()) {
+      nav({ to: "/student/search", search: { q: searchVal.trim() } });
+    }
+  };
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {};
@@ -57,6 +65,18 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
             <BrandHeader variant={variant} isCollapsed={false} />
           </div>
 
+          {variant === "student" && (
+            <form onSubmit={(e) => { e.preventDefault(); handleSearchSubmit(e); setMobileMenuOpen(false); }} className="my-2 relative group px-1 mb-4 animate-in fade-in duration-200">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-700 transition-colors" />
+              <Input
+                placeholder="Search courses, units..."
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                className="pl-9 h-9 bg-zinc-50 border-none focus-visible:ring-1 focus-visible:ring-zinc-200 focus-visible:bg-white rounded-xl text-xs placeholder:text-zinc-400 font-medium transition-all"
+              />
+            </form>
+          )}
+
           <nav className="flex-1 space-y-1 overflow-y-auto py-2">
             {renderNavItems({ items, pathname, openGroups, setOpenGroups, isCollapsed: false, setMobileMenuOpen })}
           </nav>
@@ -85,13 +105,15 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
           </div>
 
           {!isCollapsed && variant === "student" && (
-            <div className="my-2 relative group px-1 animate-in fade-in duration-300">
+            <form onSubmit={handleSearchSubmit} className="my-2 relative group px-1 animate-in fade-in duration-300">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-700 transition-colors" />
               <Input
-                placeholder="Search device"
+                placeholder="Search courses, units..."
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
                 className="pl-9 h-9 bg-zinc-50 border-none focus-visible:ring-1 focus-visible:ring-zinc-200 focus-visible:bg-white rounded-xl text-xs placeholder:text-zinc-400 font-medium transition-all"
               />
-            </div>
+            </form>
           )}
 
           <nav className="flex-1 space-y-1 overflow-y-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

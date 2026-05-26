@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight } from "lucide-react";
+import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -21,29 +21,42 @@ export const Route = createFileRoute("/_authenticated/student/unit/$id")({
     if (error || !unit) throw notFound();
 
     // Also fetch semester, course, university for breadcrumb
-    const { data: semester } = await supabase
-      .from("semesters")
-      .select("id, semester_number, title, course_id")
-      .eq("id", unit.semester_id)
-      .single();
-
+    let semester = null;
     let course = null;
     let university = null;
 
-    if (semester) {
-      const { data: c } = await supabase
-        .from("courses")
-        .select("id, name, slug, university_id")
-        .eq("id", semester.course_id)
+    if (unit.subject_id) {
+      const { data: subject } = await supabase
+        .from("subjects")
+        .select("id, semester_id")
+        .eq("id", unit.subject_id)
         .single();
-      course = c;
-      if (course) {
-        const { data: u } = await supabase
-          .from("universities")
-          .select("id, name, slug")
-          .eq("id", course.university_id)
+
+      if (subject?.semester_id) {
+        const { data: sem } = await supabase
+          .from("semesters")
+          .select("id, semester_number, title, course_id")
+          .eq("id", subject.semester_id)
           .single();
-        university = u;
+        semester = sem;
+
+        if (semester?.course_id) {
+          const { data: c } = await supabase
+            .from("courses")
+            .select("id, name, slug, university_id")
+            .eq("id", semester.course_id)
+            .single();
+          course = c;
+
+          if (course?.university_id) {
+            const { data: u } = await supabase
+              .from("universities")
+              .select("id, name, slug")
+              .eq("id", course.university_id)
+              .single();
+            university = u;
+          }
+        }
       }
     }
 
@@ -56,6 +69,7 @@ export const Route = createFileRoute("/_authenticated/student/unit/$id")({
 
 function UnitPage() {
   const { unit, semester, course, university } = Route.useLoaderData();
+  
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkId, setBookmarkId] = useState<string | null>(null);
   const [activePreview, setActivePreview] = useState<{
@@ -184,7 +198,7 @@ function UnitPage() {
               </div>
               {unit.unit_videos?.length > 0 ? (
                 <div className="grid gap-2">
-                  {unit.unit_videos.map((video) => {
+                  {unit.unit_videos.map((video: any) => {
                     const isActive = activePreview.type === "video" && activePreview.title === video.title;
                     return (
                       <Card
@@ -229,7 +243,7 @@ function UnitPage() {
               </div>
               {unit.unit_materials?.length > 0 ? (
                 <div className="grid gap-2">
-                  {unit.unit_materials.map((material) => {
+                  {unit.unit_materials.map((material: any) => {
                     const isActive = activePreview.type === "material" && activePreview.title === material.title;
                     return (
                       <Card
@@ -273,36 +287,56 @@ function UnitPage() {
               )}
             </div>
 
-            {/* Important Questions Section */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-amber-500" />
-                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Important Questions</h2>
-                <Badge variant="secondary" className="text-[10px] bg-slate-100">
-                  {unit.important_questions?.length || 0}
-                </Badge>
-              </div>
-              {unit.important_questions?.length > 0 ? (
-                <div className="grid gap-2">
-                  {unit.important_questions.map((q, idx) => (
-                    <Card key={q.id} className="p-3 border-l-4 border-l-amber-400 rounded-xl border-slate-200 bg-white">
-                      <div className="flex justify-between items-start gap-3">
-                        <p className="text-sm text-slate-700">
-                          <span className="font-bold text-amber-600 mr-1">{idx + 1}.</span> {q.question_text}
-                        </p>
-                        {q.category && (
-                          <span className="text-[10px] font-mono bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full shrink-0">
-                            {q.category}
-                          </span>
-                        )}
-                      </div>
-                    </Card>
-                  ))}
+            {/* Important Questions Portal Card */}
+            <Card className="overflow-hidden border border-slate-200 bg-white rounded-2xl p-5 shadow-md relative group">
+              {/* Subtle brand ambient glow background */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all duration-300 pointer-events-none" />
+              
+              <div className="relative z-10 space-y-4">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold tracking-widest text-emerald-600 uppercase flex items-center gap-1.5">
+                      <Sparkles className="h-3 w-3 animate-pulse text-emerald-500" /> Syllabus Focus Active
+                    </span>
+                    <h3 className="text-sm font-black tracking-tight text-slate-800 uppercase flex items-center gap-1.5">
+                      📚 Important Questions Bank
+                    </h3>
+                  </div>
+                  <Badge variant="secondary" className="bg-emerald-50 border-emerald-100 text-emerald-700 font-mono text-[9px] uppercase tracking-wider">
+                    4 Tiers
+                  </Badge>
                 </div>
-              ) : (
-                <EmptyStateRow icon={Star} message="No important questions added yet" />
-              )}
-            </div>
+                
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Get exam-ready with high-yield syllabus questions. Explore important topics sorted by standard exam weightage (1, 2, 3, and 5 Marks).
+                </p>
+
+                <div className="grid grid-cols-2 gap-2 pt-1 text-[10px] font-semibold text-slate-500">
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center gap-2">
+                    <span className="text-sm">📖</span>
+                    <div>
+                      <p className="text-slate-800 font-bold">Curated List</p>
+                      <p className="text-[9px] text-slate-400">1 to 5 Marks</p>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center gap-2">
+                    <span className="text-sm">🎯</span>
+                    <div>
+                      <p className="text-slate-800 font-bold">Target Study</p>
+                      <p className="text-[9px] text-slate-400">Syllabus blueprint</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  to={`/student/arena/${unit.id}`}
+                  className="w-full h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-sm transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 text-center"
+                >
+                  <Star className="h-3.5 w-3.5 fill-white" />
+                  VIEW IMPORTANT QUESTIONS
+                </Link>
+              </div>
+            </Card>
           </div>
 
           {/* Right Column - Preview Panel */}
@@ -355,6 +389,7 @@ function UnitPage() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }
