@@ -79,12 +79,14 @@ function UnitPage() {
   }>({ type: null, title: "", url: "" });
   const [isWindowBlurred, setIsWindowBlurred] = useState(false);
   const [isFullscreenSecure, setIsFullscreenSecure] = useState(false);
+  const [isFullscreenEntering, setIsFullscreenEntering] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
   const [shouldPreload, setShouldPreload] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isHovered, setIsHovered] = useState(false);
 
   const workspaceRef = useRef<HTMLDivElement>(null);
+  const isNotionMaterial = activePreview.type === "material" && activePreview.url.includes("notion");
 
   useEffect(() => {
     checkBookmark();
@@ -111,6 +113,11 @@ function UnitPage() {
     const handleFullscreenChange = () => {
       const isCurrentlyFullscreen = document.fullscreenElement === workspaceRef.current;
       setIsFullscreenSecure(isCurrentlyFullscreen);
+      setIsFullscreenEntering(false);
+
+      if (isCurrentlyFullscreen) {
+        setIsWindowBlurred(false);
+      }
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -126,13 +133,42 @@ function UnitPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (!isNotionMaterial) return;
+
+    const preconnectUrls = [
+      "https://www.notion.so",
+      "https://notion.site",
+      "https://fonts.googleapis.com",
+    ];
+
+    const links = preconnectUrls.map((href) => {
+      const link = document.createElement("link");
+      link.rel = "preconnect";
+      link.href = href;
+      link.crossOrigin = "anonymous";
+      document.head.appendChild(link);
+      return link;
+    });
+
+    return () => {
+      links.forEach((link) => {
+        if (document.head.contains(link)) {
+          document.head.removeChild(link);
+        }
+      });
+    };
+  }, [isNotionMaterial]);
+
   const handleMaximize = async () => {
     try {
       if (workspaceRef.current) {
-        setIsFullscreenSecure(true); // Set state immediately for seamless animation
+        setIsFullscreenEntering(true);
+        setIsWindowBlurred(false);
         await workspaceRef.current.requestFullscreen();
       }
     } catch (err) {
+      setIsFullscreenEntering(false);
       setIsFullscreenSecure(false);
       console.error("Error entering fullscreen secure mode:", err);
       toast.error("Could not enter fullscreen mode");
@@ -157,7 +193,7 @@ function UnitPage() {
     const handleBlur = () => {
       // Small timeout to allow activeElement to stabilize
       setTimeout(() => {
-        if (!document.hasFocus()) {
+        if (!document.hasFocus() && !isFullscreenEntering) {
           setIsWindowBlurred(true);
         }
       }, 100);
@@ -168,7 +204,7 @@ function UnitPage() {
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
+      if (document.visibilityState === "hidden" && !isFullscreenEntering) {
         setIsWindowBlurred(true);
       }
     };
@@ -181,7 +217,7 @@ function UnitPage() {
     // window minimization, and Snipping Tool activations.
     if (activePreview.type === "material") {
       focusInterval = setInterval(() => {
-        if (!document.hasFocus()) {
+        if (!document.hasFocus() && !isFullscreenEntering) {
           setIsWindowBlurred(true);
         } else {
           setIsWindowBlurred(false);
@@ -536,7 +572,7 @@ function UnitPage() {
                     onMouseMove={() => { if (!isHovered) setIsHovered(true); }}
                     onTouchStart={() => setIsHovered(true)}
                     className={cn(
-                      "flex-1 flex flex-col relative overflow-hidden bg-slate-900",
+                      "flex-1 flex flex-col relative overflow-hidden bg-slate-900 fullscreen-workspace",
                       isFullscreenSecure && "w-full h-full p-0"
                     )}
                   >
@@ -570,10 +606,15 @@ function UnitPage() {
                         </div>
                         
                         {activePreview.type === "material" ? (
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-200/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
                               <Lock className="h-2.5 w-2.5" /> Security Mode
                             </span>
+                            {isNotionMaterial && (
+                              <span className="bg-slate-900/95 text-slate-100 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
+                                Notion Turbo
+                              </span>
+                            )}
                             <Button
                               onClick={handleMaximize}
                               size="sm"
@@ -737,11 +778,19 @@ function UnitPage() {
             display: none !important;
           }
         }
-        div:fullscreen {
+        :fullscreen, :-webkit-full-screen, :-moz-full-screen, :-ms-fullscreen, .fullscreen-workspace:fullscreen {
+          position: fixed !important;
+          inset: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          background-color: #0f172a !important;
+          z-index: 99999 !important;
+        }
+        :fullscreen iframe, :-webkit-full-screen iframe, :-moz-full-screen iframe, :-ms-fullscreen iframe {
           width: 100% !important;
           height: 100% !important;
-          padding: 0 !important;
-          background-color: #0f172a !important;
         }
         @keyframes fullscreenFadeIn {
           from { 
