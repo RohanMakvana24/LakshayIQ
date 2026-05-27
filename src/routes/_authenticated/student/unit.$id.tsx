@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword, X, Shield, Lock } from "lucide-react";
+import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword, X, Shield, Lock, Maximize } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -93,10 +93,10 @@ function UnitPage() {
       setTimeout(() => {
         if (
           document.activeElement &&
-          document.activeElement.tagName === "IFRAME" &&
-          document.hasFocus()
+          document.activeElement.tagName === "IFRAME"
         ) {
-          // Focus is inside the iframe, and the window still has focus. This is safe.
+          // Focus is inside the iframe. This is safe.
+          setIsWindowBlurred(false);
           return;
         }
         setIsWindowBlurred(true);
@@ -121,14 +121,16 @@ function UnitPage() {
     // window minimization, and Snipping Tool activations when the focus is inside the iframe
     if (activePreview.type === "material") {
       focusInterval = setInterval(() => {
+        if (document.activeElement && document.activeElement.tagName === "IFRAME") {
+          // If the focus is currently inside the iframe, it is safe
+          setIsWindowBlurred(false);
+          return;
+        }
+
         if (!document.hasFocus()) {
           setIsWindowBlurred(true);
         } else {
-          // If the parent document has focus, but we were blurred (e.g. back to iframe)
-          // ensure we keep it visible
-          if (document.activeElement && document.activeElement.tagName === "IFRAME") {
-            setIsWindowBlurred(false);
-          }
+          setIsWindowBlurred(false);
         }
       }, 250);
     }
@@ -280,9 +282,9 @@ function UnitPage() {
               <Button
                 variant={isBookmarked ? "default" : "outline"}
                 onClick={toggleBookmark}
-                className="rounded-xl h-10 px-4 text-xs font-bold shadow-sm shrink-0 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="rounded-xl h-8 md:h-10 px-3 md:px-4 text-[10px] md:text-xs font-bold shadow-sm shrink-0 bg-white/10 border-white/20 text-white hover:bg-white/20 w-fit self-start md:self-auto"
               >
-                <Bookmark className={cn("mr-1.5 h-3.5 w-3.5", isBookmarked && "fill-white")} />
+                <Bookmark className={cn("mr-1 md:mr-1.5 h-3 w-3 md:h-3.5 md:w-3.5", isBookmarked && "fill-white")} />
                 {isBookmarked ? "Saved" : "Save Unit"}
               </Button>
             </div>
@@ -461,7 +463,7 @@ function UnitPage() {
                             size="sm"
                             className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2.5"
                           >
-                            <Shield className="h-3 w-3" /> Maximize
+                            <Maximize className="h-3 w-3" /> Maximize
                           </Button>
                         </div>
                       ) : (
@@ -492,7 +494,7 @@ function UnitPage() {
                       
                       {/* Screenshot Shield in normal preview */}
                       {isWindowBlurred && activePreview.type === "material" && (
-                        <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 transition-all duration-300">
+                        <div className="absolute inset-0 z-50 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6">
                           <div className="h-16 w-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4">
                             <Sword className="h-7 w-7 text-rose-500 animate-pulse" />
                           </div>
@@ -540,21 +542,21 @@ function UnitPage() {
           onContextMenu={(e) => e.preventDefault()}
         >
           {/* Secure Header */}
-          <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
-              <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
-                <Sparkles className="h-3 w-3 text-emerald-400 animate-pulse" /> Secure Reader Arena
+          <div className="bg-slate-900 border-b border-slate-800 px-3 py-2.5 md:px-6 md:py-4 flex items-center justify-between shrink-0 gap-3">
+            <div className="flex items-center gap-2 truncate">
+              <span className="hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider items-center gap-1.5 shadow-sm">
+                <Sparkles className="h-3 w-3 text-emerald-400" /> Secure Reader Arena
               </span>
-              <h2 className="text-sm font-bold text-white truncate max-w-xl">
+              <h2 className="text-xs md:text-sm font-bold text-white truncate max-w-xl">
                 {activePreview.title}
               </h2>
             </div>
             
             <Button
               onClick={() => setIsFullscreenSecure(false)}
-              className="rounded-xl h-9 px-4 text-xs font-black bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all flex items-center gap-1.5 animate-pulse"
+              className="rounded-xl h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all flex items-center gap-1 md:gap-1.5 shrink-0"
             >
-              <X className="h-4 w-4" /> Close Secure View
+              <X className="h-3.5 w-3.5" /> Close Secure View
             </Button>
           </div>
 
@@ -574,7 +576,7 @@ function UnitPage() {
             
             {/* Screenshot Shield in Fullscreen */}
             {isWindowBlurred && (
-              <div className="absolute inset-0 z-[101] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6 transition-all duration-300">
+              <div className="absolute inset-0 z-[101] bg-slate-950/98 flex flex-col items-center justify-center text-center p-6">
                 <div className="h-20 w-20 rounded-full bg-rose-500/10 border border-rose-500/35 flex items-center justify-center mb-6 shadow-2xl">
                   <Sword className="h-10 w-10 text-rose-500 animate-pulse" />
                 </div>

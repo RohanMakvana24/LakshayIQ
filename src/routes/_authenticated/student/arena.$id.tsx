@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import {
   HelpCircle,
-  ArrowLeft,
   Sparkles,
   Star,
   Trophy,
@@ -137,13 +136,6 @@ function ArenaPage() {
         {/* Header with Navigation */}
         <div className="mb-4">
           <div className="flex items-center gap-2">
-            <Link
-              to="/student/unit/$id"
-              params={{ id: unit.id }}
-              className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
             <BreadcrumbNav
               items={[
                 { label: "Dashboard", to: "/student" },
