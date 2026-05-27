@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -80,23 +80,75 @@ function UnitPage() {
   const [isWindowBlurred, setIsWindowBlurred] = useState(false);
   const [isFullscreenSecure, setIsFullscreenSecure] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
-  const [isFullscreenIframeLoading, setIsFullscreenIframeLoading] = useState(false);
+  const [shouldPreload, setShouldPreload] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [isHovered, setIsHovered] = useState(false);
+
+  const workspaceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     checkBookmark();
   }, [unit.id]);
 
   useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setUserEmail(user.email);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
     if (activePreview.url) {
       setIsIframeLoading(true);
+      setIsHovered(false); // Reset hover state when preview url changes
     }
   }, [activePreview.url]);
 
   useEffect(() => {
-    if (isFullscreenSecure) {
-      setIsFullscreenIframeLoading(true);
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = document.fullscreenElement === workspaceRef.current;
+      setIsFullscreenSecure(isCurrentlyFullscreen);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShouldPreload(true);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleMaximize = async () => {
+    try {
+      if (workspaceRef.current) {
+        setIsFullscreenSecure(true); // Set state immediately for seamless animation
+        await workspaceRef.current.requestFullscreen();
+      }
+    } catch (err) {
+      setIsFullscreenSecure(false);
+      console.error("Error entering fullscreen secure mode:", err);
+      toast.error("Could not enter fullscreen mode");
     }
-  }, [isFullscreenSecure]);
+  };
+
+  const handleMinimize = async () => {
+    try {
+      setIsFullscreenSecure(false); // Set state immediately for seamless animation
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error("Error exiting fullscreen secure mode:", err);
+    }
+  };
 
   // Security listener to block screenshots and handle blur state
   useEffect(() => {
@@ -105,15 +157,9 @@ function UnitPage() {
     const handleBlur = () => {
       // Small timeout to allow activeElement to stabilize
       setTimeout(() => {
-        if (
-          document.activeElement &&
-          document.activeElement.tagName === "IFRAME"
-        ) {
-          // Focus is inside the iframe. This is safe.
-          setIsWindowBlurred(false);
-          return;
+        if (!document.hasFocus()) {
+          setIsWindowBlurred(true);
         }
-        setIsWindowBlurred(true);
       }, 100);
     };
 
@@ -132,15 +178,9 @@ function UnitPage() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // If a secure material is active, run a fast polling check to catch Alt-Tab,
-    // window minimization, and Snipping Tool activations when the focus is inside the iframe
+    // window minimization, and Snipping Tool activations.
     if (activePreview.type === "material") {
       focusInterval = setInterval(() => {
-        if (document.activeElement && document.activeElement.tagName === "IFRAME") {
-          // If the focus is currently inside the iframe, it is safe
-          setIsWindowBlurred(false);
-          return;
-        }
-
         if (!document.hasFocus()) {
           setIsWindowBlurred(true);
         } else {
@@ -149,25 +189,55 @@ function UnitPage() {
       }, 250);
     }
 
-    // Prevent shortcut keys & developer tools
+    // Prevent shortcut keys, developer tools & catch screenshot key patterns instantly
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        (e.ctrlKey && e.key === "p") || // Ctrl + P
-        (e.ctrlKey && e.key === "s") || // Ctrl + S
-        (e.ctrlKey && e.shiftKey && e.key === "I") || // Ctrl + Shift + I
-        (e.ctrlKey && e.shiftKey && e.key === "J") || // Ctrl + Shift + J
-        (e.ctrlKey && e.key === "u") || // Ctrl + U
-        e.key === "F12"
-      ) {
+      // 1. Detect PrintScreen / Snapshot
+      const isPrintScreen = e.key === "PrintScreen" || e.key === "Snapshot" || e.keyCode === 44;
+      
+      // 2. Detect Win + Shift + S (Windows Snipping Tool)
+      const isWinShiftS = e.metaKey && e.shiftKey && (e.key === "S" || e.key === "s");
+      
+      // 3. Detect Cmd + Shift + 3 / 4 (Mac Screenshots)
+      const isMacScreenshot = e.metaKey && e.shiftKey && (e.key === "3" || e.key === "4");
+
+      // 4. Detect dev tools or other lock keys
+      const isDevTools = (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "i" || e.key === "j")) ||
+                         (e.ctrlKey && (e.key === "u" || e.key === "U")) ||
+                         e.key === "F12";
+      
+      const isPrintPrompt = e.ctrlKey && (e.key === "p" || e.key === "P");
+      const isSavePrompt = e.ctrlKey && (e.key === "s" || e.key === "S");
+
+      if (isPrintScreen || isWinShiftS || isMacScreenshot) {
+        e.preventDefault();
+        setIsWindowBlurred(true);
+        navigator.clipboard.writeText(""); // Clear clipboard buffer
+        toast.error("🔒 Screenshots are disabled for security!");
+        
+        // Lock screen for 2 seconds to ensure any screen capture catches the black overlay
+        setTimeout(() => {
+          setIsWindowBlurred(false);
+        }, 2000);
+        return;
+      }
+
+      if (isDevTools || isPrintPrompt || isSavePrompt) {
         e.preventDefault();
         toast.warning("🔒 Security policy: Screen operations and source inspections are disabled.");
       }
-      
-      // Block PrintScreen keyup / keydown to discourage screenshot attempts
-      if (e.key === "PrintScreen") {
-        navigator.clipboard.writeText(""); // clear clipboard
-        e.preventDefault();
-        toast.error("🔒 Screenshots are disabled for security!");
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const isPrintScreen = e.key === "PrintScreen" || e.key === "Snapshot" || e.keyCode === 44;
+      const isWinShiftS = e.metaKey && e.shiftKey && (e.key === "S" || e.key === "s");
+      const isMacScreenshot = e.metaKey && e.shiftKey && (e.key === "3" || e.key === "4");
+
+      if (isPrintScreen || isWinShiftS || isMacScreenshot) {
+        setIsWindowBlurred(true);
+        navigator.clipboard.writeText(""); // Clear clipboard buffer
+        setTimeout(() => {
+          setIsWindowBlurred(false);
+        }, 2000);
       }
     };
 
@@ -180,6 +250,7 @@ function UnitPage() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("contextmenu", handleContextMenu);
 
     return () => {
@@ -187,6 +258,7 @@ function UnitPage() {
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("contextmenu", handleContextMenu);
       if (focusInterval) {
         clearInterval(focusInterval);
@@ -457,48 +529,82 @@ function UnitPage() {
             <div className="sticky top-6">
               <Card className="overflow-hidden border border-slate-200 bg-white shadow-lg rounded-2xl flex flex-col h-[400px] md:h-[500px] lg:h-[550px] relative">
                 {activePreview.type && activePreview.url ? (
-                  <>
-                    <div className="bg-slate-100 px-4 py-3 flex items-center justify-between border-b border-slate-200 shrink-0">
-                      <div className="flex items-center gap-2 truncate">
-                        <Sparkles className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
-                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                          {activePreview.type === "material" ? "🔒 Secure View" : "Now Playing"}
-                        </span>
-                        <span className="text-sm font-medium text-slate-800 truncate">{activePreview.title}</span>
-                      </div>
-                      
-                      {activePreview.type === "material" ? (
-                        <div className="flex items-center gap-2">
-                          <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-200/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                            <Lock className="h-2.5 w-2.5" /> Security Mode
+                  <div 
+                    ref={workspaceRef}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseMove={() => { if (!isHovered) setIsHovered(true); }}
+                    onTouchStart={() => setIsHovered(true)}
+                    className={cn(
+                      "flex-1 flex flex-col relative overflow-hidden bg-slate-900",
+                      isFullscreenSecure && "w-full h-full p-0"
+                    )}
+                  >
+                    {/* Header (Dynamic based on fullscreen mode) */}
+                    {isFullscreenSecure ? (
+                      <div className="bg-slate-900 border-b border-slate-800 px-3 py-2.5 md:px-6 md:py-4 flex items-center justify-between shrink-0 gap-3 z-30 animate-fullscreen-fade">
+                        <div className="flex items-center gap-2 truncate">
+                          <span className="hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider items-center gap-1.5 shadow-sm">
+                            <Sparkles className="h-3 w-3 text-emerald-400" /> Secure Reader Arena
                           </span>
-                          <Button
-                            onClick={() => setIsFullscreenSecure(true)}
-                            size="sm"
-                            className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2.5"
-                          >
-                            <Maximize className="h-3 w-3" /> Maximize
-                          </Button>
+                          <h2 className="text-xs md:text-sm font-bold text-white truncate max-w-xl">
+                            {activePreview.title}
+                          </h2>
                         </div>
-                      ) : (
-                        <a
-                          href={activePreview.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1"
+                        
+                        <Button
+                          onClick={handleMinimize}
+                          className="rounded-xl h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all flex items-center gap-1 md:gap-1.5 shrink-0"
                         >
-                          <span>Open</span>
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      )}
-                    </div>
-                    <div className="flex-1 bg-slate-900 relative overflow-hidden">
+                          <X className="h-3.5 w-3.5" /> Close Secure View
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-100 px-4 py-3 flex items-center justify-between border-b border-slate-200 shrink-0 z-30">
+                        <div className="flex items-center gap-2 truncate">
+                          <Sparkles className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            {activePreview.type === "material" ? "🔒 Secure View" : "Now Playing"}
+                          </span>
+                          <span className="text-sm font-medium text-slate-800 truncate">{activePreview.title}</span>
+                        </div>
+                        
+                        {activePreview.type === "material" ? (
+                          <div className="flex items-center gap-2">
+                            <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-200/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                              <Lock className="h-2.5 w-2.5" /> Security Mode
+                            </span>
+                            <Button
+                              onClick={handleMaximize}
+                              size="sm"
+                              className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2.5"
+                            >
+                              <Maximize className="h-3 w-3" /> Maximize
+                            </Button>
+                          </div>
+                        ) : (
+                          <a
+                            href={activePreview.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1"
+                          >
+                            <span>Open</span>
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Iframe Workspace (Same DOM node preserved to prevent unmount and re-running scripts) */}
+                    <div className="flex-1 w-full relative overflow-hidden bg-slate-900">
                       {isIframeLoading && (
                         <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6">
                           <Loader2 className="h-8 w-8 text-emerald-500 animate-spin mb-3" />
                           <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider">Loading Material...</p>
                         </div>
                       )}
+                      
                       <iframe
                         title={activePreview.title}
                         src={formatEmbedUrl(activePreview.url, activePreview.type)}
@@ -512,21 +618,51 @@ function UnitPage() {
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen={activePreview.type !== "material"}
                       />
-                      
-                      {/* Screenshot Shield in normal preview */}
-                      {isWindowBlurred && activePreview.type === "material" && (
-                        <div className="absolute inset-0 z-50 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6">
-                          <div className="h-16 w-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4">
-                            <Sword className="h-7 w-7 text-rose-500 animate-pulse" />
+
+                      {/* Dynamic Security Watermark Overlay */}
+                      {activePreview.type === "material" && (
+                        <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden select-none opacity-[0.05] flex flex-wrap gap-12 p-8 justify-around items-center content-around">
+                          {Array.from({ length: 16 }).map((_, i) => (
+                            <div 
+                              key={`watermark-${i}`} 
+                              className="text-[10px] md:text-xs font-black text-slate-400 transform -rotate-12 select-none pointer-events-none whitespace-nowrap tracking-wider"
+                            >
+                              LAKSHAY IQ
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Hover to Reveal Shield Overlay (Only active when not in fullscreen) */}
+                      {!isHovered && !isIframeLoading && !isFullscreenSecure && activePreview.type === "material" && (
+                        <div className="absolute inset-0 z-20 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 transition-all duration-300">
+                          <div className="h-12 w-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
+                            <Shield className="h-5 w-5 text-emerald-500 animate-pulse" />
                           </div>
-                          <h3 className="text-white font-bold text-lg uppercase tracking-wider">🔒 Security Mode Active</h3>
-                          <p className="text-slate-400 text-xs max-w-sm mt-2 leading-relaxed">
+                          <h4 className="text-white font-bold text-sm uppercase tracking-wider">🔒 Secure Content Shield</h4>
+                          <p className="text-slate-400 text-[10px] max-w-xs mt-1.5 leading-relaxed">
+                            Move cursor or tap inside this workspace area to reveal secure material.
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Screenshot Shield overlay inside the exact same container */}
+                      {isWindowBlurred && activePreview.type === "material" && (
+                        <div className="absolute inset-0 z-50 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 animate-fullscreen-fade">
+                          <div className="h-16 w-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
+                            <Shield className="h-7 w-7 text-emerald-500 animate-pulse" />
+                          </div>
+                          <h2 className="text-emerald-500 font-black text-3xl tracking-widest mb-1 uppercase">
+                            LAKSHAY IQ
+                          </h2>
+                          <h3 className="text-white font-bold text-sm uppercase tracking-wider">🔒 Security Mode Active</h3>
+                          <p className="text-slate-400 text-[10px] max-w-sm mt-1 leading-relaxed">
                             Screen capture and background viewing are restricted to protect intellectual property and academic integrity.
                           </p>
                         </div>
                       )}
                     </div>
-                  </>
+                  </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3 bg-gradient-to-br from-slate-50 to-slate-100">
                     <div className="h-14 w-14 rounded-full bg-slate-200 flex items-center justify-center">
@@ -546,74 +682,79 @@ function UnitPage() {
         </div>
       </div>
 
-      {/* High Security Distraction-Free Fullscreen Viewer */}
-      {isFullscreenSecure && activePreview.type === "material" && (
-        <div 
-          className="fixed inset-0 z-[100] bg-slate-950 flex flex-col w-screen h-screen select-none transition-all duration-300"
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          {/* Secure Header */}
-          <div className="bg-slate-900 border-b border-slate-800 px-3 py-2.5 md:px-6 md:py-4 flex items-center justify-between shrink-0 gap-3">
-            <div className="flex items-center gap-2 truncate">
-              <span className="hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider items-center gap-1.5 shadow-sm">
-                <Sparkles className="h-3 w-3 text-emerald-400" /> Secure Reader Arena
-              </span>
-              <h2 className="text-xs md:text-sm font-bold text-white truncate max-w-xl">
-                {activePreview.title}
-              </h2>
-            </div>
-            
-            <Button
-              onClick={() => setIsFullscreenSecure(false)}
-              className="rounded-xl h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all flex items-center gap-1 md:gap-1.5 shrink-0"
-            >
-              <X className="h-3.5 w-3.5" /> Close Secure View
-            </Button>
-          </div>
-
-          {/* Iframe Workspace */}
-          <div className="flex-1 bg-slate-900 relative overflow-hidden">
-            {isFullscreenIframeLoading && (
-              <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6">
-                <Loader2 className="h-8 w-8 text-emerald-500 animate-spin mb-3" />
-                <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider">Loading Material...</p>
-              </div>
-            )}
+      {/* Hidden preloader container to cache files natively in the background */}
+      {shouldPreload && (
+        <div className="hidden absolute w-0 h-0 overflow-hidden" aria-hidden="true">
+          {unit.unit_materials?.map((material: any) => (
             <iframe
-              title={activePreview.title}
-              src={formatEmbedUrl(activePreview.url, activePreview.type)}
-              onLoad={() => setIsFullscreenIframeLoading(false)}
-              className="w-full border-0 absolute"
-              style={
-                activePreview.type === "material" && activePreview.url.includes("notion")
-                  ? { top: "-50px", height: "calc(100% + 50px)", left: 0, right: 0 }
-                  : { top: 0, height: "100%", left: 0, right: 0 }
-              }
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              key={`preload-material-${material.id}`}
+              src={formatEmbedUrl(material.file_url || "", "material")}
+              className="w-0 h-0 border-0"
             />
-            
-            {/* Screenshot Shield in Fullscreen */}
-            {isWindowBlurred && (
-              <div className="absolute inset-0 z-[101] bg-slate-950/98 flex flex-col items-center justify-center text-center p-6">
-                <div className="h-20 w-20 rounded-full bg-rose-500/10 border border-rose-500/35 flex items-center justify-center mb-6 shadow-2xl">
-                  <Sword className="h-10 w-10 text-rose-500 animate-pulse" />
-                </div>
-                <h3 className="text-white font-black text-2xl uppercase tracking-widest">🔒 Security Mode Active</h3>
-                <p className="text-slate-400 text-sm max-w-md mt-3 leading-relaxed">
-                  Screen capture, background windows, and screenshot utility hooks have been intercepted to protect resource integrity.
-                </p>
-              </div>
-            )}
-          </div>
+          ))}
+          {unit.unit_videos?.map((video: any) => (
+            <iframe
+              key={`preload-video-${video.id}`}
+              src={formatEmbedUrl(video.video_url || "", "video")}
+              className="w-0 h-0 border-0"
+            />
+          ))}
         </div>
       )}
 
-      {/* Inject Print and Selection Safeguards */}
+      {/* Absolute Full-Screen Security Shield covering the ENTIRE viewport */}
+      {isWindowBlurred && activePreview.type === "material" && (
+        <div 
+          className="fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center text-center p-6 select-none animate-fullscreen-fade"
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <div className="h-24 w-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 shadow-2xl shadow-emerald-500/5">
+            <Shield className="h-12 w-12 text-emerald-500 animate-pulse" />
+          </div>
+          
+          <h2 className="text-emerald-500 font-black text-5xl md:text-6xl tracking-wider mb-2 uppercase drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+            LAKSHAY IQ
+          </h2>
+          
+          <h3 className="text-white font-bold text-lg md:text-xl uppercase tracking-widest mb-4">
+            🔒 SECURE READER SHIELD
+          </h3>
+          
+          <p className="text-slate-400 text-xs md:text-sm max-w-md leading-relaxed">
+            This study resource is protected by Lakshay IQ intellectual property policy. Screen capture and copying have been blocked.
+          </p>
+          
+          <p className="text-xs text-slate-500 mt-8 font-black uppercase tracking-widest animate-pulse">
+            Click back inside this window to restore view
+          </p>
+        </div>
+      )}
+
+      {/* Inject Print and Fullscreen Styles */}
       <style>{`
         @media print {
           body {
             display: none !important;
           }
+        }
+        div:fullscreen {
+          width: 100% !important;
+          height: 100% !important;
+          padding: 0 !important;
+          background-color: #0f172a !important;
+        }
+        @keyframes fullscreenFadeIn {
+          from { 
+            opacity: 0; 
+            transform: translateY(-8px); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0); 
+          }
+        }
+        .animate-fullscreen-fade {
+          animation: fullscreenFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
 
