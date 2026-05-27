@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword, X, Shield, Lock, Maximize } from "lucide-react";
+import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword, X, Shield, Lock, Maximize, Loader2 } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -79,10 +79,24 @@ function UnitPage() {
   }>({ type: null, title: "", url: "" });
   const [isWindowBlurred, setIsWindowBlurred] = useState(false);
   const [isFullscreenSecure, setIsFullscreenSecure] = useState(false);
+  const [isIframeLoading, setIsIframeLoading] = useState(false);
+  const [isFullscreenIframeLoading, setIsFullscreenIframeLoading] = useState(false);
 
   useEffect(() => {
     checkBookmark();
   }, [unit.id]);
+
+  useEffect(() => {
+    if (activePreview.url) {
+      setIsIframeLoading(true);
+    }
+  }, [activePreview.url]);
+
+  useEffect(() => {
+    if (isFullscreenSecure) {
+      setIsFullscreenIframeLoading(true);
+    }
+  }, [isFullscreenSecure]);
 
   // Security listener to block screenshots and handle blur state
   useEffect(() => {
@@ -479,9 +493,16 @@ function UnitPage() {
                       )}
                     </div>
                     <div className="flex-1 bg-slate-900 relative overflow-hidden">
+                      {isIframeLoading && (
+                        <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6">
+                          <Loader2 className="h-8 w-8 text-emerald-500 animate-spin mb-3" />
+                          <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider">Loading Material...</p>
+                        </div>
+                      )}
                       <iframe
                         title={activePreview.title}
                         src={formatEmbedUrl(activePreview.url, activePreview.type)}
+                        onLoad={() => setIsIframeLoading(false)}
                         className="w-full border-0 absolute"
                         style={
                           activePreview.type === "material" && activePreview.url.includes("notion")
@@ -505,16 +526,6 @@ function UnitPage() {
                         </div>
                       )}
                     </div>
-                    {activePreview.type === "material" && activePreview.url.includes("notion") && (
-                      <div className="bg-emerald-50 border-t border-emerald-100/50 px-4 py-3 flex items-center justify-between gap-4 shrink-0 text-[10px] text-emerald-800 font-medium">
-                        <span className="flex items-center gap-1.5 leading-snug">
-                          <Sparkles className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0 animate-pulse" />
-                          <span>
-                            <strong>Notion Setup Tip:</strong> Ensure this page is published to the web in Notion (<strong>Share &gt; Publish &gt; Publish to web</strong>) for seamless viewing.
-                          </span>
-                        </span>
-                      </div>
-                    )}
                   </>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3 bg-gradient-to-br from-slate-50 to-slate-100">
@@ -562,9 +573,16 @@ function UnitPage() {
 
           {/* Iframe Workspace */}
           <div className="flex-1 bg-slate-900 relative overflow-hidden">
+            {isFullscreenIframeLoading && (
+              <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6">
+                <Loader2 className="h-8 w-8 text-emerald-500 animate-spin mb-3" />
+                <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider">Loading Material...</p>
+              </div>
+            )}
             <iframe
               title={activePreview.title}
               src={formatEmbedUrl(activePreview.url, activePreview.type)}
+              onLoad={() => setIsFullscreenIframeLoading(false)}
               className="w-full border-0 absolute"
               style={
                 activePreview.type === "material" && activePreview.url.includes("notion")
