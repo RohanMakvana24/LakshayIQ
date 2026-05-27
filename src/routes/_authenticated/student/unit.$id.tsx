@@ -80,6 +80,7 @@ function UnitPage() {
   const [isWindowBlurred, setIsWindowBlurred] = useState(false);
   const [isFullscreenSecure, setIsFullscreenSecure] = useState(false);
   const [isFullscreenEntering, setIsFullscreenEntering] = useState(false);
+  const [isFullscreenExiting, setIsFullscreenExiting] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
   const [shouldPreload, setShouldPreload] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
@@ -87,6 +88,18 @@ function UnitPage() {
 
   const workspaceRef = useRef<HTMLDivElement>(null);
   const isNotionMaterial = activePreview.type === "material" && activePreview.url.includes("notion");
+  const isWorkspaceTransitioning = isFullscreenEntering || isFullscreenExiting;
+
+  const runViewTransition = async (update: () => void | Promise<void>) => {
+    if (typeof document !== "undefined" && "startViewTransition" in document) {
+      const doc = document as Document & {
+        startViewTransition: (callback: () => void | Promise<void>) => { finished: Promise<void> };
+      };
+      await doc.startViewTransition(update).finished;
+      return;
+    }
+    await update();
+  };
 
   useEffect(() => {
     checkBookmark();
@@ -114,6 +127,7 @@ function UnitPage() {
       const isCurrentlyFullscreen = document.fullscreenElement === workspaceRef.current;
       setIsFullscreenSecure(isCurrentlyFullscreen);
       setIsFullscreenEntering(false);
+      setIsFullscreenExiting(false);
 
       if (isCurrentlyFullscreen) {
         setIsWindowBlurred(false);
@@ -162,11 +176,14 @@ function UnitPage() {
 
   const handleMaximize = async () => {
     try {
-      if (workspaceRef.current) {
-        setIsFullscreenEntering(true);
-        setIsWindowBlurred(false);
-        await workspaceRef.current.requestFullscreen();
-      }
+      const workspace = workspaceRef.current;
+      if (!workspace) return;
+
+      setIsFullscreenEntering(true);
+      setIsWindowBlurred(false);
+      setIsHovered(true);
+
+      await runViewTransition(() => workspace.requestFullscreen());
     } catch (err) {
       setIsFullscreenEntering(false);
       setIsFullscreenSecure(false);
@@ -177,11 +194,12 @@ function UnitPage() {
 
   const handleMinimize = async () => {
     try {
-      setIsFullscreenSecure(false); // Set state immediately for seamless animation
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      }
+      if (!document.fullscreenElement) return;
+
+      setIsFullscreenExiting(true);
+      await runViewTransition(() => document.exitFullscreen());
     } catch (err) {
+      setIsFullscreenExiting(false);
       console.error("Error exiting fullscreen secure mode:", err);
     }
   };
@@ -193,7 +211,8 @@ function UnitPage() {
     const handleBlur = () => {
       // Small timeout to allow activeElement to stabilize
       setTimeout(() => {
-        if (!document.hasFocus() && !isFullscreenEntering) {
+        const isInFullscreen = document.fullscreenElement === workspaceRef.current;
+        if (!document.hasFocus() && !isFullscreenEntering && !isFullscreenExiting && !isInFullscreen) {
           setIsWindowBlurred(true);
         }
       }, 100);
@@ -204,7 +223,8 @@ function UnitPage() {
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden" && !isFullscreenEntering) {
+      const isInFullscreen = document.fullscreenElement === workspaceRef.current;
+      if (document.visibilityState === "hidden" && !isFullscreenEntering && !isFullscreenExiting && !isInFullscreen) {
         setIsWindowBlurred(true);
       }
     };
@@ -217,7 +237,8 @@ function UnitPage() {
     // window minimization, and Snipping Tool activations.
     if (activePreview.type === "material") {
       focusInterval = setInterval(() => {
-        if (!document.hasFocus() && !isFullscreenEntering) {
+        const isInFullscreen = document.fullscreenElement === workspaceRef.current;
+        if (!document.hasFocus() && !isFullscreenEntering && !isFullscreenExiting && !isInFullscreen) {
           setIsWindowBlurred(true);
         } else {
           setIsWindowBlurred(false);
@@ -300,7 +321,7 @@ function UnitPage() {
         clearInterval(focusInterval);
       }
     };
-  }, [activePreview.type]);
+  }, [activePreview.type, isFullscreenEntering, isFullscreenExiting]);
 
   const checkBookmark = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -572,42 +593,70 @@ function UnitPage() {
                     onMouseMove={() => { if (!isHovered) setIsHovered(true); }}
                     onTouchStart={() => setIsHovered(true)}
                     className={cn(
-                      "flex-1 flex flex-col relative overflow-hidden bg-slate-900 fullscreen-workspace",
-                      isFullscreenSecure && "w-full h-full p-0"
+                      "flex flex-col relative overflow-hidden bg-slate-900 fullscreen-workspace",
+                      "transition-[box-shadow,filter] duration-500 ease-workspace",
+                      isWorkspaceTransitioning && "workspace-phase-transition",
+                      isFullscreenSecure ? "workspace-phase-active min-h-0 p-0" : "flex-1 min-h-0"
                     )}
                   >
-                    {/* Header (Dynamic based on fullscreen mode) */}
-                    {isFullscreenSecure ? (
-                      <div className="bg-slate-900 border-b border-slate-800 px-3 py-2.5 md:px-6 md:py-4 flex items-center justify-between shrink-0 gap-3 z-30 animate-fullscreen-fade">
-                        <div className="flex items-center gap-2 truncate">
-                          <span className="hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider items-center gap-1.5 shadow-sm">
-                            <Sparkles className="h-3 w-3 text-emerald-400" /> Secure Reader Arena
-                          </span>
-                          <h2 className="text-xs md:text-sm font-bold text-white truncate max-w-xl">
-                            {activePreview.title}
-                          </h2>
-                        </div>
-                        
-                        <Button
-                          onClick={handleMinimize}
-                          className="rounded-xl h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all flex items-center gap-1 md:gap-1.5 shrink-0"
+                    {isWorkspaceTransitioning && (
+                      <div className="workspace-transition-veil" aria-hidden />
+                    )}
+
+                    {/* Unified header — morphs instead of swapping DOM */}
+                    <div
+                      className={cn(
+                        "preview-workspace-header shrink-0 z-30 flex items-center justify-between gap-3 border-b",
+                        "transition-all duration-500 ease-workspace",
+                        isFullscreenSecure
+                          ? "bg-slate-900 border-slate-800 px-3 py-2.5 md:px-6 md:py-4"
+                          : "bg-slate-100 border-slate-200 px-4 py-3"
+                      )}
+                    >
+                      <div className="flex items-center gap-2 min-w-0 truncate">
+                        <Sparkles
+                          className={cn(
+                            "h-3.5 w-3.5 shrink-0 transition-colors duration-500",
+                            isFullscreenSecure ? "text-emerald-400 animate-pulse" : "text-emerald-600 animate-pulse"
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "text-xs font-semibold uppercase tracking-wider transition-all duration-500 ease-workspace",
+                            isFullscreenSecure
+                              ? "hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 font-black items-center gap-1.5"
+                              : "text-slate-500"
+                          )}
                         >
-                          <X className="h-3.5 w-3.5" /> Close Secure View
-                        </Button>
+                          {isFullscreenSecure ? (
+                            <>Secure Reader Arena</>
+                          ) : activePreview.type === "material" ? (
+                            "🔒 Secure View"
+                          ) : (
+                            "Now Playing"
+                          )}
+                        </span>
+                        <span
+                          className={cn(
+                            "truncate transition-colors duration-500",
+                            isFullscreenSecure
+                              ? "text-xs md:text-sm font-bold text-white max-w-xl"
+                              : "text-sm font-medium text-slate-800"
+                          )}
+                        >
+                          {activePreview.title}
+                        </span>
                       </div>
-                    ) : (
-                      <div className="bg-slate-100 px-4 py-3 flex items-center justify-between border-b border-slate-200 shrink-0 z-30">
-                        <div className="flex items-center gap-2 truncate">
-                          <Sparkles className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
-                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                            {activePreview.type === "material" ? "🔒 Secure View" : "Now Playing"}
-                          </span>
-                          <span className="text-sm font-medium text-slate-800 truncate">{activePreview.title}</span>
-                        </div>
-                        
-                        {activePreview.type === "material" ? (
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-200/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+
+                      <div
+                        className={cn(
+                          "flex flex-wrap items-center gap-2 shrink-0 transition-all duration-500 ease-workspace",
+                          isFullscreenSecure ? "opacity-100 translate-y-0" : "opacity-100"
+                        )}
+                      >
+                        {!isFullscreenSecure && activePreview.type === "material" && (
+                          <>
+                            <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-200/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm transition-transform duration-300 hover:scale-[1.02]">
                               <Lock className="h-2.5 w-2.5" /> Security Mode
                             </span>
                             {isNotionMaterial && (
@@ -617,32 +666,58 @@ function UnitPage() {
                             )}
                             <Button
                               onClick={handleMaximize}
+                              disabled={isWorkspaceTransitioning}
                               size="sm"
-                              className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2.5"
+                              className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2.5 transition-all duration-300 ease-workspace hover:scale-[1.03] active:scale-95 disabled:opacity-60"
                             >
-                              <Maximize className="h-3 w-3" /> Maximize
+                              <Maximize
+                                className={cn(
+                                  "h-3 w-3 transition-transform duration-500 ease-workspace",
+                                  isFullscreenEntering && "scale-110 rotate-90"
+                                )}
+                              />
+                              Maximize
                             </Button>
-                          </div>
-                        ) : (
+                          </>
+                        )}
+                        {!isFullscreenSecure && activePreview.type !== "material" && (
                           <a
                             href={activePreview.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1"
+                            className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 transition-colors duration-300"
                           >
                             <span>Open</span>
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         )}
+                        {isFullscreenSecure && (
+                          <Button
+                            onClick={handleMinimize}
+                            disabled={isWorkspaceTransitioning}
+                            className="rounded-xl h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all duration-300 ease-workspace flex items-center gap-1 md:gap-1.5 hover:scale-[1.02] active:scale-95 disabled:opacity-60 animate-workspace-reveal"
+                          >
+                            <X className="h-3.5 w-3.5 transition-transform duration-300 group-hover:rotate-90" />
+                            Close Secure View
+                          </Button>
+                        )}
                       </div>
-                    )}
+                    </div>
 
                     {/* Iframe Workspace (Same DOM node preserved to prevent unmount and re-running scripts) */}
-                    <div className="flex-1 w-full relative overflow-hidden bg-slate-900">
+                    <div
+                      className={cn(
+                        "flex-1 w-full min-h-0 relative overflow-hidden bg-slate-900 iframe-host workspace-content-shell",
+                        isNotionMaterial && "notion-embed-host",
+                        isWorkspaceTransitioning && "workspace-content-transitioning"
+                      )}
+                    >
                       {isIframeLoading && (
-                        <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6">
+                        <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6 workspace-loading-veil">
                           <Loader2 className="h-8 w-8 text-emerald-500 animate-spin mb-3" />
-                          <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider">Loading Material...</p>
+                          <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider animate-pulse">
+                            Loading Material...
+                          </p>
                         </div>
                       )}
                       
@@ -650,12 +725,11 @@ function UnitPage() {
                         title={activePreview.title}
                         src={formatEmbedUrl(activePreview.url, activePreview.type)}
                         onLoad={() => setIsIframeLoading(false)}
-                        className="w-full border-0 absolute"
-                        style={
-                          activePreview.type === "material" && activePreview.url.includes("notion")
-                            ? { top: "-50px", height: "calc(100% + 50px)", left: 0, right: 0 }
-                            : { top: 0, height: "100%", left: 0, right: 0 }
-                        }
+                        className={cn(
+                          "embed-frame border-0",
+                          !isIframeLoading && "embed-frame-ready",
+                          isWorkspaceTransitioning && "embed-frame-transitioning"
+                        )}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen={activePreview.type !== "material"}
                       />
@@ -676,7 +750,7 @@ function UnitPage() {
 
                       {/* Hover to Reveal Shield Overlay (Only active when not in fullscreen) */}
                       {!isHovered && !isIframeLoading && !isFullscreenSecure && activePreview.type === "material" && (
-                        <div className="absolute inset-0 z-20 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 transition-all duration-300">
+                        <div className="absolute inset-0 z-20 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay">
                           <div className="h-12 w-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
                             <Shield className="h-5 w-5 text-emerald-500 animate-pulse" />
                           </div>
@@ -689,7 +763,7 @@ function UnitPage() {
                       
                       {/* Screenshot Shield overlay inside the exact same container */}
                       {isWindowBlurred && activePreview.type === "material" && (
-                        <div className="absolute inset-0 z-50 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 animate-fullscreen-fade">
+                        <div className="absolute inset-0 z-50 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay">
                           <div className="h-16 w-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
                             <Shield className="h-7 w-7 text-emerald-500 animate-pulse" />
                           </div>
@@ -746,7 +820,7 @@ function UnitPage() {
       {/* Absolute Full-Screen Security Shield covering the ENTIRE viewport */}
       {isWindowBlurred && activePreview.type === "material" && (
         <div 
-          className="fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center text-center p-6 select-none animate-fullscreen-fade"
+          className="fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center text-center p-6 select-none workspace-shield-overlay"
           onContextMenu={(e) => e.preventDefault()}
         >
           <div className="h-24 w-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 shadow-2xl shadow-emerald-500/5">
@@ -778,32 +852,151 @@ function UnitPage() {
             display: none !important;
           }
         }
-        :fullscreen, :-webkit-full-screen, :-moz-full-screen, :-ms-fullscreen, .fullscreen-workspace:fullscreen {
+        .ease-workspace {
+          transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .fullscreen-workspace {
+          view-transition-name: secure-workspace;
+        }
+        .embed-frame {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+          opacity: 0.92;
+          transform: scale(0.995);
+          transition:
+            opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+            top 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+            height 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .embed-frame-ready {
+          opacity: 1;
+          transform: scale(1);
+        }
+        .embed-frame-transitioning {
+          opacity: 0.97;
+          transform: scale(1.008);
+        }
+        .notion-embed-host .embed-frame {
+          top: -50px;
+          height: calc(100% + 50px);
+        }
+        .workspace-content-shell {
+          transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .workspace-content-transitioning {
+          opacity: 0.94;
+        }
+        .workspace-phase-transition {
+          filter: brightness(0.92);
+        }
+        .workspace-phase-active {
+          box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.12), 0 24px 80px rgba(2, 6, 23, 0.45);
+        }
+        .workspace-transition-veil {
+          position: absolute;
+          inset: 0;
+          z-index: 55;
+          pointer-events: none;
+          background:
+            radial-gradient(ellipse 80% 60% at 50% 40%, rgba(16, 185, 129, 0.14) 0%, transparent 55%),
+            linear-gradient(180deg, rgba(2, 6, 23, 0.35) 0%, rgba(2, 6, 23, 0.75) 100%);
+          animation: workspaceVeil 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .workspace-loading-veil {
+          animation: workspaceLoadingIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .workspace-shield-overlay {
+          animation: workspaceShieldIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes workspaceVeil {
+          0% { opacity: 0; backdrop-filter: blur(0); }
+          35% { opacity: 1; backdrop-filter: blur(8px); }
+          100% { opacity: 0; backdrop-filter: blur(0); }
+        }
+        @keyframes workspaceLoadingIn {
+          from { opacity: 0; transform: scale(1.02); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes workspaceShieldIn {
+          from { opacity: 0; transform: translateY(6px) scale(1.01); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes workspaceReveal {
+          from { opacity: 0; transform: translateY(6px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-workspace-reveal {
+          animation: workspaceReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        :fullscreen.fullscreen-workspace,
+        :-webkit-full-screen.fullscreen-workspace,
+        :-moz-full-screen.fullscreen-workspace,
+        :-ms-fullscreen.fullscreen-workspace {
           position: fixed !important;
           inset: 0 !important;
+          display: grid !important;
+          grid-template-rows: auto minmax(0, 1fr) !important;
           width: 100vw !important;
           height: 100vh !important;
+          max-height: 100vh !important;
           padding: 0 !important;
           margin: 0 !important;
           background-color: #0f172a !important;
           z-index: 99999 !important;
+          overflow: hidden !important;
         }
-        :fullscreen iframe, :-webkit-full-screen iframe, :-moz-full-screen iframe, :-ms-fullscreen iframe {
+        :fullscreen.fullscreen-workspace .iframe-host,
+        :-webkit-full-screen.fullscreen-workspace .iframe-host,
+        :-moz-full-screen.fullscreen-workspace .iframe-host,
+        :-ms-fullscreen.fullscreen-workspace .iframe-host {
+          flex: none !important;
+          min-height: 0 !important;
+          height: 100% !important;
           width: 100% !important;
+        }
+        :fullscreen.fullscreen-workspace .notion-embed-host .embed-frame,
+        :-webkit-full-screen.fullscreen-workspace .notion-embed-host .embed-frame,
+        :-moz-full-screen.fullscreen-workspace .notion-embed-host .embed-frame,
+        :-ms-fullscreen.fullscreen-workspace .notion-embed-host .embed-frame {
+          top: 0 !important;
           height: 100% !important;
         }
-        @keyframes fullscreenFadeIn {
-          from { 
-            opacity: 0; 
-            transform: translateY(-8px); 
-          }
-          to { 
-            opacity: 1; 
-            transform: translateY(0); 
-          }
+        ::view-transition-old(secure-workspace),
+        ::view-transition-new(secure-workspace) {
+          animation-duration: 0.55s;
+          animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .animate-fullscreen-fade {
-          animation: fullscreenFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        ::view-transition-old(secure-workspace) {
+          animation-name: workspaceViewExit;
+        }
+        ::view-transition-new(secure-workspace) {
+          animation-name: workspaceViewEnter;
+        }
+        @keyframes workspaceViewEnter {
+          from { opacity: 0; transform: scale(0.985); filter: brightness(0.85); }
+          to { opacity: 1; transform: scale(1); filter: brightness(1); }
+        }
+        @keyframes workspaceViewExit {
+          from { opacity: 1; transform: scale(1); filter: brightness(1); }
+          to { opacity: 0.92; transform: scale(0.99); filter: brightness(0.9); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .fullscreen-workspace,
+          .embed-frame,
+          .preview-workspace-header,
+          .workspace-transition-veil,
+          .workspace-shield-overlay,
+          .workspace-loading-veil {
+            transition: none !important;
+            animation: none !important;
+          }
+          .fullscreen-workspace {
+            view-transition-name: none;
+          }
         }
       `}</style>
 
