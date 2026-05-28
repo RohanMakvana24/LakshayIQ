@@ -15,7 +15,8 @@ import {
   Layers,
   School,
   Library,
-  GraduationCap
+  GraduationCap,
+  SwatchBook
 } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { useState, useMemo } from "react";
@@ -84,7 +85,7 @@ function UniversityPage() {
   }, [courses]);
 
   return (
-    <div className="min-h-screen w-full ">
+    <div className="min-h-screen w-full bg-slate-50/50">
       <div className="w-full px-4 py-4 md:px-6 lg:px-8">
 
         {/* Breadcrumb */}
@@ -173,14 +174,14 @@ function UniversityPage() {
         </div>
 
         {/* Results Info */}
-        <div className="flex justify-between items-center mb-3">
-          <p className="text-xs text-slate-500">
-            Showing {filteredAndSortedCourses.length} of {courses.length} programs
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-xs font-medium text-slate-500">
+            Showing <span className="text-slate-800">{filteredAndSortedCourses.length}</span> of <span className="text-slate-800">{courses.length}</span> programs
           </p>
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="text-xs text-emerald-600 hover:text-emerald-700"
+              className="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
             >
               Clear search
             </button>
@@ -189,7 +190,7 @@ function UniversityPage() {
 
         {/* Courses Grid */}
         {filteredAndSortedCourses.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+          <div className="text-center py-12 bg-white rounded-xl border border-slate-200 shadow-sm">
             <div className="inline-flex p-2.5 bg-slate-100 rounded-full mb-2">
               <BookOpen className="h-5 w-5 text-slate-400" />
             </div>
@@ -197,7 +198,7 @@ function UniversityPage() {
             <p className="text-xs text-slate-500">Try adjusting your search terms or filters.</p>
           </div>
         ) : (
-          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredAndSortedCourses.map((course) => (
               <Link
                 key={course.id}
@@ -205,53 +206,59 @@ function UniversityPage() {
                 params={{ id: course.id }}
                 className="group block h-full"
               >
-                <Card className="relative h-full flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-emerald-500/30">
+                <Card className="relative h-full flex flex-col justify-between border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-emerald-500/30 p-5">
 
-                  {/* Premium Icon Header Section */}
-                  <div className="relative h-28 w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 flex items-center justify-center overflow-hidden">
-                    {/* Artistic Grid Background Overlay */}
-                    <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(45deg,transparent_25%,white_25%,white_50%,transparent_50%,transparent_75%,white_75%)] bg-[length:12px_12px]" />
-                    <div className="absolute -top-12 -right-12 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all duration-500" />
+                  {/* Accent Highlight Bar on Top Border */}
+                  <div className="absolute top-0 left-0 right-0 h-[3.5px] bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
 
-                    {/* Centered Floating Glass-morphic Icon */}
-                    <div className="z-10 h-14 w-14 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-inner group-hover:scale-110 group-hover:border-emerald-400/30 group-hover:bg-emerald-500/10 transition-all duration-300">
-                      <Library className="h-6 w-6 text-slate-200 group-hover:text-emerald-300 transition-colors" />
+                  {/* Header Row: Managed properly with a clean flex layout instead of absolute stacking */}
+                  <div className="flex items-center justify-between gap-3 mb-4 w-full">
+                    <div className="h-11 w-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 shadow-sm group-hover:bg-emerald-600 transition-all duration-300">
+                      {course.thumbnail_url ? (
+                        <img
+                          src={course.thumbnail_url}
+                          alt={course.name}
+                          className="h-full w-full object-cover rounded-xl"
+                        />
+                      ) : (
+                        <SwatchBook className="h-5 w-5 text-emerald-600 group-hover:text-white transition-colors duration-300" />
+                      )}
                     </div>
 
-                    {/* Integrated Top Right Badge */}
-                    <div className="absolute top-3 right-3 z-10">
-                      <Badge className="text-[10px] font-semibold tracking-wider bg-white/10 hover:bg-white/10 text-slate-200 border border-white/10 uppercase backdrop-blur-sm px-2 py-0.5 rounded-md">
-                        {course.slug || "DEGREE"}
-                      </Badge>
-                    </div>
+                    {/* Responsive badge that safely cuts off or scales inside its own frame */}
+                    <Badge className="text-[10px] font-bold tracking-wider bg-slate-100 hover:bg-slate-100 text-slate-600 border-none uppercase px-2 py-0.5 max-w-[140px] truncate block text-center rounded">
+                      {course.slug || "DEGREE"}
+                    </Badge>
                   </div>
 
-                  {/* Course Content Details */}
-                  <div className="p-4 flex flex-col flex-1">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors text-sm md:text-base tracking-tight line-clamp-1 mb-1">
+                  {/* Body Text Context Area */}
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div className="mb-4">
+                      {/* Course Title - Handled safely across lines without hard cuts */}
+                      <h3 className="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors text-base tracking-tight leading-snug mb-1.5 break-words">
                         {course.name}
                       </h3>
-                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                      {/* Responsive body summary text */}
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-3">
                         {course.description || "Access textbook materials, structured questions, and analytical review papers tailored for this branch."}
                       </p>
                     </div>
 
-                    {/* Footer Stats / CTA */}
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
-                      <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                    {/* Bottom Status Grid Bar */}
+                    <div className="flex items-center justify-between pt-3.5 border-t border-slate-100 w-full">
+                      <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-slate-600">
                         <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                          <Clock className="h-3 w-3 text-slate-400" />
+                          <Clock className="h-3 w-3 text-slate-400 shrink-0" />
                           <span>{course.duration || "3 Years"}</span>
                         </div>
                         <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                          <GraduationCap className="h-3 w-3 text-slate-400" />
+                          <Library className="h-3 w-3 text-slate-400 shrink-0" />
                           <span>{course.total_semesters || 6} Sem</span>
                         </div>
                       </div>
 
-                      {/* Interactive Smooth Arrow Circle */}
-                      <div className="h-7 w-7 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-emerald-50 group-hover:border-emerald-100 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all duration-300">
+                      {/* Micro Interaction Arrow Anchor */}
+                      <div className="h-7 w-7 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-emerald-50 group-hover:border-emerald-200 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all duration-300 shrink-0 shadow-sm">
                         <ArrowRight className="h-3.5 w-3.5" />
                       </div>
                     </div>
