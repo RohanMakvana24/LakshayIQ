@@ -171,6 +171,8 @@ function ResumeBuilderPage() {
   const [savingStatus, setSavingStatus] = useState<"Saved" | "Saving..." | "Error">("Saved");
   const [viewMode, setViewMode] = useState<"dashboard" | "editor">("dashboard");
   const [hasResumeData, setHasResumeData] = useState(false);
+  const [resumesList, setResumesList] = useState<any[]>([]);
+  const [activeResumeId, setActiveResumeId] = useState<string>("primary");
 
   // Accordion active sections
   const [activeFormTab, setActiveFormTab] = useState<string>("personal");
@@ -189,38 +191,81 @@ function ResumeBuilderPage() {
 
         if (error) throw error;
 
+        let loadedResumes: any[] = [];
+
         if (data) {
-          setPersonalInfo(data.personal_info || DEFAULT_PERSONAL_INFO);
-          setSections(data.sections || DEFAULT_SECTIONS);
-          setStyleConfig(data.style_config || DEFAULT_STYLE_CONFIG);
           setIsPublished(data.is_published || false);
           setUsername(data.username || "");
-          setHasResumeData(true);
+
+          // Check if sections contains our multi-resume vault
+          if (data.sections && typeof data.sections === "object" && (data.sections as any).isVault) {
+            loadedResumes = (data.sections as any).resumes || [];
+          } else {
+            // Convert legacy single resume to vault format
+            loadedResumes = [
+              {
+                id: "primary",
+                name: "Primary Professional Resume",
+                personalInfo: data.personal_info || DEFAULT_PERSONAL_INFO,
+                sections: data.sections || DEFAULT_SECTIONS,
+                styleConfig: data.style_config || DEFAULT_STYLE_CONFIG,
+                isPublished: data.is_published || false,
+                updatedAt: data.updated_at || new Date().toISOString()
+              }
+            ];
+          }
         } else {
           // Check localStorage fallback
-          const localData = localStorage.getItem(`resume_${user.id}`);
-          if (localData) {
-            const parsed = JSON.parse(localData);
-            setPersonalInfo(parsed.personalInfo);
-            setSections(parsed.sections);
-            setStyleConfig(parsed.styleConfig);
-            setHasResumeData(true);
+          const localVault = localStorage.getItem(`resume_vault_${user.id}`);
+          if (localVault) {
+            loadedResumes = JSON.parse(localVault);
           } else {
-            setHasResumeData(false);
+            // Try legacy single resume storage
+            const legacyLocal = localStorage.getItem(`resume_${user.id}`);
+            if (legacyLocal) {
+              const parsed = JSON.parse(legacyLocal);
+              loadedResumes = [
+                {
+                  id: "primary",
+                  name: "Primary Professional Resume",
+                  personalInfo: parsed.personalInfo,
+                  sections: parsed.sections,
+                  styleConfig: parsed.styleConfig,
+                  isPublished: false,
+                  updatedAt: new Date().toISOString()
+                }
+              ];
+            }
           }
+        }
+
+        if (loadedResumes.length > 0) {
+          setResumesList(loadedResumes);
+          setHasResumeData(true);
+          
+          // Find the active resume
+          const active = loadedResumes[0];
+          setActiveResumeId(active.id);
+          setPersonalInfo(active.personalInfo);
+          setSections(active.sections);
+          setStyleConfig(active.styleConfig);
+          setIsPublished(active.isPublished);
+        } else {
+          setHasResumeData(false);
         }
       } catch (err) {
         console.warn("Supabase fetch failed, falling back to LocalStorage:", err);
-        // Fallback
-        const localData = localStorage.getItem(`resume_${user.id}`);
-        if (localData) {
-          const parsed = JSON.parse(localData);
-          setPersonalInfo(parsed.personalInfo);
-          setSections(parsed.sections);
-          setStyleConfig(parsed.styleConfig);
+        const localVault = localStorage.getItem(`resume_vault_${user.id}`);
+        if (localVault) {
+          const parsed = JSON.parse(localVault);
+          setResumesList(parsed);
           setHasResumeData(true);
-        } else {
-          setHasResumeData(false);
+          const active = parsed[0];
+          setActiveResumeId(active.id);
+          setPersonalInfo(active.personalInfo);
+          setSections(active.sections);
+          setStyleConfig(active.styleConfig);
+          setIsPublished(active.isPublished);
         }
       } finally {
         setLoading(false);
@@ -228,6 +273,51 @@ function ResumeBuilderPage() {
     }
     loadResumeData();
   }, [user]);
+
+  // Unified Vault Cloud Saving
+  const saveVault = async (showToast: boolean = false, customList?: any[]) => {
+    if (!user) return;
+    const targetList = customList || resumesList;
+    if (targetList.length === 0) return;
+
+    setSavingStatus("Saving...");
+    
+    // Find active resume
+    const activeResume = targetList.find((r) => r.id === activeResumeId) || targetList[0];
+    
+    try {
+      const vaultPayload = {
+        isVault: true,
+        resumes: targetList
+      };
+
+      await (supabase
+        .from("student_resumes" as any)
+        .upsert({
+          user_id: user.id,
+          personal_info: activeResume.personalInfo,
+          sections: vaultPayload,
+          style_config: activeResume.styleConfig,
+          is_published: activeResume.isPublished,
+          username: username || `student_${user.id.slice(0, 5)}`,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id" }) as any);
+
+      // Save to localStorage
+      localStorage.setItem(`resume_vault_${user.id}`, JSON.stringify(targetList));
+
+      setSavingStatus("Saved");
+      if (showToast) {
+        toast.success("🎉 Changes saved to cloud successfully!");
+      }
+    } catch (err) {
+      console.error("Failed to save vault:", err);
+      setSavingStatus("Error");
+      if (showToast) {
+        toast.error("Failed to save to cloud. Saved locally.");
+      }
+    }
+  };
 
   // Debounced Autosave Trigger
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -239,39 +329,113 @@ function ResumeBuilderPage() {
   ) => {
     setSavingStatus("Saving...");
     setHasResumeData(true);
+    
+    // Update local state list immediately
+    const updatedList = resumesList.map((r) =>
+      r.id === activeResumeId
+        ? {
+            ...r,
+            personalInfo: nextInfo,
+            sections: nextSections,
+            styleConfig: nextStyle,
+            updatedAt: new Date().toISOString(),
+          }
+        : r
+    );
+    setResumesList(updatedList);
+
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
-    saveTimeoutRef.current = setTimeout(async () => {
-      if (!user) return;
+    saveTimeoutRef.current = setTimeout(() => {
+      saveVault(false, updatedList);
+    }, 1500);
+  };
 
-      // Always backup to localStorage first
-      localStorage.setItem(
-        `resume_${user.id}`,
-        JSON.stringify({ personalInfo: nextInfo, sections: nextSections, styleConfig: nextStyle })
-      );
+  const handleEditResume = (resume: any) => {
+    setActiveResumeId(resume.id);
+    setPersonalInfo(resume.personalInfo);
+    setSections(resume.sections);
+    setStyleConfig(resume.styleConfig);
+    setIsPublished(resume.isPublished || false);
+    setViewMode("editor");
+  };
 
-      try {
-        const payload = {
-          user_id: user.id,
-          personal_info: nextInfo,
-          sections: nextSections,
-          style_config: nextStyle,
-          is_published: isPublished,
-          username: username || `student_${user.id.slice(0, 5)}`,
-          updated_at: new Date().toISOString()
-        };
+  const handleDuplicateResume = async (resume: any) => {
+    const duplicated = {
+      ...resume,
+      id: `resume_${Date.now()}`,
+      name: `${resume.name} (Copy)`,
+      isPublished: false,
+      updatedAt: new Date().toISOString()
+    };
+    const newList = [...resumesList, duplicated];
+    setResumesList(newList);
+    await saveVault(false, newList);
+    toast.success("📋 Resume duplicated successfully!");
+  };
 
-        const { error } = await (supabase
-          .from("student_resumes" as any)
-          .upsert(payload, { onConflict: "user_id" }) as any);
-
-        if (error) throw error;
-        setSavingStatus("Saved");
-      } catch (err) {
-        console.warn("Autosave to database failed, data kept in local storage:", err);
-        setSavingStatus("Saved"); // Keep user relaxed
+  const handleDeleteResume = async (resumeId: string) => {
+    if (resumesList.length <= 1) {
+      toast.error("You must keep at least one resume template.");
+      return;
+    }
+    if (confirm("Are you sure you want to delete this resume?")) {
+      const newList = resumesList.filter((r) => r.id !== resumeId);
+      setResumesList(newList);
+      
+      if (activeResumeId === resumeId) {
+        const nextActive = newList[0];
+        setActiveResumeId(nextActive.id);
+        setPersonalInfo(nextActive.personalInfo);
+        setSections(nextActive.sections);
+        setStyleConfig(nextActive.styleConfig);
+        setIsPublished(nextActive.isPublished);
       }
-    }, 1000);
+      
+      await saveVault(false, newList);
+      toast.success("❌ Resume deleted successfully!");
+    }
+  };
+
+  const handleCreateNewResume = async () => {
+    const resumeName = prompt("Enter a name for your new resume:", `Resume #${resumesList.length + 1}`);
+    if (!resumeName) return;
+
+    const newResume = {
+      id: `resume_${Date.now()}`,
+      name: resumeName,
+      personalInfo: DEFAULT_PERSONAL_INFO,
+      sections: DEFAULT_SECTIONS,
+      styleConfig: DEFAULT_STYLE_CONFIG,
+      isPublished: false,
+      updatedAt: new Date().toISOString()
+    };
+
+    const newList = [...resumesList, newResume];
+    setResumesList(newList);
+    setActiveResumeId(newResume.id);
+    setPersonalInfo(newResume.personalInfo);
+    setSections(newResume.sections);
+    setStyleConfig(newResume.styleConfig);
+    setIsPublished(newResume.isPublished);
+    setHasResumeData(true);
+    setViewMode("editor");
+    
+    await saveVault(false, newList);
+    toast.success("➕ Fresh template created!");
+  };
+
+  const downloadSpecificPDF = async (resume: any) => {
+    // Temporarily load this resume into active states
+    setPersonalInfo(resume.personalInfo);
+    setSections(resume.sections);
+    setStyleConfig(resume.styleConfig);
+    setIsPublished(resume.isPublished || false);
+    
+    toast.info("Generating PDF, please wait...");
+    setTimeout(async () => {
+      await downloadPDF();
+    }, 400);
   };
 
   // State Updaters
@@ -567,26 +731,16 @@ function ResumeBuilderPage() {
           </div>
           
           <Button
-            onClick={() => {
-              if (hasResumeData) {
-                setViewMode("editor");
-              } else {
-                setPersonalInfo(DEFAULT_PERSONAL_INFO);
-                setSections(DEFAULT_SECTIONS);
-                setStyleConfig(DEFAULT_STYLE_CONFIG);
-                setHasResumeData(true);
-                setViewMode("editor");
-              }
-            }}
+            onClick={handleCreateNewResume}
             className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all active:scale-95 shadow-md shadow-emerald-600/10 flex items-center gap-2 cursor-pointer"
           >
             <Plus className="h-4 w-4" />
-            <span>{hasResumeData ? "Open Workspace Canvas" : "Create Premium Resume"}</span>
+            <span>Create New Resume</span>
           </Button>
         </div>
 
         {/* Main Dashboard View */}
-        {!hasResumeData ? (
+        {!hasResumeData || resumesList.length === 0 ? (
           /* Empty State Dashboard Card */
           <div className="max-w-2xl mx-auto my-12 text-center p-8 bg-white border border-zinc-200/60 rounded-3xl shadow-sm space-y-6">
             <div className="h-16 w-16 mx-auto rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center animate-bounce">
@@ -601,13 +755,7 @@ function ResumeBuilderPage() {
               </p>
             </div>
             <Button
-              onClick={() => {
-                setPersonalInfo(DEFAULT_PERSONAL_INFO);
-                setSections(DEFAULT_SECTIONS);
-                setStyleConfig(DEFAULT_STYLE_CONFIG);
-                setHasResumeData(true);
-                setViewMode("editor");
-              }}
+              onClick={handleCreateNewResume}
               size="lg"
               className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/20 gap-2 transition-all active:scale-95 cursor-pointer"
             >
@@ -616,158 +764,117 @@ function ResumeBuilderPage() {
             </Button>
           </div>
         ) : (
-          /* Resume List */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
+          /* Resume List Grid Layout */
+          <div className="space-y-6 max-w-7xl mx-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400" style={{ fontFamily: "'Sora', sans-serif" }}>
+                My Saved Resumes ({resumesList.length})
+              </h3>
+            </div>
             
-            {/* Resume main details card */}
-            <Card className="lg:col-span-8 p-6 bg-white border border-zinc-200/60 rounded-3xl shadow-sm flex flex-col md:flex-row gap-6 items-center">
-              
-              {/* Miniature Resume visual placeholder */}
-              <div className="w-40 h-52 shrink-0 bg-zinc-50 border border-zinc-200/80 rounded-2xl p-4 flex flex-col justify-between shadow-inner relative overflow-hidden select-none">
-                <div className="space-y-1.5">
-                  <div className="h-3 w-3/4 rounded bg-emerald-500/80" />
-                  <div className="h-2 w-1/2 rounded bg-zinc-300" />
-                  <div className="h-1.5 w-1/3 rounded bg-zinc-200" />
-                  
-                  <div className="pt-4 space-y-1.5">
-                    <div className="h-2 w-full rounded bg-zinc-300" />
-                    <div className="h-1.5 w-5/6 rounded bg-zinc-200" />
-                    <div className="h-1.5 w-3/4 rounded bg-zinc-200" />
-                  </div>
-                  <div className="pt-2 space-y-1.5">
-                    <div className="h-2 w-full rounded bg-zinc-300" />
-                    <div className="h-1.5 w-full rounded bg-zinc-200" />
-                  </div>
-                </div>
-                <div className="flex justify-between items-center border-t pt-2">
-                  <div className="h-1 w-8 rounded bg-zinc-200" />
-                  <div className="h-1 w-4 rounded bg-zinc-200" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-emerald-500/5 pointer-events-none" />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {resumesList.map((resume) => {
+                const isCurrentActive = resume.id === activeResumeId;
+                return (
+                  <Card key={resume.id} className={`bg-white border rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden ${isCurrentActive ? "border-emerald-500/80 ring-1 ring-emerald-500/10" : "border-zinc-200/60"}`}>
+                    
+                    {/* Visual Card Header */}
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`h-9 w-9 rounded-xl flex items-center justify-center border ${isCurrentActive ? "bg-emerald-50 border-emerald-100 text-emerald-500" : "bg-zinc-50 border-zinc-100 text-zinc-400"}`}>
+                          <FileText className="h-4.5 w-4.5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-zinc-950 text-sm line-clamp-1" title={resume.name}>
+                            {resume.name || "Untitled Resume"}
+                          </h4>
+                          <p className="text-[10px] text-zinc-400 font-medium">
+                            Updated {new Date(resume.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Active Indicator or Badges */}
+                      <div className="flex items-center gap-1">
+                        {isCurrentActive && (
+                          <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-black text-[9px] uppercase shadow-none tracking-wide rounded-lg px-2 py-0.5">
+                            Active
+                          </Badge>
+                        )}
+                        {resume.isPublished ? (
+                          <Badge className="bg-blue-50 text-blue-600 border border-blue-100 font-black text-[9px] uppercase shadow-none tracking-wide rounded-lg px-2 py-0.5">
+                            Live Portfolio
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-zinc-50 text-zinc-400 border border-zinc-100 font-black text-[9px] uppercase shadow-none tracking-wide rounded-lg px-2 py-0.5">
+                            Draft
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
 
-              {/* Resume Info */}
-              <div className="flex-1 space-y-4 text-center md:text-left w-full">
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-                      Primary Resume
-                    </span>
-                    {isPublished ? (
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-                        <span>Live Hub Published</span>
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500 bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded-full">
-                        Draft Mode
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-xl font-bold text-zinc-900" style={{ fontFamily: "'Sora', sans-serif" }}>
-                    {personalInfo.fullName || "My Resume Template"}
-                  </h3>
-                  <p className="text-sm font-semibold text-zinc-500">
-                    {personalInfo.title || "Academic / Professional Portfolio"}
-                  </p>
-                </div>
+                    {/* Resume Snapshot details */}
+                    <div className="bg-zinc-50/50 rounded-2xl p-4 border border-zinc-100/50 mb-5 space-y-2 text-xs">
+                      <div className="flex justify-between items-center text-zinc-600">
+                        <span className="font-bold text-zinc-900">{resume.personalInfo.fullName || "Name Not Set"}</span>
+                      </div>
+                      <p className="text-zinc-400 font-medium line-clamp-1">
+                        {resume.personalInfo.title || "No Title Specified"}
+                      </p>
+                      <div className="text-[10px] text-zinc-400 font-medium flex items-center gap-1.5 pt-1 border-t border-zinc-100">
+                        <MapPin className="h-3 w-3 shrink-0 text-zinc-300" />
+                        <span className="line-clamp-1">{resume.personalInfo.location || "Location Not Set"}</span>
+                      </div>
+                    </div>
 
-                <div className="text-xs text-zinc-400 font-medium">
-                  Last Updated: {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} at {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                </div>
+                    {/* Card Actions Footer row */}
+                    <div className="flex items-center gap-2 mt-auto">
+                      <Button
+                        onClick={() => handleEditResume(resume)}
+                        className="flex-1 h-9 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>Edit</span>
+                      </Button>
 
-                {/* Quick actions row */}
-                <div className="flex flex-wrap gap-2 justify-center md:justify-start pt-2">
-                  <Button
-                    onClick={() => setViewMode("editor")}
-                    className="h-9 px-4 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition-all active:scale-95 shadow-md shadow-zinc-950/10 flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    <span>Edit Workspace</span>
-                  </Button>
+                      <Button
+                        onClick={() => downloadSpecificPDF(resume)}
+                        variant="outline"
+                        title="Download A4 PDF"
+                        className="h-9 w-9 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-50 flex items-center justify-center cursor-pointer shrink-0"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
 
-                  <Button
-                    onClick={downloadPDF}
-                    variant="outline"
-                    className="h-9 px-4 rounded-xl border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    <span>Direct Download PDF</span>
-                  </Button>
+                      <Button
+                        onClick={() => handleDuplicateResume(resume)}
+                        variant="outline"
+                        title="Duplicate Template"
+                        className="h-9 w-9 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-50 flex items-center justify-center cursor-pointer shrink-0"
+                      >
+                        <Save className="h-3.5 w-3.5" />
+                      </Button>
 
-                  {isPublished && (
-                    <Button
-                      onClick={() => {
-                        const publicLink = `${window.location.origin}/p/${username || `student_${user?.id.slice(0, 5)}`}`;
-                        navigator.clipboard.writeText(publicLink);
-                        toast.success("🔗 Portfolio link copied to clipboard!");
-                      }}
-                      variant="outline"
-                      className="h-9 px-3 rounded-xl border border-zinc-200 text-zinc-500 hover:text-zinc-700 transition-all active:scale-95 cursor-pointer"
-                      title="Copy Public Link"
-                    >
-                      <Share2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </Card>
+                      <Button
+                        onClick={() => handleDeleteResume(resume.id)}
+                        variant="outline"
+                        title="Delete Resume"
+                        className="h-9 w-9 rounded-xl border border-zinc-200 text-red-500 hover:bg-red-50 hover:border-red-100 flex items-center justify-center cursor-pointer shrink-0"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
 
-            {/* Side Tips card */}
-            <Card className="lg:col-span-4 p-5 bg-white border border-zinc-200/60 rounded-3xl shadow-sm space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400" style={{ fontFamily: "'Sora', sans-serif" }}>
-                1-Click Presets & Tools
-              </h4>
-              <div className="space-y-3 text-xs">
-                <div className="p-3 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <p className="font-bold text-zinc-800">Template Presets</p>
-                    <p className="text-[10px] text-zinc-400 font-medium">Tech Pioneer, Clean Serif</p>
-                  </div>
-                  <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-none font-extrabold text-[9px] uppercase tracking-wide">3 Preset</Badge>
-                </div>
-
-                <div className="p-3 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <p className="font-bold text-zinc-800">Vector A4 Print Export</p>
-                    <p className="text-[10px] text-zinc-400 font-medium">Zero-margin clean formatting</p>
-                  </div>
-                  <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-none font-extrabold text-[9px] uppercase tracking-wide">Active</Badge>
-                </div>
-
-                <div className="p-3 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <p className="font-bold text-zinc-800">Direct Share Hub</p>
-                    <p className="text-[10px] text-zinc-400 font-medium">Custom web portfolio handles</p>
-                  </div>
-                  <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-none font-extrabold text-[9px] uppercase tracking-wide">Hosted</Badge>
-                </div>
-              </div>
-              
-              <Button
-                variant="outline"
-                onClick={() => {
-                  if (confirm("Reset current design and create a fresh resume?")) {
-                    setPersonalInfo(DEFAULT_PERSONAL_INFO);
-                    setSections(DEFAULT_SECTIONS);
-                    setStyleConfig(DEFAULT_STYLE_CONFIG);
-                    setHasResumeData(true);
-                    setViewMode("editor");
-                    toast.success("Initialized a fresh baseline template!");
-                  }
-                }}
-                className="w-full h-9 rounded-xl border border-dashed border-zinc-200 text-zinc-500 hover:text-red-500 hover:bg-red-50/30 text-xs font-semibold gap-1 cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Create Fresh Template</span>
-              </Button>
-            </Card>
-
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
     );
   }
+
 
   return (
     <div className="w-full bg-white min-h-screen text-zinc-800 antialiased selection:bg-emerald-50 selection:text-emerald-700">
@@ -802,6 +909,16 @@ function ResumeBuilderPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Manual Save button */}
+          <Button
+            size="sm"
+            onClick={() => saveVault(true)}
+            className="h-9 px-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 gap-1.5 transition-all active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10"
+          >
+            <Save className="h-4 w-4" />
+            <span>Save Draft</span>
+          </Button>
+
           {/* Public Portfolio button */}
           <Button
             variant="outline"
