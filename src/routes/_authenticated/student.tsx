@@ -2,12 +2,13 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { AppShell, type NavItem } from "@/components/app-shell";
-import { Home, Bookmark, Search, GraduationCap, UserCircle } from "lucide-react";
+import { Home, Bookmark, Search, GraduationCap, UserCircle, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 const items: NavItem[] = [
   { to: "/student", label: "Dashboard", icon: Home },
   { to: "/student/bookmarks", label: "Bookmarks", icon: Bookmark },
+  { to: "/student/resume", label: "Resume Builder", icon: FileText },
   { to: "/student/search", label: "Search", icon: Search },
   { to: "/student/profile", label: "My Profile", icon: UserCircle },
 ];
@@ -26,6 +27,9 @@ function StudentLayout() {
 
   // Global Student Security Safeguards
   useEffect(() => {
+    const isResumePath = window.location.pathname.includes("/student/resume");
+    if (isResumePath) return;
+
     // 1. Block standard developer tools and save/print/view-source shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -102,6 +106,8 @@ function StudentLayout() {
     };
   }, []);
 
+  const isResumePath = typeof window !== "undefined" && window.location.pathname.includes("/student/resume");
+
   return (
     <>
       <style>{`
@@ -110,11 +116,11 @@ function StudentLayout() {
           -webkit-user-drag: none !important;
         }
         
-        /* Force blank page on print attempts */
+        /* Force blank page on print attempts only if not on resume path */
         @media print {
           body, html, #root {
-            display: none !important;
-            visibility: hidden !important;
+            display: ${isResumePath ? "block" : "none"} !important;
+            visibility: ${isResumePath ? "visible" : "hidden"} !important;
           }
         }
       `}</style>
