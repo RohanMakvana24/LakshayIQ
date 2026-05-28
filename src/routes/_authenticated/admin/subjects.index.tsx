@@ -11,15 +11,15 @@ import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Trash2, Edit3, Loader2, UploadCloud, GraduationCap, BookOpen, Layers, X, ShieldAlert, School, Hash } from "lucide-react";
 
-type Row = { 
-  id: string; 
-  semester_id: string; 
-  name: string; 
-  subject_code: string | null; 
-  slug: string; 
-  description: string | null; 
-  thumbnail_url: string | null; 
-  created_at: string 
+type Row = {
+  id: string;
+  semester_id: string;
+  name: string;
+  subject_code: string | null;
+  slug: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  created_at: string
 };
 type Sem = { id: string; semester_number: number; course_id: string };
 type Course = { id: string; name: string; university_id: string };
@@ -62,14 +62,14 @@ function ManageSubjects() {
   const getSemDetails = (semId: string) => {
     const sem = sems?.find(s => s.id === semId);
     if (!sem) return { fullString: "Unallocated", courseName: "—", semNum: "—", uniName: "—", semRawNum: "—", courseId: "", uniId: "" };
-    
+
     const course = courses?.find(c => c.id === sem.course_id);
     const cName = course?.name ?? "—";
-    
+
     // @ts-ignore
     const uId = course?.university_id || "";
     const uName = universities?.find(u => u.id === uId)?.name ?? "—";
-    
+
     return {
       fullString: `${uName} · ${cName} · Sem ${sem.semester_number}`,
       uniName: uName,
@@ -103,7 +103,7 @@ function ManageSubjects() {
   // 🏛️ ફિલ્ટર બાર માટે ડાયનેમિક સેમેસ્ટર લિસ્ટ (સિલેક્ટેડ કોર્સ મુજબ)
   const toolbarSemesters = useMemo(() => {
     if (!sems) return [];
-    
+
     // જો યુનિવર્સિટી પણ સિલેક્ટ ના હોય તો બધા સેમેસ્ટર બતાવો
     if (filterUniversityId === "all" && filterCourseId === "all") return sems;
 
@@ -121,11 +121,11 @@ function ManageSubjects() {
     if (!data) return [];
     return data.filter((row) => {
       const details = getSemDetails(row.semester_id);
-      
+
       const matchesUniversity = filterUniversityId === "all" || details.uniId === filterUniversityId;
       const matchesCourse = filterCourseId === "all" || details.courseId === filterCourseId;
       const matchesSemester = filterSemesterId === "all" || row.semester_id === filterSemesterId;
-      
+
       return matchesUniversity && matchesCourse && matchesSemester;
     });
   }, [data, filterUniversityId, filterCourseId, filterSemesterId, sems, courses, universities]);
@@ -236,17 +236,17 @@ function ManageSubjects() {
       sortValue: (r) => r.name,
       accessor: (r) => (
         <div className="flex items-center gap-3">
-      <div className="h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-200/60 flex-shrink-0 overflow-hidden flex items-center justify-center">
-  {r.thumbnail_url ? (
-    <img
-      src={r.thumbnail_url}
-      alt=""
-      className="w-full h-full object-cover"
-    />
-  ) : (
-    <BookOpen className="h-4 w-4 text-neutral-400 stroke-[1.5]" />
-  )}
-</div>
+          <div className="h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-200/60 flex-shrink-0 overflow-hidden flex items-center justify-center">
+            {r.thumbnail_url ? (
+              <img
+                src={r.thumbnail_url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <BookOpen className="h-4 w-4 text-neutral-400 stroke-[1.5]" />
+            )}
+          </div>
           <div className="flex flex-col truncate">
             <span className="font-semibold text-neutral-900 text-[13px] uppercase tracking-tight leading-normal">
               {r.name}
@@ -315,17 +315,17 @@ function ManageSubjects() {
       className: "text-right",
       accessor: (r) => (
         <div className="flex items-center justify-end gap-1">
-          <Button 
-            size="icon" 
-            variant="ghost" 
+          <Button
+            size="icon"
+            variant="ghost"
             className="h-8 w-8 text-neutral-400 hover:text-neutral-900 rounded-lg transition-colors"
             onClick={() => handleEditInitialize(r)}
           >
             <Edit3 className="h-4 w-4 stroke-[1.8]" />
           </Button>
-          <Button 
-            size="icon" 
-            variant="ghost" 
+          <Button
+            size="icon"
+            variant="ghost"
             className="h-8 w-8 text-neutral-400 hover:text-red-600 rounded-lg transition-colors"
             onClick={() => {
               if (confirm(`Are you sure you want to deprecate "${r.name}" from curriculum?`)) remove(r.id);
@@ -349,10 +349,10 @@ function ManageSubjects() {
           </div>
           <h1 className="text-xl font-bold tracking-tight text-neutral-900">Academic Subjects</h1>
         </div>
-        
-        <Button 
-          onClick={handleAddInitialize} 
-          size="sm" 
+
+        <Button
+          onClick={handleAddInitialize}
+          size="sm"
           className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-4 shadow-sm tracking-wide self-start sm:self-auto"
         >
           <Plus className="mr-1 h-3.5 w-3.5 stroke-[2.5]" /> Add Subject
@@ -362,7 +362,7 @@ function ManageSubjects() {
       {/* 🏛️ 🆕 LIVE FILTER BAR PANEL */}
       {!loading && data && data.length > 0 && (
         <div className="flex flex-col md:flex-row gap-3 p-2 bg-neutral-50 rounded-xl border border-neutral-200/60 shadow-sm">
-          
+
           {/* 1. University Filter */}
           <div className="w-full md:w-56">
             <Select value={filterUniversityId} onValueChange={setFilterUniversityId}>
@@ -451,11 +451,11 @@ function ManageSubjects() {
         </div>
       ) : filteredTableData && filteredTableData.length > 0 ? (
         <div className="w-full">
-          <DataTable<Row> 
+          <DataTable<Row>
             data={filteredTableData} // 🏛️ ફિલ્ટર થયેલો ડેટા ટેબલમાં મોકલ્યો
-            columns={columns} 
-            searchableKeys={["name", "slug", "subject_code"]} 
-            rowKey={(r) => r.id} 
+            columns={columns}
+            searchableKeys={["name", "slug", "subject_code"]}
+            rowKey={(r) => r.id}
           />
         </div>
       ) : (
@@ -499,20 +499,20 @@ function ManageSubjects() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Subject Title Name *</Label>
-                <Input 
-                  required 
-                  value={name} 
-                  onChange={(e) => setName(e.target.value)} 
+                <Input
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="h-9 border-neutral-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Link URI Route Slug</Label>
-                <Input 
-                  value={slug} 
+                <Input
+                  value={slug}
                   placeholder={slugify(name) || "auto-generated"}
-                  onChange={(e) => setSlug(e.target.value)} 
+                  onChange={(e) => setSlug(e.target.value)}
                   className="h-9 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />
               </div>
@@ -521,9 +521,9 @@ function ManageSubjects() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Registry Identifier Code</Label>
-                <Input 
-                  value={code} 
-                  onChange={(e) => setCode(e.target.value)} 
+                <Input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
                   placeholder="e.g., PH102"
                   className="h-9 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />
@@ -531,25 +531,25 @@ function ManageSubjects() {
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Thumbnail Cover Graphic</Label>
-                <input 
-                  type="file" 
-                  id="add-file-upload" 
-                  className="hidden" 
-                  accept="image/*" 
-                  onChange={handleAssetUpload} 
-                  disabled={uploading} 
+                <input
+                  type="file"
+                  id="add-file-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleAssetUpload}
+                  disabled={uploading}
                 />
-                
+
                 {thumbnailUrl ? (
                   <div className="flex items-center justify-between border border-neutral-200 bg-neutral-50 px-3 rounded-xl h-9">
                     <span className="text-[11px] text-neutral-600 font-bold flex items-center gap-1.5 truncate max-w-[140px]">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> File Target Linked
                     </span>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => setThumbnailUrl("")} 
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setThumbnailUrl("")}
                       className="h-5 w-5 text-neutral-400 hover:text-neutral-900 rounded-md"
                     >
                       <X className="h-3.5 w-3.5 stroke-[2.5]" />
@@ -576,26 +576,26 @@ function ManageSubjects() {
 
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-neutral-700">Abstract Summary Catalog</Label>
-              <Textarea 
+              <Textarea
                 rows={3}
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)} 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 placeholder="Granular syllabus overview context description..."
                 className="border-neutral-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-neutral-400 transition-all resize-none p-3 bg-white"
               />
             </div>
 
             <DialogFooter className="pt-3 border-t border-neutral-100 flex flex-row items-center justify-end gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsAddModalOpen(false)}
                 className="rounded-xl text-xs font-semibold h-9 px-4 border-neutral-200 hover:bg-neutral-50"
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={creating || uploading}
                 className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-5 shadow-sm transition-all"
               >
@@ -640,20 +640,20 @@ function ManageSubjects() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Subject Title Name *</Label>
-                <Input 
-                  required 
-                  value={name} 
-                  onChange={(e) => setName(e.target.value)} 
+                <Input
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="h-9 border-neutral-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Link URI Route Slug</Label>
-                <Input 
-                  value={slug} 
+                <Input
+                  value={slug}
                   placeholder={slugify(name) || "auto-generated"}
-                  onChange={(e) => setSlug(e.target.value)} 
+                  onChange={(e) => setSlug(e.target.value)}
                   className="h-9 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />
               </div>
@@ -662,9 +662,9 @@ function ManageSubjects() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Registry Identifier Code</Label>
-                <Input 
-                  value={code} 
-                  onChange={(e) => setCode(e.target.value)} 
+                <Input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
                   placeholder="e.g., PH102"
                   className="h-9 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />
@@ -672,25 +672,25 @@ function ManageSubjects() {
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-neutral-700">Thumbnail Cover Graphic</Label>
-                <input 
-                  type="file" 
-                  id="drawer-file-upload" 
-                  className="hidden" 
-                  accept="image/*" 
-                  onChange={handleAssetUpload} 
-                  disabled={uploading} 
+                <input
+                  type="file"
+                  id="drawer-file-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleAssetUpload}
+                  disabled={uploading}
                 />
-                
+
                 {thumbnailUrl ? (
                   <div className="flex items-center justify-between border border-neutral-200 bg-neutral-50 px-3 rounded-xl h-9">
                     <span className="text-[11px] text-neutral-600 font-bold flex items-center gap-1.5 truncate max-w-[140px]">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> File Target Linked
                     </span>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => setThumbnailUrl("")} 
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setThumbnailUrl("")}
                       className="h-5 w-5 text-neutral-400 hover:text-neutral-900 rounded-md"
                     >
                       <X className="h-3.5 w-3.5 stroke-[2.5]" />
@@ -717,26 +717,26 @@ function ManageSubjects() {
 
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-neutral-700">Abstract Summary Catalog</Label>
-              <Textarea 
+              <Textarea
                 rows={3}
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)} 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 placeholder="Granular syllabus overview context description..."
                 className="border-neutral-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-neutral-400 transition-all resize-none p-3 bg-white"
               />
             </div>
 
             <DialogFooter className="pt-3 border-t border-neutral-100 flex flex-row items-center justify-end gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-xl text-xs font-semibold h-9 px-4 border-neutral-200 hover:bg-neutral-50"
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={updating || uploading}
                 className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-5 shadow-sm transition-all"
               >
