@@ -923,7 +923,7 @@ function UnitPage() {
         }
         .appflowy-embed-frame {
           top: -48px !important;
-          height: calc(100% + 48px) !important;
+          height: calc(100% + 48px + 45px) !important;
         }
         .workspace-content-shell {
           transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
