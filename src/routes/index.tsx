@@ -15,7 +15,10 @@ import {
   Layers,
   Network,
   Milestone,
-  Loader2
+  Loader2,
+  Github,
+  Twitter,
+  Globe
 } from "lucide-react";
 
 import { BiSolidBookHeart } from "react-icons/bi";
@@ -61,16 +64,23 @@ function Landing() {
       {/* HEADER SECTION */}
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-md transition-transform group-hover:scale-105">
-              <BiSolidBookHeart className="h-5 w-5" />
-              <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
+          <Link to="/" className="flex items-center gap-3.5 group">
+            <div className="relative flex h-11 w-11 items-center justify-center">
+              {/* Spinning futuristic outer orbit ring */}
+              <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-emerald-500/50" />
+              <div className="absolute inset-0 rounded-full border border-teal-500/20" />
+              
+              {/* Inner glowing core background */}
+              <div className="absolute inset-1.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-12 flex items-center justify-center">
+                <BiSolidBookHeart className="h-5 w-5 text-white" />
+                <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border border-white shadow-sm" />
+              </div>
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-black tracking-tight text-slate-900" style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.03em" }}>
-                Lakshay<span className="text-emerald-500 text-[14px]">.IQ</span>
+              <span className="text-base font-black tracking-tight text-slate-900 group-hover:text-emerald-500 transition-colors leading-tight" style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.02em" }}>
+                Lakshay<span className="text-emerald-500 text-[12px] font-black">.IQ</span>
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Smart Learning</span>
+              <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 leading-none">Smart Platform</span>
             </div>
           </Link>
 
@@ -321,34 +331,96 @@ function Landing() {
       </main>
 
       {/* FOOTER */}
-      <footer className="bg-slate-900 text-slate-400 mt-16">
-        <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
-            <div className="sm:col-span-2">
-              <span className="font-sans text-lg font-black tracking-tight text-white">
-                Lakshay <span className="text-emerald-400">IQ</span>
-              </span>
-              <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
-                Simplifying Indian collegiate systems by deploying modular study architecture right to structural portals.
+      <footer className="bg-slate-950 border-t border-slate-900 text-slate-400 mt-20 pt-16 pb-8">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-12">
+            
+            {/* Col 1: Brand & Pulsing status */}
+            <div className="sm:col-span-2 md:col-span-5 space-y-5">
+              <div className="flex items-center gap-3.5 group">
+                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-emerald-500/30" />
+                  <div className="absolute inset-0 rounded-full border border-teal-500/10" />
+                  
+                  <div className="absolute inset-1.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md flex items-center justify-center">
+                    <BiSolidBookHeart className="h-5 w-5 text-white" />
+                  </div>
+                </div>
+                <div className="flex flex-col leading-tight text-left">
+                  <h1 className="text-base font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors" style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.02em" }}>
+                    Lakshay<span className="ml-0.5 text-emerald-400 font-extrabold text-[12px]">IQ</span>
+                  </h1>
+                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest leading-none">
+                    Smart Learning Platform
+                  </span>
+                </div>
+              </div>
+              
+              <p className="max-w-sm text-xs leading-relaxed text-slate-400">
+                Simplifying Indian collegiate systems by deploying modular study architecture right to structural portals. Access high-quality syllabus frameworks, concept notes, and custom question vaults.
               </p>
+
+              {/* Pulsing Live Platform Status Pill */}
+              <div className="inline-flex items-center gap-2 rounded-xl bg-slate-900/50 border border-slate-800/80 px-3.5 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 shadow-inner">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/80" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
+                <span>System: Nodes fully synced</span>
+              </div>
             </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-white">Platform Hierarchy</h4>
-              <ul className="mt-4 space-y-2 text-sm">
-                <li><a href="#flow" className="hover:text-white transition-colors">Universities</a></li>
-                <li><a href="#flow" className="hover:text-white transition-colors">Courses Offered</a></li>
+
+            {/* Col 2: Platform Hierarchy */}
+            <div className="md:col-span-2 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-200">Resources</h4>
+              <ul className="space-y-2.5 text-xs font-medium">
+                <li><a href="#flow" className="hover:text-emerald-400 transition-colors">Campus Hubs</a></li>
+                <li><a href="#flow" className="hover:text-emerald-400 transition-colors">Syllabus Matrix</a></li>
+                <li><Link to="/signup" className="hover:text-emerald-400 transition-colors">Student Arena</Link></li>
+                <li><Link to="/login" className="hover:text-emerald-400 transition-colors">Admin Console</Link></li>
               </ul>
             </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-white">Support</h4>
-              <ul className="mt-4 space-y-2 text-sm">
-                <li className="flex items-center gap-1.5"><HelpCircle className="h-3.5 w-3.5" /> Help Center</li>
-                <li>Terms of Service</li>
+
+            {/* Col 3: Support */}
+            <div className="md:col-span-2 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-200">Support</h4>
+              <ul className="space-y-2.5 text-xs font-medium">
+                <li className="flex items-center gap-1.5 hover:text-emerald-400 transition-colors cursor-pointer"><HelpCircle className="h-3.5 w-3.5" /> Help Desk</li>
+                <li className="hover:text-emerald-400 transition-colors cursor-pointer">Security Sandbox</li>
+                <li className="hover:text-emerald-400 transition-colors cursor-pointer">Terms of Service</li>
+                <li className="hover:text-emerald-400 transition-colors cursor-pointer">Privacy Protocol</li>
               </ul>
             </div>
+
+            {/* Col 4: Quick Newsletter / Socials */}
+            <div className="md:col-span-3 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-200">Connect</h4>
+              <p className="text-[11px] text-slate-500 leading-normal">
+                Stay updated with major university schedule announcements and newly indexed curriculum modules.
+              </p>
+              
+              {/* Social icons */}
+              <div className="flex items-center gap-3 pt-2">
+                <a href="https://github.com" target="_blank" rel="noreferrer" className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all hover:scale-105 active:scale-95 shadow-sm">
+                  <Github className="h-4 w-4" />
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noreferrer" className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all hover:scale-105 active:scale-95 shadow-sm">
+                  <Twitter className="h-4 w-4" />
+                </a>
+                <a href="https://lakshay.iq" target="_blank" rel="noreferrer" className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all hover:scale-105 active:scale-95 shadow-sm">
+                  <Globe className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
+
           </div>
-          <div className="mt-12 border-t border-slate-800 pt-8 text-center text-xs text-slate-500">
-            © {new Date().getFullYear()} Lakshay IQ — Smart University Learning Platform. All rights reserved.
+
+          {/* Bottom Copyright Area */}
+          <div className="mt-16 border-t border-slate-900 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
+            <p>© {new Date().getFullYear()} Lakshay IQ — Smart University Learning Platform. All rights reserved.</p>
+            <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-900 px-3 py-1 rounded-xl text-[10px] font-bold text-slate-400 tracking-wider">
+              <span>MADE FOR INDIAN UNIVERSITIES</span>
+            </div>
           </div>
         </div>
       </footer>
