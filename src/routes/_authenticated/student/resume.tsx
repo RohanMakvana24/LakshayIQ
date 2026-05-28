@@ -169,6 +169,8 @@ function ResumeBuilderPage() {
   const [isPublished, setIsPublished] = useState(false);
   const [username, setUsername] = useState("");
   const [savingStatus, setSavingStatus] = useState<"Saved" | "Saving..." | "Error">("Saved");
+  const [viewMode, setViewMode] = useState<"dashboard" | "editor">("dashboard");
+  const [hasResumeData, setHasResumeData] = useState(false);
 
   // Accordion active sections
   const [activeFormTab, setActiveFormTab] = useState<string>("personal");
@@ -193,6 +195,7 @@ function ResumeBuilderPage() {
           setStyleConfig(data.style_config || DEFAULT_STYLE_CONFIG);
           setIsPublished(data.is_published || false);
           setUsername(data.username || "");
+          setHasResumeData(true);
         } else {
           // Check localStorage fallback
           const localData = localStorage.getItem(`resume_${user.id}`);
@@ -201,6 +204,9 @@ function ResumeBuilderPage() {
             setPersonalInfo(parsed.personalInfo);
             setSections(parsed.sections);
             setStyleConfig(parsed.styleConfig);
+            setHasResumeData(true);
+          } else {
+            setHasResumeData(false);
           }
         }
       } catch (err) {
@@ -212,6 +218,9 @@ function ResumeBuilderPage() {
           setPersonalInfo(parsed.personalInfo);
           setSections(parsed.sections);
           setStyleConfig(parsed.styleConfig);
+          setHasResumeData(true);
+        } else {
+          setHasResumeData(false);
         }
       } finally {
         setLoading(false);
@@ -229,6 +238,7 @@ function ResumeBuilderPage() {
     nextStyle: StyleConfig
   ) => {
     setSavingStatus("Saving...");
+    setHasResumeData(true);
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
     saveTimeoutRef.current = setTimeout(async () => {
@@ -542,12 +552,239 @@ function ResumeBuilderPage() {
     return "font-mono text-xs";
   };
 
+  if (viewMode === "dashboard") {
+    return (
+      <div className="w-full bg-zinc-50/40 min-h-screen text-zinc-800 antialiased no-print p-6">
+        {/* Dashboard Header */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-zinc-200/60 pb-5 mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-zinc-950" style={{ fontFamily: "'Sora', sans-serif" }}>
+              Premium Resume & Portfolio Hub
+            </h1>
+            <p className="text-sm text-zinc-500 mt-1 font-medium">
+              Create, customize, host and export your job-ready academic portfolio in seconds.
+            </p>
+          </div>
+          
+          <Button
+            onClick={() => {
+              if (hasResumeData) {
+                setViewMode("editor");
+              } else {
+                setPersonalInfo(DEFAULT_PERSONAL_INFO);
+                setSections(DEFAULT_SECTIONS);
+                setStyleConfig(DEFAULT_STYLE_CONFIG);
+                setHasResumeData(true);
+                setViewMode("editor");
+              }
+            }}
+            className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all active:scale-95 shadow-md shadow-emerald-600/10 flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="h-4 w-4" />
+            <span>{hasResumeData ? "Open Workspace Canvas" : "Create Premium Resume"}</span>
+          </Button>
+        </div>
+
+        {/* Main Dashboard View */}
+        {!hasResumeData ? (
+          /* Empty State Dashboard Card */
+          <div className="max-w-2xl mx-auto my-12 text-center p-8 bg-white border border-zinc-200/60 rounded-3xl shadow-sm space-y-6">
+            <div className="h-16 w-16 mx-auto rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center animate-bounce">
+              <Sparkles className="h-8 w-8 text-emerald-500" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-zinc-900" style={{ fontFamily: "'Sora', sans-serif" }}>
+                No Premium Resumes Created Yet
+              </h2>
+              <p className="text-sm text-zinc-500 max-w-md mx-auto leading-relaxed">
+                Unlock professional career-ready options! Build a beautiful, live-saving A4 vector resume and digital portfolio hosted directly on Lakshay IQ.
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                setPersonalInfo(DEFAULT_PERSONAL_INFO);
+                setSections(DEFAULT_SECTIONS);
+                setStyleConfig(DEFAULT_STYLE_CONFIG);
+                setHasResumeData(true);
+                setViewMode("editor");
+              }}
+              size="lg"
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/20 gap-2 transition-all active:scale-95 cursor-pointer"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>Get Started in 1-Click</span>
+            </Button>
+          </div>
+        ) : (
+          /* Resume List */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
+            
+            {/* Resume main details card */}
+            <Card className="lg:col-span-8 p-6 bg-white border border-zinc-200/60 rounded-3xl shadow-sm flex flex-col md:flex-row gap-6 items-center">
+              
+              {/* Miniature Resume visual placeholder */}
+              <div className="w-40 h-52 shrink-0 bg-zinc-50 border border-zinc-200/80 rounded-2xl p-4 flex flex-col justify-between shadow-inner relative overflow-hidden select-none">
+                <div className="space-y-1.5">
+                  <div className="h-3 w-3/4 rounded bg-emerald-500/80" />
+                  <div className="h-2 w-1/2 rounded bg-zinc-300" />
+                  <div className="h-1.5 w-1/3 rounded bg-zinc-200" />
+                  
+                  <div className="pt-4 space-y-1.5">
+                    <div className="h-2 w-full rounded bg-zinc-300" />
+                    <div className="h-1.5 w-5/6 rounded bg-zinc-200" />
+                    <div className="h-1.5 w-3/4 rounded bg-zinc-200" />
+                  </div>
+                  <div className="pt-2 space-y-1.5">
+                    <div className="h-2 w-full rounded bg-zinc-300" />
+                    <div className="h-1.5 w-full rounded bg-zinc-200" />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center border-t pt-2">
+                  <div className="h-1 w-8 rounded bg-zinc-200" />
+                  <div className="h-1 w-4 rounded bg-zinc-200" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-emerald-500/5 pointer-events-none" />
+              </div>
+
+              {/* Resume Info */}
+              <div className="flex-1 space-y-4 text-center md:text-left w-full">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+                      Primary Resume
+                    </span>
+                    {isPublished ? (
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+                        <span>Live Hub Published</span>
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500 bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded-full">
+                        Draft Mode
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-bold text-zinc-900" style={{ fontFamily: "'Sora', sans-serif" }}>
+                    {personalInfo.fullName || "My Resume Template"}
+                  </h3>
+                  <p className="text-sm font-semibold text-zinc-500">
+                    {personalInfo.title || "Academic / Professional Portfolio"}
+                  </p>
+                </div>
+
+                <div className="text-xs text-zinc-400 font-medium">
+                  Last Updated: {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} at {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                </div>
+
+                {/* Quick actions row */}
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start pt-2">
+                  <Button
+                    onClick={() => setViewMode("editor")}
+                    className="h-9 px-4 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition-all active:scale-95 shadow-md shadow-zinc-950/10 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    <span>Edit Workspace</span>
+                  </Button>
+
+                  <Button
+                    onClick={downloadPDF}
+                    variant="outline"
+                    className="h-9 px-4 rounded-xl border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    <span>Direct Download PDF</span>
+                  </Button>
+
+                  {isPublished && (
+                    <Button
+                      onClick={() => {
+                        const publicLink = `${window.location.origin}/p/${username || `student_${user?.id.slice(0, 5)}`}`;
+                        navigator.clipboard.writeText(publicLink);
+                        toast.success("🔗 Portfolio link copied to clipboard!");
+                      }}
+                      variant="outline"
+                      className="h-9 px-3 rounded-xl border border-zinc-200 text-zinc-500 hover:text-zinc-700 transition-all active:scale-95 cursor-pointer"
+                      title="Copy Public Link"
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            {/* Side Tips card */}
+            <Card className="lg:col-span-4 p-5 bg-white border border-zinc-200/60 rounded-3xl shadow-sm space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400" style={{ fontFamily: "'Sora', sans-serif" }}>
+                1-Click Presets & Tools
+              </h4>
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-zinc-800">Template Presets</p>
+                    <p className="text-[10px] text-zinc-400 font-medium">Tech Pioneer, Clean Serif</p>
+                  </div>
+                  <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-none font-extrabold text-[9px] uppercase tracking-wide">3 Preset</Badge>
+                </div>
+
+                <div className="p-3 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-zinc-800">Vector A4 Print Export</p>
+                    <p className="text-[10px] text-zinc-400 font-medium">Zero-margin clean formatting</p>
+                  </div>
+                  <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-none font-extrabold text-[9px] uppercase tracking-wide">Active</Badge>
+                </div>
+
+                <div className="p-3 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-zinc-800">Direct Share Hub</p>
+                    <p className="text-[10px] text-zinc-400 font-medium">Custom web portfolio handles</p>
+                  </div>
+                  <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-none font-extrabold text-[9px] uppercase tracking-wide">Hosted</Badge>
+                </div>
+              </div>
+              
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (confirm("Reset current design and create a fresh resume?")) {
+                    setPersonalInfo(DEFAULT_PERSONAL_INFO);
+                    setSections(DEFAULT_SECTIONS);
+                    setStyleConfig(DEFAULT_STYLE_CONFIG);
+                    setHasResumeData(true);
+                    setViewMode("editor");
+                    toast.success("Initialized a fresh baseline template!");
+                  }
+                }}
+                className="w-full h-9 rounded-xl border border-dashed border-zinc-200 text-zinc-500 hover:text-red-500 hover:bg-red-50/30 text-xs font-semibold gap-1 cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Create Fresh Template</span>
+              </Button>
+            </Card>
+
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="w-full bg-white min-h-screen text-zinc-800 antialiased selection:bg-emerald-50 selection:text-emerald-700">
       
       {/* Dynamic Header */}
       <div className="flex items-center justify-between gap-4 border-b border-zinc-100 pb-4 mb-6 no-print">
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setViewMode("dashboard")}
+            className="h-9 px-3 rounded-xl border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition-all active:scale-95 gap-1 font-bold text-xs bg-white cursor-pointer"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Exit Editor</span>
+          </Button>
+
           <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
             <FileText className="h-5 w-5 text-emerald-500" />
           </div>
@@ -570,7 +807,7 @@ function ResumeBuilderPage() {
             variant="outline"
             size="sm"
             onClick={handlePublishToggle}
-            className={`h-9 px-4 rounded-xl border border-zinc-200 font-semibold gap-1.5 transition-all active:scale-95 ${isPublished ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-white text-zinc-600"}`}
+            className={`h-9 px-4 rounded-xl border border-zinc-200 font-semibold gap-1.5 transition-all active:scale-95 cursor-pointer ${isPublished ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-white text-zinc-600"}`}
           >
             <Globe className="h-4 w-4" />
             <span>{isPublished ? "Live Hub Active" : "Go Live"}</span>
@@ -581,7 +818,7 @@ function ResumeBuilderPage() {
             variant="outline"
             size="sm"
             onClick={triggerPrint}
-            className="h-9 px-3 rounded-xl border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition-all active:scale-95"
+            className="h-9 px-3 rounded-xl border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition-all active:scale-95 cursor-pointer"
             title="Open standard browser print dialog"
           >
             <Share2 className="h-4 w-4" />
@@ -591,7 +828,7 @@ function ResumeBuilderPage() {
           <Button
             size="sm"
             onClick={downloadPDF}
-            className="h-9 px-4 rounded-xl bg-zinc-950 text-white font-semibold hover:bg-zinc-800 gap-1.5 transition-all active:scale-95 shadow-md shadow-zinc-950/10"
+            className="h-9 px-4 rounded-xl bg-zinc-950 text-white font-semibold hover:bg-zinc-800 gap-1.5 transition-all active:scale-95 shadow-md shadow-zinc-950/10 cursor-pointer"
           >
             <Download className="h-4 w-4" />
             <span>Direct Download</span>
@@ -1264,6 +1501,19 @@ function ResumeBuilderPage() {
          ======================================================== */}
       <style>{`
         @media print {
+          @page {
+            margin: 0mm !important;
+            size: A4 portrait;
+          }
+          
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            background: white !important;
+          }
+
           /* Hide absolutely everything except the resume paper canvas during printing */
           body * {
             visibility: hidden;
@@ -1280,11 +1530,12 @@ function ResumeBuilderPage() {
             top: 0 !important;
             width: 210mm !important;
             min-height: 297mm !important;
-            padding: 15mm !important;
+            padding: 20mm !important;
             border: none !important;
             box-shadow: none !important;
             background: white !important;
             margin: 0 !important;
+            box-sizing: border-box !important;
           }
           
           /* Page break avoidance rules for timelines */
@@ -1292,10 +1543,21 @@ function ResumeBuilderPage() {
             page-break-inside: avoid !important;
           }
           
+          .page-break-after-always {
+            page-break-after: always !important;
+            display: block !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+          }
+          
           html, body {
             background: white !important;
             margin: 0 !important;
             padding: 0 !important;
+            height: 100%;
+            overflow: hidden;
           }
         }
       `}</style>
