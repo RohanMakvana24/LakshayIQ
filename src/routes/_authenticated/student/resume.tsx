@@ -173,6 +173,8 @@ function ResumeBuilderPage() {
   const [hasResumeData, setHasResumeData] = useState(false);
   const [resumesList, setResumesList] = useState<any[]>([]);
   const [activeResumeId, setActiveResumeId] = useState<string>("primary");
+  const [showAdModal, setShowAdModal] = useState(false);
+  const [adPendingResume, setAdPendingResume] = useState<any>(null);
 
   // Accordion active sections
   const [activeFormTab, setActiveFormTab] = useState<string>("personal");
@@ -425,7 +427,12 @@ function ResumeBuilderPage() {
     toast.success("➕ Fresh template created!");
   };
 
-  const downloadSpecificPDF = async (resume: any) => {
+  const downloadSpecificPDF = (resume: any) => {
+    setAdPendingResume(resume);
+    setShowAdModal(true);
+  };
+
+  const executeActualPDFDownload = async (resume: any) => {
     // Temporarily load this resume into active states
     setPersonalInfo(resume.personalInfo);
     setSections(resume.sections);
@@ -434,7 +441,7 @@ function ResumeBuilderPage() {
     
     toast.info("Generating PDF, please wait...");
     setTimeout(async () => {
-      await downloadPDF();
+      await executeActualActivePDFDownload();
     }, 400);
   };
 
@@ -622,8 +629,14 @@ function ResumeBuilderPage() {
     window.print();
   };
 
-  // Direct A4 PDF export using html2canvas and jsPDF
-  const downloadPDF = async () => {
+  // Direct A4 PDF export trigger
+  const downloadPDF = () => {
+    setAdPendingResume(null);
+    setShowAdModal(true);
+  };
+
+  // Actual PDF Generator Engine
+  const executeActualActivePDFDownload = async () => {
     const element = document.querySelector(".resume-canvas");
     if (!element) return;
 
@@ -1610,6 +1623,56 @@ function ResumeBuilderPage() {
             </div>
           </div>
         </div>
+
+        {/* Sponsor Adsterra Monetization Modal */}
+        {showAdModal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md no-print p-4">
+            <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 text-center animate-in fade-in zoom-in-95 duration-200">
+              
+              {/* Pulsing visual */}
+              <div className="h-16 w-16 mx-auto rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center animate-pulse">
+                <Download className="h-8 w-8 text-emerald-500" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold text-zinc-950 font-sans animate-pulse" style={{ fontFamily: "'Sora', sans-serif" }}>
+                  Preparing Premium A4 PDF...
+                </h3>
+                <p className="text-xs text-zinc-500 leading-relaxed px-2">
+                  To keep Lakshay IQ's premium resume and portfolio builder 100% free for all university students, please proceed through our sponsor network to unlock your download.
+                </p>
+              </div>
+
+              {/* Sponsor Button */}
+              <Button
+                onClick={() => {
+                  // Open Adsterra link in a new tab
+                  window.open("https://www.effectivecpmnetwork.com/n7uqb683?key=ddbf42a7d34cc2cee82b22cef3e125f9", "_blank");
+                  
+                  // Trigger actual PDF generation
+                  if (adPendingResume) {
+                    executeActualPDFDownload(adPendingResume);
+                  } else {
+                    executeActualActivePDFDownload();
+                  }
+                  
+                  // Close modal
+                  setShowAdModal(false);
+                  setAdPendingResume(null);
+                  toast.success("🚀 Download unlocked!");
+                }}
+                className="w-full h-11 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white font-extrabold shadow-lg shadow-zinc-950/20 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+              >
+                <Sparkles className="h-4 w-4 text-emerald-400" />
+                <span>Unlock & Download PDF</span>
+              </Button>
+              
+              <p className="text-[10px] text-zinc-400 font-medium">
+                Secure sponsored download powered by Adsterra Network
+              </p>
+            </div>
+          </div>
+        )}
 
       </div>
 
