@@ -77,7 +77,7 @@ function Landing() {
               </div>
             </div>
             <div className="flex flex-col">
-              <span className="text-base font-black tracking-tight text-slate-900 group-hover:text-emerald-500 transition-colors leading-tight" style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.02em" }}>
+              <span className="text-base font-black tracking-tight text-slate-900 group-hover:text-emerald-500 transition-colors leading-tight" style={{ fontFamily: "'Sora', sans-serif", letterSpacing: "-0.03em" }}>
                 Lakshay<span className="text-emerald-500 text-[12px] font-black">.IQ</span>
               </span>
               <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 leading-none">Smart Platform</span>
@@ -347,7 +347,7 @@ function Landing() {
                   </div>
                 </div>
                 <div className="flex flex-col leading-tight text-left">
-                  <h1 className="text-base font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors" style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.02em" }}>
+                  <h1 className="text-base font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors" style={{ fontFamily: "'Sora', sans-serif", letterSpacing: "-0.03em" }}>
                     Lakshay<span className="ml-0.5 text-emerald-400 font-extrabold text-[12px]">IQ</span>
                   </h1>
                   <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest leading-none">

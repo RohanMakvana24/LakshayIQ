@@ -132,7 +132,7 @@ function Login() {
             <div className="flex flex-col">
               <span className={`text-base font-black tracking-tight leading-tight group-hover:text-emerald-400 transition-colors duration-300 ${
                 isDarkMode ? "text-white" : "text-slate-900"
-              }`} style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.02em" }}>
+              }`} style={{ fontFamily: "'Sora', sans-serif", letterSpacing: "-0.03em" }}>
                 Lakshay<span className="text-emerald-400 text-[12px] font-black">.IQ</span>
               </span>
               <span className={`text-[8px] font-bold uppercase tracking-widest leading-none transition-colors duration-500 ${
