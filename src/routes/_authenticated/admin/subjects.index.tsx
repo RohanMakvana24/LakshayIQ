@@ -147,11 +147,11 @@ function ManageSubjects() {
 
   const handleEditInitialize = (subject: Row) => {
     setSelectedSubject(subject);
-    setName(subject.name);
-    setSlug(subject.slug);
+    setName(subject.name || "");
+    setSlug(subject.slug || "");
     setCode(subject.subject_code || "");
     setDescription(subject.description || "");
-    setSemesterId(subject.semester_id);
+    setSemesterId(subject.semester_id || "");
     setThumbnailUrl(subject.thumbnail_url || "");
     setIsModalOpen(true);
   };
@@ -467,7 +467,7 @@ function ManageSubjects() {
 
       {/* 1. NEW Add Subject Drawer Popover */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-[480px] w-[95vw] rounded-2xl border-neutral-200 bg-white p-5 shadow-2xl overflow-hidden focus:outline-none">
+        <DialogContent className="sm:max-w-[580px] w-[95vw] rounded-2xl border-neutral-200 bg-white p-5 shadow-2xl overflow-hidden focus:outline-none">
           <DialogHeader className="space-y-1 pb-3 border-b border-neutral-100">
             <div className="flex items-center gap-1.5 text-neutral-400 mb-0.5">
               <Layers className="h-3.5 w-3.5 stroke-[2]" />
@@ -483,7 +483,7 @@ function ManageSubjects() {
                 <span>Structural Semester Alignment *</span>
               </Label>
               <Select value={semesterId} onValueChange={setSemesterId} required>
-                <SelectTrigger className="h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all">
+                <SelectTrigger className="w-full h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all min-w-0 overflow-hidden [&>span]:truncate [&>span]:min-w-0 [&>span]:text-left">
                   <SelectValue placeholder="Select target node structural terminal" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-neutral-200 bg-white shadow-lg max-h-[220px]">
@@ -608,7 +608,7 @@ function ManageSubjects() {
 
       {/* 2. Existing Edit Subject Drawer Popover */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[480px] w-[95vw] rounded-2xl border-neutral-200 bg-white p-5 shadow-2xl overflow-hidden focus:outline-none">
+        <DialogContent className="sm:max-w-[580px] w-[95vw] rounded-2xl border-neutral-200 bg-white p-5 shadow-2xl overflow-hidden focus:outline-none">
           <DialogHeader className="space-y-1 pb-3 border-b border-neutral-100">
             <div className="flex items-center gap-1.5 text-neutral-400 mb-0.5">
               <Layers className="h-3.5 w-3.5 stroke-[2]" />
@@ -624,7 +624,7 @@ function ManageSubjects() {
                 <span>Structural Semester Alignment *</span>
               </Label>
               <Select value={semesterId} onValueChange={setSemesterId} required>
-                <SelectTrigger className="h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all">
+                <SelectTrigger className="w-full h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all min-w-0 overflow-hidden [&>span]:truncate [&>span]:min-w-0 [&>span]:text-left">
                   <SelectValue placeholder="Select target node structural terminal" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-neutral-200 bg-white shadow-lg max-h-[220px]">
@@ -649,10 +649,10 @@ function ManageSubjects() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-neutral-700">Link URI Route Slug *</Label>
+                <Label className="text-xs font-bold text-neutral-700">Link URI Route Slug</Label>
                 <Input 
-                  required 
                   value={slug} 
+                  placeholder={slugify(name) || "auto-generated"}
                   onChange={(e) => setSlug(e.target.value)} 
                   className="h-9 border-neutral-200 rounded-xl text-xs font-mono focus-visible:ring-0 focus-visible:border-neutral-400 transition-all bg-white"
                 />

@@ -254,7 +254,7 @@ function ManageUnits() {
 
       {/* Structural Edit Unit Specification Drawer Modal Popover */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[480px] w-[95vw] rounded-2xl border-neutral-200 bg-white p-5 shadow-2xl overflow-hidden focus:outline-none">
+        <DialogContent className="sm:max-w-[580px] w-[95vw] rounded-2xl border-neutral-200 bg-white p-5 shadow-2xl overflow-hidden focus:outline-none">
           <DialogHeader className="space-y-1 pb-3 border-b border-neutral-100">
             <div className="flex items-center gap-1.5 text-neutral-400 mb-0.5">
               <Layers className="h-3.5 w-3.5 stroke-[2]" />

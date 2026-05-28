@@ -3,14 +3,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { BookOpen, ArrowRight, Clock, Building2, Sparkles, Search, SlidersHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  BookOpen,
+  ArrowRight,
+  Clock,
+  Building2,
+  Sparkles,
+  Search,
+  SlidersHorizontal,
+  Layers,
+  School,
+  Library,
+  GraduationCap
+} from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { useState, useMemo } from "react";
 
-// 🏛️ TanStack Router Loader Engine
 export const Route = createFileRoute("/_authenticated/student/university/$id")({
   loader: async ({ params }) => {
-    // 1. યુનિવર્સિટીની બેઝિક વિગતો મેળવો
     const { data: university, error: univError } = await supabase
       .from("universities")
       .select("id, name, slug, description, logo_url, banner_url, is_active")
@@ -21,16 +32,15 @@ export const Route = createFileRoute("/_authenticated/student/university/$id")({
       throw notFound();
     }
 
-    // 2. આ યુનિવર્સિટી સાથે કનેક્ટેડ તમામ કોર્સ લોડ કરો
     const { data: courses, error: coursesError } = await supabase
       .from("courses")
       .select("id, name, slug, duration, total_semesters, thumbnail_url, description")
       .eq("university_id", params.id)
       .order("name", { ascending: true });
 
-    return { 
-      university, 
-      courses: courses || [] 
+    return {
+      university,
+      courses: courses || []
     };
   },
   head: ({ loaderData }) => ({
@@ -42,18 +52,13 @@ export const Route = createFileRoute("/_authenticated/student/university/$id")({
 });
 
 function UniversityPage() {
-  // Loader માંથી ડેટા લોડ કરો
   const { university, courses } = Route.useLoaderData();
-
-  // Search અને Sort ની સ્ટેટ્સ
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name-asc" | "sem-desc" | "sem-asc">("name-asc");
 
-  // ⚡ Client-side Search & Sort Engine: પરફોર્મન્સ ઓપ્ટિમાઇઝેશન માટે useMemo નો ઉપયોગ
   const filteredAndSortedCourses = useMemo(() => {
     let result = [...courses];
 
-    // 1. સર્ચ ફિલ્ટર એપ્લાય કરો (નામ અથવા ડિસ્ક્રિપ્શન બંનેમાં સર્ચ કરશે)
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
       result = result.filter(
@@ -63,7 +68,6 @@ function UniversityPage() {
       );
     }
 
-    // 2. સોર્ટિંગ ઓર્ડર એપ્લાય કરો
     if (sortBy === "name-asc") {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortBy === "sem-desc") {
@@ -75,89 +79,90 @@ function UniversityPage() {
     return result;
   }, [courses, searchQuery, sortBy]);
 
+  const totalSemesters = useMemo(() => {
+    return courses.reduce((acc, c) => acc + (c.total_semesters || 0), 0);
+  }, [courses]);
+
   return (
-    <div className="min-h-screen w-full bg-white">
-      <div className="w-full px-4 py-6 md:px-6 lg:px-8">
-        <div className="space-y-8 antialiased animate-fade-in max-w-7xl mx-auto">
+    <div className="min-h-screen w-full ">
+      <div className="w-full px-4 py-4 md:px-6 lg:px-8">
 
-          {/* 🗺️ PRECISE BREADCRUMB NAVIGATION */}
-          <BreadcrumbNav 
+        {/* Breadcrumb */}
+        <div className="mb-4">
+          <BreadcrumbNav
             items={[
-              { label: "Dashboard", to: "/student" }, 
+              { label: "Dashboard", to: "/student" },
               { label: university.name }
-            ]} 
+            ]}
           />
+        </div>
 
-          {/* 🌌 CINEMATIC HERO BANNER HEADER FRAME */}
-          <header className="relative rounded-[1rem] border border-slate-200/70 bg-slate-950 shadow-lg overflow-hidden group">
-            <div className="absolute inset-0 z-0 opacity-40">
-              {university.banner_url ? (
-                <img 
-                  src={university.banner_url} 
-                  alt={university.name} 
-                  className="w-full h-full object-cover filter brightness-75 contrast-125"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-r from-slate-950 to-slate-900" />
-              )}
+        {/* Hero Section */}
+        <div className="relative rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden mb-6 shadow-lg">
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute top-0 -right-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-2xl" />
+          <div className="absolute bottom-0 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl" />
+          <div className="absolute inset-0 opacity-10 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.1)_75%)] bg-[length:16px_16px]" />
+
+          <div className="relative z-10 px-5 py-5 md:px-7 md:py-6">
+            <div className="flex flex-col md:flex-row md:items-center gap-5">
+              <div className="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-white shadow-md overflow-hidden flex items-center justify-center shrink-0">
+                {university.logo_url ? (
+                  <img src={university.logo_url} alt={university.name} className="h-full w-full object-cover" />
+                ) : (
+                  <Building2 className="h-8 w-8 text-slate-700" />
+                )}
+              </div>
+
+              <div className="flex-1 space-y-2">
+                <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 rounded-full px-2.5 py-0.5 border border-emerald-500/30">
+                  <Sparkles className="h-3 w-3 text-emerald-300" />
+                  <span className="text-[10px] font-semibold tracking-wide text-emerald-200">REGISTERED UNIVERSITY</span>
+                </div>
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">
+                  {university.name}
+                </h1>
+                <p className="text-slate-300 text-xs md:text-sm max-w-2xl">
+                  {university.description || "Comprehensive educational programs and study resources are calibrated for this structural campus grid mapping."}
+                </p>
+              </div>
+
+              <div className="flex gap-3 shrink-0">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/20 text-center">
+                  <School className="h-4 w-4 text-emerald-300 mx-auto mb-1" />
+                  <p className="text-lg font-bold text-white">{courses.length}</p>
+                  <p className="text-[9px] text-slate-300 uppercase">Courses</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/20 text-center">
+                  <Layers className="h-4 w-4 text-emerald-300 mx-auto mb-1" />
+                  <p className="text-lg font-bold text-white">{totalSemesters}</p>
+                  <p className="text-[9px] text-slate-300 uppercase">Semesters</p>
+                </div>
+              </div>
             </div>
-
-        <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6 text-white">
-          <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-white text-neutral-950 border-2 border-white/20 shadow-xl overflow-hidden font-mono font-bold text-xl">
-            {university.logo_url ? (
-              <img src={university.logo_url} alt={university.name} className="h-full w-full object-cover" />
-            ) : (
-              <Building2 className="h-7 w-7 text-neutral-900" />
-            )}
-          </div>
-
-          <div className="space-y-2 flex-1">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold font-mono tracking-wider text-emerald-400 border border-emerald-500/20 backdrop-blur-md">
-              <Sparkles className="h-3 w-3" /> REGISTERED UNIVERSITY
-            </div>
-            <h1 className="font-display text-2xl md:text-3xl font-extrabold tracking-tight max-w-4xl leading-tight">
-              {university.name}
-            </h1>
-            <p className="text-xs md:text-sm text-neutral-400 font-medium line-clamp-2 max-w-3xl leading-relaxed">
-              {university.description || "Comprehensive educational programs and study resources are calibrated for this structural campus grid mapping."}
-            </p>
-          </div>
-          
-          <div className="shrink-0 font-mono text-xs font-bold uppercase tracking-wider bg-black/30 border border-white/5 px-3 py-1.5 rounded-xl backdrop-blur-md text-neutral-300">
-            {courses.length} Active Courses
           </div>
         </div>
-      </header>
 
-      {/* 📚 COURSES CONTENT GRID WITH SEARCH & FILTER */}
-      <section className="space-y-5">
-        <div className="border-b border-neutral-100 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="font-display text-xl font-bold tracking-tight text-neutral-900">Available Degrees & Programs</h2>
-            <p className="text-xs text-neutral-400 mt-0.5">Select a course pipeline framework to extract semester components</p>
+        {/* Controls Bar */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex flex-col sm:flex-row items-center gap-3 mb-5">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Search courses by name or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 border-slate-200 rounded-lg text-sm"
+            />
           </div>
 
-          {/* 🔍 SEARCH AND SORT CONTROLS PANEL */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-            {/* Search Input */}
-            <div className="relative flex-1 sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-              <input
-                type="text"
-                placeholder="Search courses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-9 pr-4 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
-              />
-            </div>
-
-            {/* Sort Dropdown */}
-            <div className="relative flex items-center gap-2 bg-white border border-neutral-200 rounded-xl px-3 h-9 text-sm text-neutral-700 hover:border-neutral-300 transition-colors">
-              <SlidersHorizontal className="h-3.5 w-3.5 text-neutral-400" />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5">
+              <SlidersHorizontal className="h-3 w-3 text-slate-500" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-transparent pr-2 font-medium text-neutral-900 outline-none cursor-pointer text-xs"
+                className="bg-transparent text-xs font-medium text-slate-600 focus:outline-none"
               >
                 <option value="name-asc">Alphabetical (A-Z)</option>
                 <option value="sem-desc">Semesters: High to Low</option>
@@ -167,50 +172,88 @@ function UniversityPage() {
           </div>
         </div>
 
-        {/* 📭 Empty State કે ફિલ્ટર નો મેચ થાય ત્યારનું સ્ટેટ */}
+        {/* Results Info */}
+        <div className="flex justify-between items-center mb-3">
+          <p className="text-xs text-slate-500">
+            Showing {filteredAndSortedCourses.length} of {courses.length} programs
+          </p>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="text-xs text-emerald-600 hover:text-emerald-700"
+            >
+              Clear search
+            </button>
+          )}
+        </div>
+
+        {/* Courses Grid */}
         {filteredAndSortedCourses.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-neutral-200 rounded-2xl bg-neutral-50/50 animate-fade-in">
-            <BookOpen className="h-8 w-8 text-neutral-300 mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-neutral-500">No courses match your criteria</h3>
-            <p className="text-xs text-neutral-400 mt-1">Try adjusting your search terms or filters to locate curriculum templates.</p>
+          <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+            <div className="inline-flex p-2.5 bg-slate-100 rounded-full mb-2">
+              <BookOpen className="h-5 w-5 text-slate-400" />
+            </div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-0.5">No courses match your criteria</h3>
+            <p className="text-xs text-slate-500">Try adjusting your search terms or filters.</p>
           </div>
         ) : (
-          /* Primary Responsive Structural Card Mapping */
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 transition-all duration-300">
-            {filteredAndSortedCourses.map((c: any) => (
-              <Link key={c.id} to="/student/course/$id" params={{ id: c.id }} className="block group h-full animate-fade-in">
-                <Card className="h-full border border-neutral-200/80 bg-white p-5 rounded-2xl shadow-[0_4px_15px_-3px_rgba(0,0,0,0.01)] transition-all duration-300 hover:-translate-y-1 hover:border-neutral-900 hover:shadow-[0_12px_25px_-6px_rgba(0,0,0,0.05)] flex flex-col justify-between overflow-hidden relative">
-                  
-                  <div>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="grid h-10 w-10 place-items-center rounded-xl bg-neutral-900 text-white shadow-sm transition-transform duration-300 group-hover:scale-105">
-                        <BookOpen className="h-4 w-4 stroke-[2.2]" />
-                      </div>
-                      <Badge variant="outline" className="text-[10px] font-mono font-bold uppercase tracking-wider bg-neutral-50 text-neutral-500 rounded-md border-neutral-200">
-                        {c.slug || "DEGREE"}
-                      </Badge>
+          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredAndSortedCourses.map((course) => (
+              <Link
+                key={course.id}
+                to="/student/course/$id"
+                params={{ id: course.id }}
+                className="group block h-full"
+              >
+                <Card className="relative h-full flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-emerald-500/30">
+
+                  {/* Premium Icon Header Section */}
+                  <div className="relative h-28 w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 flex items-center justify-center overflow-hidden">
+                    {/* Artistic Grid Background Overlay */}
+                    <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(45deg,transparent_25%,white_25%,white_50%,transparent_50%,transparent_75%,white_75%)] bg-[length:12px_12px]" />
+                    <div className="absolute -top-12 -right-12 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all duration-500" />
+
+                    {/* Centered Floating Glass-morphic Icon */}
+                    <div className="z-10 h-14 w-14 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-inner group-hover:scale-110 group-hover:border-emerald-400/30 group-hover:bg-emerald-500/10 transition-all duration-300">
+                      <Library className="h-6 w-6 text-slate-200 group-hover:text-emerald-300 transition-colors" />
                     </div>
 
-                    <div className="mt-4 space-y-1.5">
-                      <h3 className="font-display text-base font-bold text-neutral-900 group-hover:text-neutral-950 transition-colors line-clamp-1">
-                        {c.name}
-                      </h3>
-                      <p className="text-xs text-neutral-400 font-medium line-clamp-2 leading-relaxed">
-                        {c.description || "Access textbook materials, repeated structural questions, and standard analytical review papers inside."}
-                      </p>
+                    {/* Integrated Top Right Badge */}
+                    <div className="absolute top-3 right-3 z-10">
+                      <Badge className="text-[10px] font-semibold tracking-wider bg-white/10 hover:bg-white/10 text-slate-200 border border-white/10 uppercase backdrop-blur-sm px-2 py-0.5 rounded-md">
+                        {course.slug || "DEGREE"}
+                      </Badge>
                     </div>
                   </div>
 
-                  <div className="mt-6 flex item-center justify-between border-t border-neutral-100 pt-3.5 text-xs font-medium">
-                    <p className="inline-flex items-center gap-1.5 text-[11px] text-neutral-500 font-mono">
-                      <Clock className="h-3.5 w-3.5 text-neutral-400 stroke-[2]" /> 
-                      <span>{c.duration || "3 Years"}</span> 
-                      <span className="text-neutral-300">•</span>
-                      <span>{c.total_semesters} Semesters</span>
-                    </p>
-                    
-                    <div className="h-7 w-7 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center text-neutral-900 group-hover:bg-neutral-900 group-hover:text-white transition-all duration-300 shadow-sm">
-                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 stroke-[2.5]" />
+                  {/* Course Content Details */}
+                  <div className="p-4 flex flex-col flex-1">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors text-sm md:text-base tracking-tight line-clamp-1 mb-1">
+                        {course.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        {course.description || "Access textbook materials, structured questions, and analytical review papers tailored for this branch."}
+                      </p>
+                    </div>
+
+                    {/* Footer Stats / CTA */}
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                      <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                        <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                          <Clock className="h-3 w-3 text-slate-400" />
+                          <span>{course.duration || "3 Years"}</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                          <GraduationCap className="h-3 w-3 text-slate-400" />
+                          <span>{course.total_semesters || 6} Sem</span>
+                        </div>
+                      </div>
+
+                      {/* Interactive Smooth Arrow Circle */}
+                      <div className="h-7 w-7 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-emerald-50 group-hover:border-emerald-100 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all duration-300">
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </div>
                     </div>
                   </div>
 
@@ -219,9 +262,6 @@ function UniversityPage() {
             ))}
           </div>
         )}
-      </section>
-
-        </div>
       </div>
     </div>
   );

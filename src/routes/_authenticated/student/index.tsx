@@ -225,16 +225,6 @@ function StudentDashboard() {
             </div>
           </div>
         </div>
-
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <Link
-            to="/student/fullscreen-test"
-            className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500"
-          >
-            <ExternalLink className="h-4 w-4" /> Fullscreen Test Lab
-          </Link>
-        </div>
-
         {/* Controls Bar */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex flex-col sm:flex-row items-center gap-3 mb-5">
           <div className="relative flex-1 w-full">
