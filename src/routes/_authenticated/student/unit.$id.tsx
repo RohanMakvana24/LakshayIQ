@@ -88,6 +88,7 @@ function UnitPage() {
 
   const workspaceRef = useRef<HTMLDivElement>(null);
   const isNotionMaterial = activePreview.type === "material" && activePreview.url.includes("notion");
+  const isClickUpMaterial = activePreview.type === "material" && activePreview.url.includes("clickup.com");
   const isWorkspaceTransitioning = isFullscreenEntering || isFullscreenExiting;
 
   const runViewTransition = async (update: () => void | Promise<void>) => {
@@ -370,6 +371,9 @@ function UnitPage() {
       // Auto-convert standard Coda URLs to Coda embed format
       if (url.includes("coda.io") && url.includes("/d/")) {
         return url.replace("/d/", "/embed/");
+      }
+      if (url.toLowerCase().includes(".pdf")) {
+        return url.includes("#") ? `${url}&toolbar=0&navpanes=0` : `${url}#toolbar=0&navpanes=0`;
       }
       return url;
     }
@@ -709,6 +713,7 @@ function UnitPage() {
                       className={cn(
                         "flex-1 w-full min-h-0 relative overflow-hidden bg-slate-900 iframe-host workspace-content-shell",
                         isNotionMaterial && "notion-embed-host",
+                        isClickUpMaterial && "clickup-embed-host",
                         isWorkspaceTransitioning && "workspace-content-transitioning"
                       )}
                     >
@@ -883,6 +888,10 @@ function UnitPage() {
         .notion-embed-host .embed-frame {
           top: -50px;
           height: calc(100% + 50px);
+        }
+        .clickup-embed-host .embed-frame {
+          top: -56px;
+          height: calc(100% + 56px);
         }
         .workspace-content-shell {
           transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
