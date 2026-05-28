@@ -69,7 +69,7 @@ export const Route = createFileRoute("/_authenticated/student/unit/$id")({
 
 function UnitPage() {
   const { unit, semester, course, university } = Route.useLoaderData();
-  
+
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkId, setBookmarkId] = useState<string | null>(null);
   const [activePreview, setActivePreview] = useState<{
@@ -257,18 +257,18 @@ function UnitPage() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // 1. Detect PrintScreen / Snapshot
       const isPrintScreen = e.key === "PrintScreen" || e.key === "Snapshot" || e.keyCode === 44;
-      
+
       // 2. Detect Win + Shift + S (Windows Snipping Tool)
       const isWinShiftS = e.metaKey && e.shiftKey && (e.key === "S" || e.key === "s");
-      
+
       // 3. Detect Cmd + Shift + 3 / 4 (Mac Screenshots)
       const isMacScreenshot = e.metaKey && e.shiftKey && (e.key === "3" || e.key === "4");
 
       // 4. Detect dev tools or other lock keys
       const isDevTools = (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "i" || e.key === "j")) ||
-                         (e.ctrlKey && (e.key === "u" || e.key === "U")) ||
-                         e.key === "F12";
-      
+        (e.ctrlKey && (e.key === "u" || e.key === "U")) ||
+        e.key === "F12";
+
       const isPrintPrompt = e.ctrlKey && (e.key === "p" || e.key === "P");
       const isSavePrompt = e.ctrlKey && (e.key === "s" || e.key === "S");
 
@@ -277,7 +277,7 @@ function UnitPage() {
         setIsWindowBlurred(true);
         navigator.clipboard.writeText(""); // Clear clipboard buffer
         toast.error("🔒 Screenshots are disabled for security!");
-        
+
         // Lock screen for 2 seconds to ensure any screen capture catches the black overlay
         setTimeout(() => {
           setIsWindowBlurred(false);
@@ -404,7 +404,7 @@ function UnitPage() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <div className="w-full px-4 py-4 md:px-6 lg:px-8">
-        
+
         {/* Breadcrumb Navigation */}
         <div className="mb-4">
           <BreadcrumbNav items={breadcrumbItems} />
@@ -543,7 +543,7 @@ function UnitPage() {
             <Card className="overflow-hidden border border-slate-200 bg-white rounded-2xl p-5 shadow-md relative group">
               {/* Subtle brand ambient glow background */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all duration-300 pointer-events-none" />
-              
+
               <div className="relative z-10 space-y-4">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
@@ -558,7 +558,7 @@ function UnitPage() {
                     4 Tiers
                   </Badge>
                 </div>
-                
+
                 <p className="text-xs text-slate-500 leading-relaxed">
                   Get exam-ready with high-yield syllabus questions. Explore important topics sorted by standard exam weightage (1, 2, 3, and 5 Marks).
                 </p>
@@ -596,7 +596,7 @@ function UnitPage() {
             <div className="sticky top-6">
               <Card className="overflow-hidden border border-slate-200 bg-white shadow-lg rounded-2xl flex flex-col h-[400px] md:h-[500px] lg:h-[550px] relative">
                 {activePreview.type && activePreview.url ? (
-                  <div 
+                  <div
                     ref={workspaceRef}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
@@ -731,7 +731,7 @@ function UnitPage() {
                           </p>
                         </div>
                       )}
-                      
+
                       {/* For Video Preview: Single video player iframe */}
                       {activePreview.type === "video" && (
                         <iframe
@@ -778,8 +778,8 @@ function UnitPage() {
                       {activePreview.type === "material" && (
                         <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden select-none opacity-[0.05] flex flex-wrap gap-12 p-8 justify-around items-center content-around">
                           {Array.from({ length: 16 }).map((_, i) => (
-                            <div 
-                              key={`watermark-${i}`} 
+                            <div
+                              key={`watermark-${i}`}
                               className="text-[10px] md:text-xs font-black text-slate-400 transform -rotate-12 select-none pointer-events-none whitespace-nowrap tracking-wider"
                             >
                               LAKSHAY IQ
@@ -800,7 +800,7 @@ function UnitPage() {
                           </p>
                         </div>
                       )}
-                      
+
                       {/* Screenshot Shield overlay inside the exact same container */}
                       {isWindowBlurred && activePreview.type === "material" && (
                         <div className="absolute inset-0 z-50 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay">
@@ -852,26 +852,26 @@ function UnitPage() {
 
       {/* Absolute Full-Screen Security Shield covering the ENTIRE viewport */}
       {isWindowBlurred && activePreview.type === "material" && (
-        <div 
+        <div
           className="fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center text-center p-6 select-none workspace-shield-overlay"
           onContextMenu={(e) => e.preventDefault()}
         >
           <div className="h-24 w-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 shadow-2xl shadow-emerald-500/5">
             <Shield className="h-12 w-12 text-emerald-500 animate-pulse" />
           </div>
-          
+
           <h2 className="text-emerald-500 font-black text-5xl md:text-6xl tracking-wider mb-2 uppercase drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
             LAKSHAY IQ
           </h2>
-          
+
           <h3 className="text-white font-bold text-lg md:text-xl uppercase tracking-widest mb-4">
             🔒 SECURE READER SHIELD
           </h3>
-          
+
           <p className="text-slate-400 text-xs md:text-sm max-w-md leading-relaxed">
             This study resource is protected by Lakshay IQ intellectual property policy. Screen capture and copying have been blocked.
           </p>
-          
+
           <p className="text-xs text-slate-500 mt-8 font-black uppercase tracking-widest animate-pulse">
             Click back inside this window to restore view
           </p>

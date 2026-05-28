@@ -80,6 +80,24 @@ function StudentDashboard() {
     fetchUniversitiesData();
   }, []);
 
+  // Track real user views/visits on the Student Dashboard (Login redirection & direct active sessions)
+  useEffect(() => {
+    const logDashboardHit = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await supabase.from("page_views" as any).insert({
+            user_id: session.user.id,
+            page_path: "/student"
+          });
+        }
+      } catch (err) {
+        console.error("Failed to log student dashboard hit:", err);
+      }
+    };
+    logDashboardHit();
+  }, []);
+
   const filteredAndSortedUniversities = useMemo(() => {
     let result = [...universities];
 

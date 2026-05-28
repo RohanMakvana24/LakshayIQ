@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, ArrowRight, ShieldCheck, Database, Layers, Milestone, PlayCircle, FileText, ArrowUpRight, Sparkles } from "lucide-react";
+import { Loader2, Eye, EyeOff, ArrowRight, ShieldCheck, Database, Layers, Milestone, PlayCircle, FileText, ArrowUpRight, Sparkles, Mail, Lock, User, Sun, Moon } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 
 export const Route = createFileRoute("/signup")({
@@ -22,6 +22,24 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("theme");
+      if (saved) return saved === "dark";
+      return document.documentElement.classList.contains("dark");
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     if (!authLoading && user && role) {
@@ -77,38 +95,92 @@ function Signup() {
   };
 
   return (
-    <div className="grid min-h-screen w-full bg-[#fafafa] font-sans text-slate-800 antialiased md:grid-cols-12 selection:bg-emerald-500/10 selection:text-emerald-600">
+    <div className={`grid min-h-screen w-full font-sans antialiased md:grid-cols-12 selection:bg-emerald-500/10 selection:text-emerald-400 transition-colors duration-500 ${
+      isDarkMode ? "bg-[#090c12] text-slate-100" : "bg-[#fafafa] text-slate-800"
+    }`}>
       
       {/* LEFT COLUMN: CRISP STRUCTURED ACADEMIC REGISTRATION PORTAL */}
-      <div className="relative z-10 flex flex-col justify-between p-6 sm:p-10 md:col-span-6 lg:col-span-5 xl:col-span-4 bg-white border-r border-slate-200/60 shadow-xl shadow-slate-100">
+      <div className={`relative z-10 flex flex-col justify-between p-6 sm:p-10 md:col-span-6 lg:col-span-5 xl:col-span-4 border-r transition-all duration-500 ${
+        isDarkMode 
+          ? "bg-[#0b0f19] border-slate-900 shadow-2xl shadow-emerald-950/10" 
+          : "bg-white border-slate-200/60 shadow-xl shadow-slate-100"
+      }`}>
         
         {/* Decorative Top Accent Glow */}
-        <div className="absolute top-0 left-1/4 -translate-x-1/2 w-72 h-40 bg-emerald-500/5 rounded-full blur-[80px] pointer-events-none" />
-
-        {/* Brand Header (Restored Original Layout) */}
+        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-80 h-48 rounded-full blur-[100px] pointer-events-none animate-pulse transition-all duration-500 ${
+          isDarkMode ? "bg-emerald-500/10" : "bg-emerald-500/5"
+        }`} />
+        
+        {/* Brand Header */}
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/10 transition-transform group-hover:scale-105">
-              <BiSolidBookHeart className="h-4.5 w-4.5" />
-              <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border border-white" />
+          <Link to="/" className="flex items-center gap-3.5 group">
+            <div className="relative flex h-11 w-11 items-center justify-center">
+              {/* Spinning futuristic outer orbit ring */}
+              <div className={`absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] transition-colors duration-500 ${
+                isDarkMode ? "border-emerald-500/35" : "border-emerald-500/50"
+              }`} />
+              <div className={`absolute inset-0 rounded-full border transition-colors duration-500 ${
+                isDarkMode ? "border-teal-500/15" : "border-teal-500/20"
+              }`} />
+              
+              {/* Inner glowing core background */}
+              <div className="absolute inset-1.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-12 flex items-center justify-center">
+                {/* Core original Book Heart Icon */}
+                <BiSolidBookHeart className="h-5 w-5 text-white" />
+                {/* Little emerald notification dot */}
+                <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border shadow-sm transition-colors duration-500 ${
+                  isDarkMode ? "border-slate-900" : "border-white"
+                }`} />
+              </div>
             </div>
             <div className="flex flex-col">
-              <span className="text-base font-black tracking-tight text-slate-900 leading-tight" style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.02em" }}>
-                Lakshay<span className="text-emerald-500 text-[11px]">.IQ</span>
+              <span className={`text-base font-black tracking-tight leading-tight group-hover:text-emerald-400 transition-colors duration-300 ${
+                isDarkMode ? "text-white" : "text-slate-900"
+              }`} style={{ fontFamily: "'Unbounded', sans-serif", letterSpacing: "-0.02em" }}>
+                Lakshay<span className="text-emerald-400 text-[12px] font-black">.IQ</span>
               </span>
-              <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 leading-none">Smart Platform</span>
+              <span className={`text-[8px] font-bold uppercase tracking-widest leading-none transition-colors duration-500 ${
+                isDarkMode ? "text-slate-500" : "text-slate-400"
+              }`}>Smart Platform</span>
             </div>
           </Link>
+
+          {/* Elegant Dark/Light Toggle Button */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`h-9 w-9 rounded-lg border transition-all duration-300 hover:scale-105 active:scale-95 ${
+              isDarkMode 
+                ? "border-slate-800 bg-slate-900/60 text-yellow-400 hover:bg-slate-800/80 hover:text-yellow-350" 
+                : "border-slate-200 bg-slate-50/50 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            }`}
+          >
+            {isDarkMode ? (
+              <Sun className="h-4.5 w-4.5 animate-[spin_12s_linear_infinite]" />
+            ) : (
+              <Moon className="h-4.5 w-4.5 text-slate-700" />
+            )}
+          </Button>
         </div>
 
         {/* Core Gateway Form Layout */}
         <div className="my-auto w-full max-w-[340px] mx-auto py-10">
           <div className="space-y-2.5">
-            <div className="inline-flex items-center gap-1.5 rounded-md bg-slate-950 text-[10px] font-bold tracking-wider text-emerald-400 border border-slate-800 px-2.5 py-1 uppercase">
+            <div className={`inline-flex items-center gap-1.5 rounded-lg text-[10px] font-bold tracking-widest border px-3 py-1 uppercase shadow-sm transition-all duration-500 ${
+              isDarkMode 
+                ? "bg-emerald-950/50 text-emerald-400 border-emerald-900/50 shadow-emerald-500/5" 
+                : "bg-slate-950 text-emerald-400 border-slate-800 shadow-slate-950/5"
+            }`}>
               <Sparkles className="h-3 w-3 text-emerald-400 animate-pulse" /> Student Registration
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-950">Create Account</h1>
-            <p className="text-xs font-medium text-slate-500 leading-relaxed">
+            <h1 className={`text-3xl font-black tracking-tight transition-colors duration-500 ${
+              isDarkMode ? "text-white" : "text-slate-950"
+            }`}>Create Account</h1>
+            <p className={`text-xs font-semibold leading-relaxed transition-colors duration-500 ${
+              isDarkMode ? "text-slate-400" : "text-slate-500"
+            }`}>
               Get immediate access to customized academic syllabus tracks, learning content units, and papers.
             </p>
           </div>
@@ -117,7 +189,11 @@ function Signup() {
           <Button 
             onClick={onGoogle} 
             variant="outline" 
-            className="mt-6 w-full h-11 rounded-xl border-slate-200 bg-white font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-950 hover:border-slate-300"
+            className={`mt-6 w-full h-12 rounded-lg font-extrabold shadow-sm transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] ${
+              isDarkMode 
+                ? "border-slate-805 bg-slate-900 hover:bg-slate-850 hover:border-slate-700 text-slate-200" 
+                : "border-slate-200 bg-white hover:bg-slate-50 hover:text-slate-950 hover:border-emerald-500 text-slate-700"
+            }`}
           >
             <svg className="mr-2.5 h-4 w-4" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -128,87 +204,166 @@ function Signup() {
             Sign up with Google
           </Button>
 
-          <div className="relative my-6 flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            <span className="absolute inset-x-0 h-px bg-slate-100" />
-            <span className="relative bg-white px-3 text-[9px]">Registration Fields</span>
+          <div className="relative my-6 flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            <span className={`absolute inset-x-0 h-px transition-colors duration-500 ${
+              isDarkMode ? "bg-slate-800/40" : "bg-slate-100"
+            }`} />
+            <span className={`relative px-3 text-[9px] transition-colors duration-500 ${
+              isDarkMode ? "bg-[#0b0f19]" : "bg-white text-slate-400"
+            }`}>Registration Fields</span>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-xs font-bold text-slate-400 uppercase tracking-wider">Full Name</Label>
-              <Input 
-                id="name" 
-                type="text"
-                value={fullName} 
-                onChange={(e) => setFullName(e.target.value)} 
-                required 
-                placeholder="John Doe" 
-                className="h-11 rounded-xl border-slate-200 bg-slate-50/50 px-3.5 text-sm font-medium text-slate-900 shadow-sm outline-none transition-all focus-visible:border-emerald-500 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-emerald-500/5 placeholder:text-slate-400"
-              />
+            {/* Full Name Field */}
+            <div className="space-y-2 group/field">
+              <Label 
+                htmlFor="name" 
+                className="text-[10px] font-black text-slate-400 uppercase tracking-widest transition-colors duration-300 group-focus-within/field:text-emerald-400 flex items-center gap-1.5"
+              >
+                <User className="h-3.5 w-3.5" /> Full Name
+              </Label>
+              <div className={`relative rounded-lg border transition-all duration-300 overflow-hidden shadow-inner ${
+                isDarkMode 
+                  ? "border-slate-800 bg-slate-950/40 group-focus-within/field:border-emerald-500/60" 
+                  : "border-slate-200 bg-slate-50/50 group-focus-within/field:border-emerald-500"
+              }`}>
+                <div className={`relative flex items-center transition-all duration-300 ${
+                  isDarkMode 
+                    ? "bg-slate-950/20 group-focus-within/field:bg-slate-950/60" 
+                    : "group-focus-within/field:bg-white"
+                }`}>
+                  <div className="pl-4 text-slate-500 group-focus-within/field:text-emerald-400 transition-colors duration-300">
+                    <User className="h-4 w-4" />
+                  </div>
+                  <input 
+                    id="name" 
+                    type="text" 
+                    value={fullName} 
+                    onChange={(e) => setFullName(e.target.value)} 
+                    required 
+                    placeholder="John Doe" 
+                    className={`w-full h-12 bg-transparent pl-3 pr-4 text-sm font-semibold outline-none border-0 focus:ring-0 focus:outline-none transition-colors duration-500 ${
+                      isDarkMode ? "text-white placeholder:text-slate-600" : "text-slate-900 placeholder:text-slate-400"
+                    }`}
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email Address</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                required 
-                placeholder="name@email.com" 
-                className="h-11 rounded-xl border-slate-200 bg-slate-50/50 px-3.5 text-sm font-medium text-slate-900 shadow-sm outline-none transition-all focus-visible:border-emerald-500 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-emerald-500/5 placeholder:text-slate-400"
-              />
+            {/* Email Address Field */}
+            <div className="space-y-2 group/field">
+              <Label 
+                htmlFor="email" 
+                className="text-[10px] font-black text-slate-400 uppercase tracking-widest transition-colors duration-300 group-focus-within/field:text-emerald-400 flex items-center gap-1.5"
+              >
+                <Mail className="h-3.5 w-3.5" /> Email Address
+              </Label>
+              <div className={`relative rounded-lg border transition-all duration-300 overflow-hidden shadow-inner ${
+                isDarkMode 
+                  ? "border-slate-800 bg-slate-950/40 group-focus-within/field:border-emerald-500/60" 
+                  : "border-slate-200 bg-slate-50/50 group-focus-within/field:border-emerald-500"
+              }`}>
+                <div className={`relative flex items-center transition-all duration-300 ${
+                  isDarkMode 
+                    ? "bg-slate-950/20 group-focus-within/field:bg-slate-950/60" 
+                    : "group-focus-within/field:bg-white"
+                }`}>
+                  <div className="pl-4 text-slate-500 group-focus-within/field:text-emerald-400 transition-colors duration-300">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  <input 
+                    id="email" 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    required 
+                    placeholder="name@email.com" 
+                    className={`w-full h-12 bg-transparent pl-3 pr-4 text-sm font-semibold outline-none border-0 focus:ring-0 focus:outline-none transition-colors duration-500 ${
+                      isDarkMode ? "text-white placeholder:text-slate-600" : "text-slate-900 placeholder:text-slate-400"
+                    }`}
+                  />
+                </div>
+              </div>
             </div>
             
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-xs font-bold text-slate-400 uppercase tracking-wider">Password</Label>
-              <div className="relative">
-                <Input 
-                  id="password" 
-                  type={showPassword ? "text" : "password"} 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  required 
-                  minLength={6}
-                  placeholder="••••••••" 
-                  className="h-11 rounded-xl border-slate-200 bg-slate-50/50 pl-3.5 pr-10 text-sm font-medium text-slate-900 shadow-sm outline-none transition-all focus-visible:border-emerald-500 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-emerald-500/5 placeholder:text-slate-400"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+            {/* Password Field */}
+            <div className="space-y-2 group/field">
+              <div className="flex items-center justify-between">
+                <Label 
+                  htmlFor="password" 
+                  className="text-[10px] font-black text-slate-400 uppercase tracking-widest transition-colors duration-300 group-focus-within/field:text-emerald-400 flex items-center gap-1.5"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                  <Lock className="h-3.5 w-3.5" /> Password
+                </Label>
+              </div>
+              <div className={`relative rounded-lg border transition-all duration-300 overflow-hidden shadow-inner ${
+                isDarkMode 
+                  ? "border-slate-800 bg-slate-950/40 group-focus-within/field:border-emerald-500/60" 
+                  : "border-slate-200 bg-slate-50/50 group-focus-within/field:border-emerald-500"
+              }`}>
+                <div className={`relative flex items-center transition-all duration-300 ${
+                  isDarkMode 
+                    ? "bg-slate-950/20 group-focus-within/field:bg-slate-950/60" 
+                    : "group-focus-within/field:bg-white"
+                }`}>
+                  <div className="pl-4 text-slate-500 group-focus-within/field:text-emerald-400 transition-colors duration-300">
+                    <Lock className="h-4 w-4" />
+                  </div>
+                  <input 
+                    id="password" 
+                    type={showPassword ? "text" : "password"} 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    required 
+                    minLength={6}
+                    placeholder="••••••••" 
+                    className={`w-full h-12 bg-transparent pl-3 pr-10 text-sm font-semibold outline-none border-0 focus:ring-0 focus:outline-none transition-colors duration-500 ${
+                      isDarkMode ? "text-white placeholder:text-slate-600" : "text-slate-900 placeholder:text-slate-400"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 text-slate-500 hover:text-slate-350 transition-colors duration-300"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             </div>
 
             <Button 
               type="submit" 
               disabled={loading}
-              className="w-full h-11 mt-4 rounded-xl bg-slate-950 font-bold text-white shadow-lg shadow-slate-950/10 transition-all hover:bg-slate-900 active:scale-[0.99] disabled:opacity-70 text-sm"
+              className="w-full h-12 mt-6 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 font-extrabold text-white shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 text-sm"
             >
               {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin mx-auto text-emerald-400" />
+                <Loader2 className="h-5 w-5 animate-spin mx-auto text-white" />
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  Create Free Account <ArrowRight className="h-4 w-4 text-emerald-400" />
+                  Create Free Account <ArrowRight className="h-4 w-4 text-white" />
                 </span>
               )}
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-xs font-semibold text-slate-400">
+          <p className="mt-6 text-center text-xs font-semibold text-slate-500">
             Already have an account?{" "}
-            <Link to="/login" className="font-bold text-emerald-600 hover:text-emerald-700 hover:underline transition-colors">
+            <Link to="/login" className={`font-bold transition-colors ${
+              isDarkMode ? "text-emerald-400 hover:text-emerald-300" : "text-emerald-600 hover:text-emerald-700"
+            } hover:underline`}>
               Log in instead
             </Link>
           </p>
         </div>
 
         {/* Notice Info Container */}
-        <div className="rounded-xl bg-slate-50 border border-slate-150 p-3.5 text-center">
-          <p className="text-[10px] font-bold text-slate-400 leading-normal uppercase tracking-wider">
+        <div className={`rounded-xl border p-3.5 text-center backdrop-blur-md transition-all duration-500 ${
+          isDarkMode 
+            ? "bg-slate-900/40 border-slate-800/80 text-slate-500" 
+            : "bg-slate-50 border-slate-150 text-slate-400"
+        }`}>
+          <p className="text-[10px] font-bold leading-normal uppercase tracking-wider">
             Need Admin Privileges? Register as a student first, then request workspace parameters from an active administrator platform key.
           </p>
         </div>
@@ -216,19 +371,83 @@ function Signup() {
 
       {/* RIGHT COLUMN: CINEMATIC BENTO PLATFORM FLOW PREVIEW */}
       <div className="relative hidden md:flex md:col-span-6 lg:col-span-7 xl:col-span-8 bg-[#090c12] overflow-hidden items-center justify-center p-8 lg:p-12">
+        <style>{`
+          @keyframes node-glow {
+            0%, 15% {
+              border-color: rgba(16, 185, 129, 0.9);
+              box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+              background-color: rgba(16, 185, 129, 0.08);
+              transform: translateY(-4px) scale(1.02);
+            }
+            20%, 100% {
+              border-color: rgba(30, 41, 59, 0.6);
+              box-shadow: none;
+              background-color: rgba(15, 23, 42, 0.5);
+              transform: translateY(0) scale(1);
+            }
+          }
+          @keyframes step-pulse {
+            0%, 15% {
+              background-color: #10b981;
+              color: #ffffff;
+              box-shadow: 0 0 10px #10b981;
+              border-color: #10b981;
+            }
+            20%, 100% {
+              background-color: rgb(15 23 42);
+              color: #10b981;
+              border-color: rgb(30 41 59);
+            }
+          }
+          @keyframes bento-float-1 {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(0.2deg); }
+          }
+          @keyframes bento-float-2 {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(-0.3deg); }
+          }
+          @keyframes bento-float-3 {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(0.1deg); }
+          }
+          @keyframes ambient-glow {
+            0%, 100% { opacity: 0.1; transform: scale(1); }
+            50% { opacity: 0.18; transform: scale(1.08); }
+          }
+          .animate-node-1 { animation: node-glow 8s infinite 0s ease-in-out; }
+          .animate-node-2 { animation: node-glow 8s infinite 1.3s ease-in-out; }
+          .animate-node-3 { animation: node-glow 8s infinite 2.6s ease-in-out; }
+          .animate-node-4 { animation: node-glow 8s infinite 3.9s ease-in-out; }
+          .animate-node-5 { animation: node-glow 8s infinite 5.2s ease-in-out; }
+          .animate-node-6 { animation: node-glow 8s infinite 6.5s ease-in-out; }
+
+          .step-dot-1 { animation: step-pulse 8s infinite 0s ease-in-out; }
+          .step-dot-2 { animation: step-pulse 8s infinite 1.3s ease-in-out; }
+          .step-dot-3 { animation: step-pulse 8s infinite 2.6s ease-in-out; }
+          .step-dot-4 { animation: step-pulse 8s infinite 3.9s ease-in-out; }
+          .step-dot-5 { animation: step-pulse 8s infinite 5.2s ease-in-out; }
+          .step-dot-6 { animation: step-pulse 8s infinite 6.5s ease-in-out; }
+
+          .animate-float-1 { animation: bento-float-1 7s ease-in-out infinite; }
+          .animate-float-2 { animation: bento-float-2 9s ease-in-out infinite; }
+          .animate-float-3 { animation: bento-float-3 8s ease-in-out infinite; }
+          .animate-ambient-pulse-1 { animation: ambient-glow 10s ease-in-out infinite; }
+          .animate-ambient-pulse-2 { animation: ambient-glow 12s ease-in-out infinite -2s; }
+        `}</style>
         
         {/* Subtle Engineering Grid Layer */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#131a26_1px,transparent_1px),linear-gradient(to_bottom,#131a26_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-30" />
         
         {/* Soft Accent Radial Glows */}
-        <div className="absolute -bottom-24 -right-24 w-[550px] h-[550px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
-        <div className="absolute -top-24 -left-24 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[110px] pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-[550px] h-[550px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none animate-ambient-pulse-1" />
+        <div className="absolute -top-24 -left-24 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[110px] pointer-events-none animate-ambient-pulse-2" />
 
         {/* Content Hierarchy Bento System */}
         <div className="relative z-10 w-full max-w-2xl grid grid-cols-12 gap-4">
           
           {/* Main Bento Box: Platform Core Database Flow View */}
-          <div className="col-span-12 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-6 backdrop-blur-xl shadow-2xl space-y-4">
+          <div className="col-span-12 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-6 backdrop-blur-xl shadow-2xl space-y-4 animate-float-1">
             <div className="flex items-center justify-between border-b border-slate-800/50 pb-3">
               <div className="flex items-center gap-2">
                 <Database className="h-4 w-4 text-emerald-400" />
@@ -249,8 +468,11 @@ function Signup() {
                 { name: "Unit", label: "Resource Pack" },
                 { name: "Content", label: "Target Learning" }
               ].map((step, idx) => (
-                <div key={idx} className="relative p-3 rounded-xl bg-slate-950/50 border border-slate-800/60 flex flex-col justify-center items-center group hover:border-emerald-500/40 transition-colors">
-                  <div className="h-5 w-5 rounded bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400 mb-1.5 group-hover:bg-slate-900 transition-colors">
+                <div 
+                  key={idx} 
+                  className={`relative p-3 rounded-xl bg-slate-950/50 border border-slate-800/60 flex flex-col justify-center items-center group hover:border-emerald-500/40 transition-all duration-500 animate-node-${idx + 1}`}
+                >
+                  <div className={`h-5 w-5 rounded bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400 mb-1.5 group-hover:bg-slate-900 transition-all duration-500 step-dot-${idx + 1}`}>
                     {idx + 1}
                   </div>
                   <span className="text-slate-100 font-sans tracking-tight block font-extrabold">{step.name}</span>
@@ -261,7 +483,7 @@ function Signup() {
           </div>
 
           {/* Left Sub-Bento Card: Admin Control Center Profile */}
-          <div className="col-span-12 sm:col-span-7 rounded-2xl border border-slate-800/60 bg-slate-900/30 p-5 backdrop-blur-xl flex flex-col justify-between group hover:bg-slate-900/50 transition-all duration-300">
+          <div className="col-span-12 sm:col-span-7 rounded-2xl border border-slate-800/60 bg-slate-900/30 p-5 backdrop-blur-xl flex flex-col justify-between group hover:bg-slate-900/50 transition-all duration-300 animate-float-2">
             <div className="space-y-2">
               <div className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-900/40">
                 <Layers className="h-4 w-4" />
@@ -279,7 +501,7 @@ function Signup() {
           </div>
 
           {/* Right Sub-Bento Card: Active Integration Systems */}
-          <div className="col-span-12 sm:col-span-5 rounded-2xl border border-slate-800/60 bg-gradient-to-br from-emerald-950/20 to-slate-900/30 p-5 backdrop-blur-xl flex flex-col justify-between hover:border-emerald-800/30 transition-all duration-300">
+          <div className="col-span-12 sm:col-span-5 rounded-2xl border border-slate-800/60 bg-gradient-to-br from-emerald-950/20 to-slate-900/30 p-5 backdrop-blur-xl flex flex-col justify-between hover:border-emerald-800/30 transition-all duration-300 animate-float-3">
             <div className="space-y-2.5">
               <span className="text-[9px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Active Repositories</span>
               

@@ -23,6 +23,11 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchVal, setSearchVal] = useState("");
 
+  // Revert dark mode on dashboard portals mount
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+  }, []);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchVal.trim()) {
@@ -199,7 +204,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
       {/* --- FLOATING MOBILE ACTION DOCK (BACK & HOME NAVIGATION) --- */}
       {variant === "student" && pathname !== "/student" && pathname !== "/student/" && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden animate-in slide-in-from-bottom-8 duration-300">
-          <div className="flex items-center gap-1.5 p-1.5 bg-white/90 backdrop-blur-md border border-zinc-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-full">
+          <div className="flex items-center gap-1.5 p-1.5 bg-white/90 border border-zinc-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-full">
             {/* Elegant Back Button */}
             <button
               onClick={() => window.history.back()}
@@ -253,26 +258,32 @@ export function BrandHeader({ variant, isCollapsed }: { variant: string; isColla
     <Link
       to="/"
       className={cn(
-        "group flex items-center justify-between rounded-xl p-1.5 transition-all duration-300 hover:bg-zinc-50 w-full",
+        "group flex items-center justify-between rounded-xl p-1 transition-all duration-300 hover:bg-zinc-50 w-full",
         isCollapsed ? "justify-center" : ""
       )}
     >
-      <div className="flex items-center gap-3">
-        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-zinc-900 to-zinc-950 shadow-md border border-zinc-800 transition-transform duration-300 group-hover:scale-[1.02]">
-          <BiSolidBookHeart className="relative z-10 h-4.5 w-4.5 text-emerald-400" />
-          <Sparkles className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 text-emerald-300 opacity-80" />
-          {!isCollapsed && (
-            <span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm" />
-          )}
+      <div className="flex items-center gap-3.5">
+        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+          {/* Spinning futuristic outer orbit ring */}
+          <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-emerald-500/50" />
+          <div className="absolute inset-0 rounded-full border border-teal-500/20" />
+          
+          {/* Inner glowing core background */}
+          <div className="absolute inset-1 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md transition-transform duration-500 group-hover:scale-105 group-hover:rotate-12 flex items-center justify-center">
+            {/* Core original Book Heart Icon */}
+            <BiSolidBookHeart className="h-4.5 w-4.5 text-white" />
+            {/* Little emerald notification dot */}
+            <span className="absolute bottom-0 right-0 h-1.5 w-1.5 rounded-full bg-emerald-400 border border-white shadow-sm" />
+          </div>
         </div>
 
         {!isCollapsed && (
           <div className="flex flex-col leading-tight text-left">
-            <h1 className="text-sm font-bold tracking-tight text-zinc-900">
-              Lakshay<span className="ml-0.5 text-emerald-500 font-extrabold">IQ</span>
+            <h1 className="text-sm font-bold tracking-tight text-zinc-900 group-hover:text-emerald-500 transition-colors duration-300" style={{ letterSpacing: "-0.02em" }}>
+              Lakshay<span className="ml-0.5 text-emerald-500 font-extrabold text-[10px]">IQ</span>
             </h1>
-            <span className="text-[10px] text-zinc-400 font-medium">
-              {variant === "admin" ? "Admin Master" : "Team Plan"}
+            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest leading-none">
+              {variant === "admin" ? "Admin Master" : "Smart Platform"}
             </span>
           </div>
         )}
