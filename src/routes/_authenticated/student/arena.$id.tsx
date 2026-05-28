@@ -130,7 +130,7 @@ function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen w-full bg-white">
       <div className="w-full px-4 py-4 md:px-6 lg:px-8">
 
         {/* Header with Navigation */}

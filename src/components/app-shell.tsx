@@ -52,7 +52,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
   }, [pathname, items]);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-zinc-600 font-sans antialiased selection:bg-emerald-50 selection:text-emerald-700">
+    <div className="min-h-screen bg-white text-zinc-600 font-sans antialiased selection:bg-emerald-50 selection:text-emerald-700">
 
       {/* --- MOBILE SIDEBAR DRAWER --- */}
       <div className={cn(
@@ -201,7 +201,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
         </header>
 
         {/* --- MAIN ROUTE VIEW --- */}
-        <main className="p-4 md:p-6 max-w-[1600px] bg-gradient-to-br from-slate-50 via-white to-slate-100  mx-auto animate-in fade-in duration-500">
+        <main className="p-4 md:p-6 max-w-[1600px] bg-white mx-auto animate-in fade-in duration-500">
           {children}
         </main>
       </div>

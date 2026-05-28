@@ -76,7 +76,7 @@ function UniversityPage() {
   }, [courses, searchQuery, sortBy]);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen w-full bg-white">
       <div className="w-full px-4 py-6 md:px-6 lg:px-8">
         <div className="space-y-8 antialiased animate-fade-in max-w-7xl mx-auto">
 

@@ -56,7 +56,7 @@ function CoursePage() {
   const totalSubjects = semesters.reduce((acc, s) => acc + (s.subjects?.length || 0), 0);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen w-full bg-white">
       <div className="w-full px-4 py-4 md:px-6 lg:px-8">
         
         {/* Breadcrumb - Compact */}

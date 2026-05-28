@@ -137,7 +137,7 @@ function StudentDashboard() {
   }, [universities]);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen w-full bg-white">
       <div className="w-full px-4 py-4 md:px-6 lg:px-8">
         {/* Compact Hero Section */}
         <div className="relative rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden mb-6 shadow-lg">
