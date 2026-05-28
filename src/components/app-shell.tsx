@@ -145,33 +145,38 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
             <Menu className="h-5 w-5" />
           </Button>
 
-          {/* --- ULTRA UNIQUE LETTER-WAVE TEXT ANIMATION (MOBILE ONLY) --- */}
+          {/* --- SLOW PULSING ORBITAL BRANDING (MOBILE ONLY) --- */}
           <div className="flex md:hidden flex-1 justify-center items-center">
-            <div className="flex items-center text-sm font-black tracking-widest uppercase select-none relative px-4 py-1">
-
+            <div className="flex items-center gap-2 select-none relative">
               {/* Soft Ambient Background Light Effect */}
-              <div className="absolute inset-0 bg-emerald-400/5 blur-xl rounded-full animate-pulse" />
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 bg-emerald-400/5 blur-lg rounded-full animate-[pulse_3s_infinite_ease-in-out]" />
 
-              {/* LAKSHAY TEXT WITH STAGGERED WAVE ANIMATION */}
-              <div className="flex text-zinc-900 font-extrabold mr-1">
-                <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out]" style={{ animationDelay: '0.1s' }}>L</span>
-                <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out]" style={{ animationDelay: '0.2s' }}>a</span>
-                <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out]" style={{ animationDelay: '0.3s' }}>k</span>
-                <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out]" style={{ animationDelay: '0.4s' }}>s</span>
-                <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out]" style={{ animationDelay: '0.5s' }}>h</span>
-                <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out]" style={{ animationDelay: '0.6s' }}>a</span>
-                <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out]" style={{ animationDelay: '0.7s' }}>y</span>
+              {/* Spinning futuristic outer orbit ring */}
+              <div className="relative flex h-8 w-8 items-center justify-center shrink-0">
+                <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-emerald-500/40" />
+                <div className="absolute inset-0 rounded-full border border-teal-500/10" />
+                
+                {/* Inner glowing core background */}
+                <div className="absolute inset-1 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md flex items-center justify-center">
+                  <BiSolidBookHeart className="h-3.5 w-3.5 text-white" />
+                </div>
               </div>
 
-              {/* IQ TEXT WITH GLOW SHIMMER */}
-              <div className="flex text-emerald-500 font-black relative">
-                <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out] drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]" style={{ animationDelay: '0.8s' }}>I</span>
-                <span className="inline-block animate-[letterWave_2.5s_infinite_ease-in-out] drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]" style={{ animationDelay: '0.9s' }}>Q</span>
-
-                {/* Live Micro Status Radar Dot */}
-                <span className="absolute -top-0.5 -right-2 h-1.5 w-1.5 bg-emerald-400 rounded-full animate-ping" />
-                <span className="absolute -top-0.5 -right-2 h-1.5 w-1.5 bg-emerald-500 rounded-full shadow-sm" />
+              {/* Elegant Sora font branding */}
+              <div className="flex flex-col leading-none text-left">
+                <h1 className="text-xs font-black tracking-tight text-zinc-950" style={{ fontFamily: "'Sora', sans-serif", letterSpacing: "-0.03em" }}>
+                  Lakshay<span className="text-emerald-500 font-extrabold">.IQ</span>
+                </h1>
+                <span className="text-[7px] text-zinc-400 font-bold uppercase tracking-wider">
+                  {variant === "admin" ? "Admin" : "Smart Platform"}
+                </span>
               </div>
+
+              {/* Little active radar indicator */}
+              <span className="relative flex h-1.5 w-1.5 ml-0.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/80" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              </span>
             </div>
           </div>
 
