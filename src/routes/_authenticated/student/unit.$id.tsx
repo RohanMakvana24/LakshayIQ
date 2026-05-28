@@ -82,6 +82,7 @@ function UnitPage() {
   const [isFullscreenEntering, setIsFullscreenEntering] = useState(false);
   const [isFullscreenExiting, setIsFullscreenExiting] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
+  const [loadedIframes, setLoadedIframes] = useState<Record<string, boolean>>({});
   const [shouldPreload, setShouldPreload] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isHovered, setIsHovered] = useState(false);
@@ -89,6 +90,9 @@ function UnitPage() {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const isNotionMaterial = activePreview.type === "material" && activePreview.url.includes("notion");
   const isClickUpMaterial = activePreview.type === "material" && activePreview.url.includes("clickup.com");
+  const isCurrentIframeLoading = activePreview.type === "material" && activePreview.url
+    ? !loadedIframes[activePreview.url]
+    : isIframeLoading;
   const isWorkspaceTransitioning = isFullscreenEntering || isFullscreenExiting;
 
   const runViewTransition = async (update: () => void | Promise<void>) => {
@@ -149,11 +153,13 @@ function UnitPage() {
   }, []);
 
   useEffect(() => {
-    if (!isNotionMaterial) return;
-
     const preconnectUrls = [
       "https://www.notion.so",
       "https://notion.site",
+      "https://sharing.clickup.com",
+      "https://clickup.com",
+      "https://appflowy.cloud",
+      "https://appflowy.io",
       "https://fonts.googleapis.com",
     ];
 
@@ -173,7 +179,7 @@ function UnitPage() {
         }
       });
     };
-  }, [isNotionMaterial]);
+  }, []);
 
   const handleMaximize = async () => {
     try {
@@ -717,7 +723,7 @@ function UnitPage() {
                         isWorkspaceTransitioning && "workspace-content-transitioning"
                       )}
                     >
-                      {isIframeLoading && (
+                      {isCurrentIframeLoading && (
                         <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6 workspace-loading-veil">
                           <Loader2 className="h-8 w-8 text-emerald-500 animate-spin mb-3" />
                           <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider animate-pulse">
@@ -726,18 +732,45 @@ function UnitPage() {
                         </div>
                       )}
                       
-                      <iframe
-                        title={activePreview.title}
-                        src={formatEmbedUrl(activePreview.url, activePreview.type)}
-                        onLoad={() => setIsIframeLoading(false)}
-                        className={cn(
-                          "embed-frame border-0",
-                          !isIframeLoading && "embed-frame-ready",
-                          isWorkspaceTransitioning && "embed-frame-transitioning"
-                        )}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen={activePreview.type !== "material"}
-                      />
+                      {/* For Video Preview: Single video player iframe */}
+                      {activePreview.type === "video" && (
+                        <iframe
+                          title={activePreview.title}
+                          src={formatEmbedUrl(activePreview.url, "video")}
+                          onLoad={() => setIsIframeLoading(false)}
+                          className={cn(
+                            "embed-frame border-0",
+                            !isIframeLoading && "embed-frame-ready",
+                            isWorkspaceTransitioning && "embed-frame-transitioning"
+                          )}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      )}
+
+                      {/* For Material Preview: Pre-rendered persistent cached iframes */}
+                      {unit.unit_materials?.map((material: any) => {
+                        const isActive = activePreview.type === "material" && activePreview.url === material.file_url;
+                        const isNotion = material.file_url?.includes("notion");
+                        const isClickUp = material.file_url?.includes("clickup.com");
+
+                        return (
+                          <iframe
+                            key={`material-frame-${material.id}`}
+                            title={material.title}
+                            src={formatEmbedUrl(material.file_url || "", "material")}
+                            onLoad={() => setLoadedIframes(prev => ({ ...prev, [material.file_url || ""]: true }))}
+                            className={cn(
+                              "embed-frame border-0",
+                              isActive ? "embed-frame-ready z-10" : "opacity-0 pointer-events-none -z-10",
+                              isNotion && "notion-embed-frame",
+                              isClickUp && "clickup-embed-frame",
+                              isWorkspaceTransitioning && "embed-frame-transitioning"
+                            )}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          />
+                        );
+                      })}
 
                       {/* Dynamic Security Watermark Overlay */}
                       {activePreview.type === "material" && (
@@ -754,7 +787,7 @@ function UnitPage() {
                       )}
 
                       {/* Hover to Reveal Shield Overlay (Only active when not in fullscreen) */}
-                      {!isHovered && !isIframeLoading && !isFullscreenSecure && activePreview.type === "material" && (
+                      {!isHovered && !isCurrentIframeLoading && !isFullscreenSecure && activePreview.type === "material" && (
                         <div className="absolute inset-0 z-20 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay">
                           <div className="h-12 w-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
                             <Shield className="h-5 w-5 text-emerald-500 animate-pulse" />
@@ -805,13 +838,6 @@ function UnitPage() {
       {/* Hidden preloader container to cache files natively in the background */}
       {shouldPreload && (
         <div className="hidden absolute w-0 h-0 overflow-hidden" aria-hidden="true">
-          {unit.unit_materials?.map((material: any) => (
-            <iframe
-              key={`preload-material-${material.id}`}
-              src={formatEmbedUrl(material.file_url || "", "material")}
-              className="w-0 h-0 border-0"
-            />
-          ))}
           {unit.unit_videos?.map((video: any) => (
             <iframe
               key={`preload-video-${video.id}`}
@@ -885,13 +911,13 @@ function UnitPage() {
           opacity: 0.97;
           transform: scale(1.008);
         }
-        .notion-embed-host .embed-frame {
-          top: -50px;
-          height: calc(100% + 50px);
+        .notion-embed-frame {
+          top: -50px !important;
+          height: calc(100% + 50px) !important;
         }
-        .clickup-embed-host .embed-frame {
-          top: -56px;
-          height: calc(100% + 56px);
+        .clickup-embed-frame {
+          top: -56px !important;
+          height: calc(100% + 56px) !important;
         }
         .workspace-content-shell {
           transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
@@ -967,10 +993,10 @@ function UnitPage() {
           height: 100% !important;
           width: 100% !important;
         }
-        :fullscreen.fullscreen-workspace .notion-embed-host .embed-frame,
-        :-webkit-full-screen.fullscreen-workspace .notion-embed-host .embed-frame,
-        :-moz-full-screen.fullscreen-workspace .notion-embed-host .embed-frame,
-        :-ms-fullscreen.fullscreen-workspace .notion-embed-host .embed-frame {
+        :fullscreen.fullscreen-workspace .notion-embed-frame,
+        :-webkit-full-screen.fullscreen-workspace .notion-embed-frame,
+        :-moz-full-screen.fullscreen-workspace .notion-embed-frame,
+        :-ms-fullscreen.fullscreen-workspace .notion-embed-frame {
           top: 0 !important;
           height: 100% !important;
         }
