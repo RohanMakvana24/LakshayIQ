@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageLoader } from "@/components/page-loader";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 export const Route = createFileRoute("/_authenticated/student/resume")({
   head: () => ({ meta: [{ title: "Interactive Resume Builder — Lakshay IQ" }] }),
@@ -53,7 +55,7 @@ interface SkillCategory {
 interface ResumeSection {
   id: string;
   title: string;
-  type: "timeline" | "tags" | "text";
+  type: "timeline" | "tags" | "text" | "pagebreak";
   isVisible: boolean;
   items?: TimelineItem[];
   categories?: SkillCategory[];
@@ -288,11 +290,11 @@ function ResumeBuilderPage() {
     toast.success("Section removed");
   };
 
-  const addCustomSection = (type: "timeline" | "tags" | "text") => {
+  const addCustomSection = (type: "timeline" | "tags" | "text" | "pagebreak") => {
     const newId = `sec_custom_${Date.now()}`;
     const newSection: ResumeSection = {
       id: newId,
-      title: "New Custom Section",
+      title: type === "pagebreak" ? "Page Break Divider" : "New Custom Section",
       type,
       isVisible: true,
       items: type === "timeline" ? [{
@@ -315,7 +317,7 @@ function ResumeBuilderPage() {
     setSections(next);
     triggerAutosave(personalInfo, next, styleConfig);
     setActiveFormTab(newId);
-    toast.success("Added custom section!");
+    toast.success(type === "pagebreak" ? "Page break added!" : "Added custom section!");
   };
 
   // Timeline Item manipulation
@@ -446,6 +448,60 @@ function ResumeBuilderPage() {
     window.print();
   };
 
+  // Direct A4 PDF export using html2canvas and jsPDF
+  const downloadPDF = async () => {
+    const element = document.querySelector(".resume-canvas");
+    if (!element) return;
+
+    try {
+      setSavingStatus("Saving...");
+      toast.info("Generating high-fidelity PDF, please wait...");
+
+      // Short timeout to guarantee UI rendering
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      const canvas = await html2canvas(element as HTMLElement, {
+        scale: 2.5, // Ultra-high resolution crisp text rendering
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 793,
+        windowHeight: 1122
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+      heightLeft -= pageHeight;
+
+      // Handle multi-page splits seamlessly
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+        heightLeft -= pageHeight;
+      }
+
+      const cleanName = personalInfo.fullName.trim().replace(/\s+/g, "_") || "My";
+      pdf.save(`${cleanName}_Resume.pdf`);
+      setSavingStatus("Saved");
+      toast.success("🎉 PDF downloaded successfully!");
+    } catch (err) {
+      console.error("Direct PDF Generation error:", err);
+      toast.error("Direct download failed. Falling back to print menu.");
+      window.print();
+    }
+  };
+
   // Share Public Link Toggle
   const handlePublishToggle = async () => {
     const nextPublished = !isPublished;
@@ -520,14 +576,25 @@ function ResumeBuilderPage() {
             <span>{isPublished ? "Live Hub Active" : "Go Live"}</span>
           </Button>
 
+          {/* Share/Print fallback button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={triggerPrint}
+            className="h-9 px-3 rounded-xl border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition-all active:scale-95"
+            title="Open standard browser print dialog"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
+
           {/* Download PDF button */}
           <Button
             size="sm"
-            onClick={triggerPrint}
+            onClick={downloadPDF}
             className="h-9 px-4 rounded-xl bg-zinc-950 text-white font-semibold hover:bg-zinc-800 gap-1.5 transition-all active:scale-95 shadow-md shadow-zinc-950/10"
           >
             <Download className="h-4 w-4" />
-            <span>Download A4 PDF</span>
+            <span>Direct Download</span>
           </Button>
         </div>
       </div>
@@ -683,14 +750,39 @@ function ResumeBuilderPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-[10px] font-bold text-zinc-400">Physical Location</label>
-                    <Input
-                      value={personalInfo.location}
-                      onChange={(e) => updatePersonalInfo("location", e.target.value)}
-                      className="h-9 text-xs rounded-xl"
-                      placeholder="Ahmedabad, Gujarat"
-                    />
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div>
+                      <label className="text-[10px] font-bold text-zinc-400">GitHub Profile Link</label>
+                      <Input
+                        value={personalInfo.socials.find(s => s.platform === "Github")?.url || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const nextSocials = personalInfo.socials.filter(s => s.platform !== "Github");
+                          if (val.trim()) {
+                            nextSocials.push({ platform: "Github", url: val.trim() });
+                          }
+                          updatePersonalInfo("socials", nextSocials);
+                        }}
+                        className="h-9 text-xs rounded-xl"
+                        placeholder="github.com/username"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-zinc-400">LinkedIn Profile Link</label>
+                      <Input
+                        value={personalInfo.socials.find(s => s.platform === "Linkedin")?.url || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const nextSocials = personalInfo.socials.filter(s => s.platform !== "Linkedin");
+                          if (val.trim()) {
+                            nextSocials.push({ platform: "Linkedin", url: val.trim() });
+                          }
+                          updatePersonalInfo("socials", nextSocials);
+                        }}
+                        className="h-9 text-xs rounded-xl"
+                        placeholder="linkedin.com/in/username"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -876,6 +968,13 @@ function ResumeBuilderPage() {
                         </div>
                       )}
 
+                      {/* --- FORM RENDER TYPE: PAGE BREAK --- */}
+                      {section.type === "pagebreak" && (
+                        <div className="text-zinc-500 text-xs py-2 leading-relaxed bg-zinc-50/50 p-3 rounded-xl border border-zinc-100 font-medium">
+                          📄 This block forces a clean A4 page split. You can drag and drop this section in the list to rearrange exactly where the page breaks.
+                        </div>
+                      )}
+
                     </div>
                   )}
                 </Card>
@@ -888,14 +987,14 @@ function ResumeBuilderPage() {
                 Add Custom Dynamic Block
               </h3>
               
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   onClick={() => addCustomSection("timeline")}
                   variant="outline"
                   size="sm"
                   className="h-8 text-[10px] font-bold rounded-xl w-full hover:bg-zinc-50 bg-white"
                 >
-                  📜 Timeline
+                  📜 Timeline Row
                 </Button>
                 <Button
                   onClick={() => addCustomSection("tags")}
@@ -912,6 +1011,14 @@ function ResumeBuilderPage() {
                   className="h-8 text-[10px] font-bold rounded-xl w-full hover:bg-zinc-50 bg-white"
                 >
                   📝 Text Bio
+                </Button>
+                <Button
+                  onClick={() => addCustomSection("pagebreak")}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-[10px] font-bold rounded-xl w-full hover:bg-zinc-50 bg-white border-dashed text-zinc-500"
+                >
+                  📄 Page Break
                 </Button>
               </div>
             </Card>
@@ -1066,60 +1173,74 @@ function ResumeBuilderPage() {
                   <div className="col-span-1 space-y-6">
                     {sections
                       .filter(s => s.isVisible)
-                      .map(section => (
-                        <div key={section.id} className="space-y-3 page-break">
-                          <h2 className="text-xs font-black uppercase tracking-wider border-b pb-1" style={{ color: styleConfig.themeColor, borderColor: `${styleConfig.themeColor}30`, fontFamily: styleConfig.fontFamily === "Sora" ? "'Sora', sans-serif" : undefined }}>
-                            {section.title}
-                          </h2>
-
-                          {section.type === "timeline" && (
-                            <div className="space-y-4">
-                              {(section.items || []).map(item => (
-                                <div key={item.id} className="space-y-1 text-xs">
-                                  <div className="flex justify-between items-start gap-3">
-                                    <h3 className="font-bold text-zinc-800 text-[13px]">{item.primaryHeader}</h3>
-                                    <span className="text-[11px] font-bold text-zinc-400 shrink-0">{item.dateRange}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline gap-3 text-[11px] font-semibold text-zinc-500">
-                                    <span>{item.secondaryHeader}</span>
-                                    {item.metrics && <span className="font-mono text-zinc-600 bg-zinc-50 px-1 border rounded">{item.metrics}</span>}
-                                  </div>
-                                  <p className="text-[11px] text-zinc-500 mt-1 pl-2 border-l border-zinc-100 whitespace-pre-line leading-relaxed">
-                                    {item.description}
-                                  </p>
-                                </div>
-                              ))}
+                      .map(section => {
+                        if (section.type === "pagebreak") {
+                          return (
+                            <div key={section.id} className="py-4 relative my-2 no-print page-break-after-always">
+                              <div className="border-t-2 border-dashed border-zinc-200 w-full flex items-center justify-center">
+                                <span className="absolute bg-white border border-zinc-200 px-3 py-0.5 text-[9px] font-black text-zinc-400 uppercase tracking-widest rounded-full flex items-center gap-1.5 shadow-sm">
+                                  ✂️ A4 Page Split Divider
+                                </span>
+                              </div>
                             </div>
-                          )}
+                          );
+                        }
 
-                          {section.type === "tags" && (
-                            <div className="grid grid-cols-2 gap-4">
-                              {(section.categories || []).map((cat, idx) => (
-                                <div key={idx} className="space-y-1.5">
-                                  <h4 className="text-[10px] font-black uppercase tracking-wide text-zinc-400">{cat.name}</h4>
-                                  <div className="flex flex-wrap gap-1">
-                                    {cat.tags.map((tag, tagIdx) => (
-                                      <Badge
-                                        key={tagIdx}
-                                        variant="outline"
-                                        className="text-[9px] font-medium px-2 py-0.5 rounded border-zinc-200 bg-zinc-50/20 text-zinc-700"
-                                      >
-                                        {tag}
-                                      </Badge>
-                                    ))}
+                        return (
+                          <div key={section.id} className="space-y-3 page-break">
+                            <h2 className="text-xs font-black uppercase tracking-wider border-b pb-1" style={{ color: styleConfig.themeColor, borderColor: `${styleConfig.themeColor}30`, fontFamily: styleConfig.fontFamily === "Sora" ? "'Sora', sans-serif" : undefined }}>
+                              {section.title}
+                            </h2>
+
+                            {section.type === "timeline" && (
+                              <div className="space-y-4">
+                                {(section.items || []).map(item => (
+                                  <div key={item.id} className="space-y-1 text-xs">
+                                    <div className="flex justify-between items-start gap-3">
+                                      <h3 className="font-bold text-zinc-800 text-[13px]">{item.primaryHeader}</h3>
+                                      <span className="text-[11px] font-bold text-zinc-400 shrink-0">{item.dateRange}</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline gap-3 text-[11px] font-semibold text-zinc-500">
+                                      <span>{item.secondaryHeader}</span>
+                                      {item.metrics && <span className="font-mono text-zinc-600 bg-zinc-50 px-1 border rounded">{item.metrics}</span>}
+                                    </div>
+                                    <p className="text-[11px] text-zinc-500 mt-1 pl-2 border-l border-zinc-100 whitespace-pre-line leading-relaxed">
+                                      {item.description}
+                                    </p>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                                ))}
+                              </div>
+                            )}
 
-                          {section.type === "text" && (
-                            <p className="text-[11px] text-zinc-500 leading-relaxed whitespace-pre-line">
-                              {section.textContent}
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                            {section.type === "tags" && (
+                              <div className="grid grid-cols-2 gap-4">
+                                {(section.categories || []).map((cat, idx) => (
+                                  <div key={idx} className="space-y-1.5">
+                                    <h4 className="text-[10px] font-black uppercase tracking-wide text-zinc-400">{cat.name}</h4>
+                                    <div className="flex flex-wrap gap-1">
+                                      {cat.tags.map((tag, tagIdx) => (
+                                        <Badge
+                                          key={tagIdx}
+                                          variant="outline"
+                                          className="text-[9px] font-medium px-2 py-0.5 rounded border-zinc-200 bg-zinc-50/20 text-zinc-700"
+                                        >
+                                          {tag}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {section.type === "text" && (
+                              <p className="text-[11px] text-zinc-500 leading-relaxed whitespace-pre-line">
+                                {section.textContent}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                   </div>
                 )}
               </div>
