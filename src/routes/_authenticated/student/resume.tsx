@@ -178,6 +178,7 @@ function ResumeBuilderPage() {
 
   // Accordion active sections
   const [activeFormTab, setActiveFormTab] = useState<string>("personal");
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<"editor" | "preview">("editor");
 
   // Load from Supabase (with localStorage fallback)
   useEffect(() => {
@@ -731,7 +732,7 @@ function ResumeBuilderPage() {
 
   if (viewMode === "dashboard") {
     return (
-      <div className="w-full bg-zinc-50/40 min-h-screen text-zinc-800 antialiased no-print p-6">
+      <div className="w-full bg-zinc-50/40 min-h-screen text-zinc-800 antialiased no-print px-4 py-6 md:p-6">
         {/* Dashboard Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-zinc-200/60 pb-5 mb-8 gap-4">
           <div>
@@ -755,7 +756,7 @@ function ResumeBuilderPage() {
         {/* Main Dashboard View */}
         {!hasResumeData || resumesList.length === 0 ? (
           /* Empty State Dashboard Card */
-          <div className="max-w-2xl mx-auto my-12 text-center p-8 bg-white border border-zinc-200/60 rounded-3xl shadow-sm space-y-6">
+          <div className="max-w-2xl mx-auto my-12 text-center p-6 sm:p-8 bg-white border border-zinc-200/60 rounded-3xl shadow-sm space-y-6">
             <div className="h-16 w-16 mx-auto rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center animate-bounce">
               <Sparkles className="h-8 w-8 text-emerald-500" />
             </div>
@@ -893,8 +894,8 @@ function ResumeBuilderPage() {
     <div className="w-full bg-white min-h-screen text-zinc-800 antialiased selection:bg-emerald-50 selection:text-emerald-700">
       
       {/* Dynamic Header */}
-      <div className="flex items-center justify-between gap-4 border-b border-zinc-100 pb-4 mb-6 no-print">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-zinc-100 pb-4 mb-6 px-4 md:px-6 pt-4 no-print">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <Button
             variant="outline"
             size="sm"
@@ -902,14 +903,15 @@ function ResumeBuilderPage() {
             className="h-9 px-3 rounded-xl border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition-all active:scale-95 gap-1 font-bold text-xs bg-white cursor-pointer"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Exit Editor</span>
+            <span className="hidden sm:inline">Exit Editor</span>
+            <span className="inline sm:hidden">Exit</span>
           </Button>
 
           <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
             <FileText className="h-5 w-5 text-emerald-500" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>
+            <h1 className="text-xl font-bold tracking-tight animate-fade-in" style={{ fontFamily: "'Sora', sans-serif" }}>
               Modular Resume Canvas
             </h1>
             <div className="flex items-center gap-2 mt-0.5">
@@ -921,15 +923,16 @@ function ResumeBuilderPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
           {/* Manual Save button */}
           <Button
             size="sm"
             onClick={() => saveVault(true)}
-            className="h-9 px-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 gap-1.5 transition-all active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10"
+            className="h-9 px-3 sm:px-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 gap-1.5 transition-all active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10"
           >
             <Save className="h-4 w-4" />
-            <span>Save Draft</span>
+            <span className="hidden sm:inline">Save Draft</span>
+            <span className="inline sm:hidden">Save</span>
           </Button>
 
           {/* Public Portfolio button */}
@@ -937,10 +940,11 @@ function ResumeBuilderPage() {
             variant="outline"
             size="sm"
             onClick={handlePublishToggle}
-            className={`h-9 px-4 rounded-xl border border-zinc-200 font-semibold gap-1.5 transition-all active:scale-95 cursor-pointer ${isPublished ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-white text-zinc-600"}`}
+            className={`h-9 px-3 sm:px-4 rounded-xl border border-zinc-200 font-semibold gap-1.5 transition-all active:scale-95 cursor-pointer ${isPublished ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-white text-zinc-600"}`}
           >
             <Globe className="h-4 w-4" />
-            <span>{isPublished ? "Live Hub Active" : "Go Live"}</span>
+            <span className="hidden sm:inline">{isPublished ? "Live Hub Active" : "Go Live"}</span>
+            <span className="inline sm:hidden">{isPublished ? "Live" : "Go Live"}</span>
           </Button>
 
           {/* Share/Print fallback button */}
@@ -958,21 +962,50 @@ function ResumeBuilderPage() {
           <Button
             size="sm"
             onClick={downloadPDF}
-            className="h-9 px-4 rounded-xl bg-zinc-950 text-white font-semibold hover:bg-zinc-800 gap-1.5 transition-all active:scale-95 shadow-md shadow-zinc-950/10 cursor-pointer"
+            className="h-9 px-3 sm:px-4 rounded-xl bg-zinc-950 text-white font-semibold hover:bg-zinc-800 gap-1.5 transition-all active:scale-95 shadow-md shadow-zinc-950/10 cursor-pointer"
           >
             <Download className="h-4 w-4" />
-            <span>Direct Download</span>
+            <span className="hidden sm:inline">Direct Download</span>
+            <span className="inline sm:hidden">Download</span>
           </Button>
         </div>
       </div>
 
+      {/* Mobile Workspace Tabs Switcher */}
+      <div className="flex lg:hidden justify-center px-4 mb-6 no-print">
+        <div className="flex w-full max-w-sm bg-zinc-100 p-1 rounded-xl border border-zinc-200/60 shadow-inner">
+          <button
+            onClick={() => setActiveWorkspaceTab("editor")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
+              activeWorkspaceTab === "editor"
+                ? "bg-white text-zinc-950 shadow-sm"
+                : "text-zinc-500 hover:text-zinc-800"
+            }`}
+          >
+            <FileText className="h-3.5 w-3.5" />
+            <span>Editor</span>
+          </button>
+          <button
+            onClick={() => setActiveWorkspaceTab("preview")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
+              activeWorkspaceTab === "preview"
+                ? "bg-white text-zinc-950 shadow-sm"
+                : "text-zinc-500 hover:text-zinc-800"
+            }`}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            <span>Preview</span>
+          </button>
+        </div>
+      </div>
+
       {/* Main Split Screen Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start px-4 md:px-6 pb-12">
         
         {/* ========================================================
             LEFT COLUMN: THE FORM EDITOR (no-print)
            ======================================================== */}
-        <div className="lg:col-span-5 space-y-5 no-print">
+        <div className={`lg:col-span-5 space-y-5 no-print ${activeWorkspaceTab === "editor" ? "block" : "hidden lg:block"}`}>
           
           {/* Styles Config Dock */}
           <Card className="p-4 border border-zinc-100 shadow-sm rounded-2xl bg-zinc-50/50">
@@ -1075,7 +1108,7 @@ function ResumeBuilderPage() {
               
               {activeFormTab === "personal" && (
                 <div className="p-4 pt-0 border-t border-zinc-50 space-y-3 mt-1">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] font-bold text-zinc-400">Full Name</label>
                       <Input
@@ -1096,7 +1129,7 @@ function ResumeBuilderPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] font-bold text-zinc-400">Contact Email</label>
                       <Input
@@ -1117,7 +1150,7 @@ function ResumeBuilderPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div>
                       <label className="text-[10px] font-bold text-zinc-400">GitHub Profile Link</label>
                       <Input
@@ -1218,7 +1251,7 @@ function ResumeBuilderPage() {
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
 
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
                                   <label className="text-[9px] font-bold text-zinc-400">Primary Header (Organization)</label>
                                   <Input
@@ -1237,7 +1270,7 @@ function ResumeBuilderPage() {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
                                   <label className="text-[9px] font-bold text-zinc-400">Date / Duration</label>
                                   <Input
@@ -1396,10 +1429,10 @@ function ResumeBuilderPage() {
         {/* ========================================================
             RIGHT COLUMN: THE PIXEL-PERFECT LIVE A4 CANVAS
            ======================================================== */}
-        <div className="lg:col-span-7 flex flex-col items-center">
+        <div className={`lg:col-span-7 flex flex-col items-center ${activeWorkspaceTab === "preview" ? "block" : "hidden lg:block"}`}>
           
           {/* Real-time scaling layout container for A4 preview */}
-          <div className="w-full overflow-x-auto p-4 bg-zinc-100/50 border border-zinc-200/50 rounded-3xl flex justify-center no-print">
+          <div className="w-full overflow-hidden p-4 bg-zinc-100/50 border border-zinc-200/50 rounded-3xl flex justify-center no-print canvas-container">
             
             {/* The Live A4 Paper Canvas */}
             <div 
@@ -1680,6 +1713,57 @@ function ResumeBuilderPage() {
           CSS PRINT ENGINE BLOCK (ONLY ACTIVE DURING window.print)
          ======================================================== */}
       <style>{`
+        /* Bulletproof Viewport-Based Responsive A4 Canvas Scaling */
+        .canvas-container {
+          width: 100% !important;
+          display: grid !important;
+          place-items: start center !important;
+          overflow: hidden !important;
+          padding: 24px 0 !important;
+          transition: all 0.2s ease-in-out;
+        }
+
+        .resume-canvas {
+          transform-origin: top center !important;
+          margin: 0 !important;
+          width: 794px !important;
+          min-height: 1122px !important;
+          box-shadow: 0 16px 40px rgba(0,0,0,0.06) !important;
+          border-radius: 12px !important;
+          transition: transform 0.2s ease-in-out;
+        }
+
+        /* Large Desktop (1024px and up) - col-span-7 is ~58.3% of viewport */
+        @media (min-width: 1024px) {
+          .canvas-container {
+            height: calc(min(1122px, calc(1.4142 * ((100vw * 0.58) - 80px))) + 48px) !important;
+          }
+          .resume-canvas {
+            transform: scale(min(1, calc(((100vw * 0.58) - 80px) / 794))) !important;
+          }
+        }
+
+        /* Tablet (640px to 1023px) - Full width layout */
+        @media (min-width: 640px) and (max-width: 1023px) {
+          .canvas-container {
+            height: calc(min(1122px, calc(1.4142 * (100vw - 80px))) + 48px) !important;
+          }
+          .resume-canvas {
+            transform: scale(min(1, calc((100vw - 80px) / 794))) !important;
+          }
+        }
+
+        /* Mobile (below 640px) - Fit inside tab with both paddings accounted */
+        @media (max-width: 639px) {
+          .canvas-container {
+            padding: 12px 0 !important;
+            height: calc(min(1122px, calc(1.4142 * (100vw - 72px))) + 24px) !important;
+          }
+          .resume-canvas {
+            transform: scale(min(1, calc((100vw - 72px) / 794))) !important;
+          }
+        }
+
         @media print {
           @page {
             margin: 0mm !important;
@@ -1716,6 +1800,7 @@ function ResumeBuilderPage() {
             background: white !important;
             margin: 0 !important;
             box-sizing: border-box !important;
+            transform: none !important;
           }
           
           /* Page break avoidance rules for timelines */
