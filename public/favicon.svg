@@ -1,50 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
   <defs>
-    <!-- Background Gradient -->
+    <!-- Brand Gradient -->
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#0d9488" />
     </linearGradient>
-    
-    <!-- Heart Glow/Highlight -->
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
   </defs>
 
-  <!-- Rounded App Icon Background -->
-  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  <!-- Rounded Brand App Icon Background -->
+  <rect width="24" height="24" rx="5.5" fill="url(#bgGrad)" />
 
-  <!-- Outer Orbit Ring (matching the UI's spinning futuristic orbit) -->
-  <circle cx="256" cy="256" r="210" fill="none" stroke="white" stroke-width="8" stroke-dasharray="30 15 10 15" stroke-opacity="0.25" />
-  <circle cx="256" cy="256" r="185" fill="none" stroke="white" stroke-width="4" stroke-opacity="0.15" />
+  <!-- Outer Orbit Rings (matching the UI's spinning futuristic orbit) -->
+  <circle cx="12" cy="12" r="10.5" fill="none" stroke="white" stroke-width="0.6" stroke-dasharray="2 1.5" stroke-opacity="0.35" />
+  <circle cx="12" cy="12" r="9.2" fill="none" stroke="white" stroke-width="0.3" stroke-opacity="0.2" />
 
-  <!-- Heart-Book Core Silhouette -->
-  <path d="M256,155 C215,95 125,95 125,195 C125,295 256,390 256,410 C256,390 387,295 387,195 C387,95 297,95 256,155 Z" 
-        fill="white" 
-        filter="url(#glow)" />
-        
-  <!-- Book Details: Spine carved out in rich emerald -->
-  <path d="M256,180 L256,375" stroke="#059669" stroke-width="12" stroke-linecap="round" />
+  <!-- The Exact Brand Book Heart Icon Core -->
+  <g transform="translate(4, 4) scale(0.6666)">
+    <path d="M6.012 18H21V4c0-1.103-.897-2-2-2H6c-1.206 0-3 .799-3 3v14c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.806 5 19c0-.101.009-.191.024-.273.112-.576.584-.717.988-.727zM8.648 7.642a2.224 2.224 0 0 1 3.125 0l.224.219.223-.219a2.225 2.225 0 0 1 3.126 0 2.129 2.129 0 0 1 0 3.069L11.998 14l-3.349-3.289a2.128 2.128 0 0 1-.001-3.069z" 
+          fill="white" />
+  </g>
   
-  <!-- Left Page Lines -->
-  <path d="M190,210 C160,225 155,255 155,275 M190,260 C165,275 160,295 160,315 M200,310 C180,325 175,340 175,350" 
-        fill="none" 
-        stroke="#059669" 
-        stroke-width="8" 
-        stroke-linecap="round" 
-        stroke-opacity="0.8" />
-
-  <!-- Right Page Lines -->
-  <path d="M322,210 C352,225 357,255 357,275 M322,260 C347,275 352,295 352,315 M312,310 C332,325 337,340 337,350" 
-        fill="none" 
-        stroke="#059669" 
-        stroke-width="8" 
-        stroke-linecap="round" 
-        stroke-opacity="0.8" />
-
   <!-- Twinkling Sparkle in top right (Brand sparkle) -->
-  <path d="M370,120 C370,130 380,130 390,130 C380,130 380,140 380,150 C380,140 370,140 370,130 C360,130 370,130 370,120 Z" 
+  <path d="M19,4.5 C19,5 19.5,5 20,5 C19.5,5 19.5,5.5 19.5,6 C19.5,5.5 19,5.5 19,5 C18.5,5 19,5 19,4.5 Z" 
         fill="#ffebd5" />
 </svg>
