@@ -173,8 +173,7 @@ function ResumeBuilderPage() {
   const [hasResumeData, setHasResumeData] = useState(false);
   const [resumesList, setResumesList] = useState<any[]>([]);
   const [activeResumeId, setActiveResumeId] = useState<string>("primary");
-  const [showAdModal, setShowAdModal] = useState(false);
-  const [adPendingResume, setAdPendingResume] = useState<any>(null);
+
 
   // Accordion active sections
   const [activeFormTab, setActiveFormTab] = useState<string>("personal");
@@ -429,8 +428,7 @@ function ResumeBuilderPage() {
   };
 
   const downloadSpecificPDF = (resume: any) => {
-    setAdPendingResume(resume);
-    setShowAdModal(true);
+    executeActualPDFDownload(resume);
   };
 
   const executeActualPDFDownload = async (resume: any) => {
@@ -632,8 +630,7 @@ function ResumeBuilderPage() {
 
   // Direct A4 PDF export trigger
   const downloadPDF = () => {
-    setAdPendingResume(null);
-    setShowAdModal(true);
+    executeActualActivePDFDownload();
   };
 
   // Actual PDF Generator Engine
@@ -997,7 +994,7 @@ function ResumeBuilderPage() {
       </div>
 
       {/* Main Split Screen Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start px-4 md:px-6 pb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start px-4 md:px-6 pb-12 print:block print:p-0 print:m-0">
 
         {/* ========================================================
             LEFT COLUMN: THE FORM EDITOR (no-print)
@@ -1426,10 +1423,10 @@ function ResumeBuilderPage() {
         {/* ========================================================
             RIGHT COLUMN: THE PIXEL-PERFECT LIVE A4 CANVAS
            ======================================================== */}
-        <div className={`lg:col-span-7 flex flex-col items-center ${activeWorkspaceTab === "preview" ? "block" : "hidden lg:block"}`}>
+        <div className={`lg:col-span-7 flex flex-col items-center print:block print:w-full ${activeWorkspaceTab === "preview" ? "block" : "hidden lg:block"}`}>
 
           {/* Real-time scaling layout container for A4 preview */}
-          <div className="w-full overflow-hidden p-4 bg-zinc-100/50 border border-zinc-200/50 rounded-3xl flex justify-center no-print canvas-container">
+          <div className="w-full overflow-hidden p-4 bg-zinc-100/50 border border-zinc-200/50 rounded-3xl flex justify-center canvas-container print:p-0 print:bg-white print:border-none print:shadow-none">
 
             {/* The Live A4 Paper Canvas */}
             <div
@@ -1654,55 +1651,7 @@ function ResumeBuilderPage() {
           </div>
         </div>
 
-        {/* Sponsor Adsterra Monetization Modal */}
-        {showAdModal && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md no-print p-4">
-            <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 text-center animate-in fade-in zoom-in-95 duration-200">
 
-              {/* Pulsing visual */}
-              <div className="h-16 w-16 mx-auto rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center animate-pulse">
-                <Download className="h-8 w-8 text-emerald-500" />
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold text-zinc-950 font-sans animate-pulse" style={{ fontFamily: "'Sora', sans-serif" }}>
-                  Preparing Premium A4 PDF...
-                </h3>
-                <p className="text-xs text-zinc-500 leading-relaxed px-2">
-                  To keep Lakshay IQ's premium resume and portfolio builder 100% free for all university students, please proceed through our sponsor network to unlock your download.
-                </p>
-              </div>
-
-              {/* Sponsor Button */}
-              <Button
-                onClick={() => {
-                  // Open Adsterra link in a new tab
-                  window.open("https://www.effectivecpmnetwork.com/n7uqb683?key=ddbf42a7d34cc2cee82b22cef3e125f9", "_blank");
-
-                  // Trigger actual PDF generation
-                  if (adPendingResume) {
-                    executeActualPDFDownload(adPendingResume);
-                  } else {
-                    executeActualActivePDFDownload();
-                  }
-
-                  // Close modal
-                  setShowAdModal(false);
-                  setAdPendingResume(null);
-                  toast.success("🚀 Download unlocked!");
-                }}
-                className="w-full h-11 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white font-extrabold shadow-lg shadow-zinc-950/20 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
-              >
-                <Sparkles className="h-4 w-4 text-emerald-400" />
-                <span>Unlock & Download PDF</span>
-              </Button>
-
-              <p className="text-[10px] text-zinc-400 font-medium">
-                Secure sponsored download powered by Adsterra Network
-              </p>
-            </div>
-          </div>
-        )}
 
       </div>
 
@@ -1777,37 +1726,43 @@ function ResumeBuilderPage() {
             size: A4 portrait;
           }
           
-          body {
+          .no-print,
+          [data-sonner-toaster],
+          #sonner-toaster {
+            display: none !important;
+          }
+
+          html, body {
+            background: white !important;
             margin: 0 !important;
             padding: 0 !important;
+            height: auto !important;
+            min-height: auto !important;
+            overflow: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+          }
+
+          /* Force the container path to flow cleanly */
+          .canvas-container {
+            display: block !important;
+            overflow: visible !important;
+            padding: 0 !important;
+            border: none !important;
+            height: auto !important;
             background: white !important;
           }
 
-          /* Hide absolutely everything except the resume paper canvas during printing */
-          body * {
-            visibility: hidden;
-          }
-          
-          /* Target ONLY the canvas and force A4 boundaries */
-          .resume-canvas, .resume-canvas * {
-            visibility: visible;
-          }
-          
           .resume-canvas {
-            position: absolute;
-            left: 0 !important;
-            top: 0 !important;
             width: 210mm !important;
             min-height: 297mm !important;
-            padding: 8mm 10mm !important;
+            padding: 10mm 15mm !important;
             border: none !important;
             box-shadow: none !important;
             background: white !important;
-            margin: 0 !important;
-            box-sizing: border-box !important;
+            margin: 0 auto !important;
             transform: none !important;
+            position: relative !important;
           }
           
           /* Page break avoidance rules for timelines */
@@ -1822,14 +1777,6 @@ function ResumeBuilderPage() {
             margin: 0 !important;
             padding: 0 !important;
             border: none !important;
-          }
-          
-          html, body {
-            background: white !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            height: 100%;
-            overflow: hidden;
           }
         }
       `}</style>

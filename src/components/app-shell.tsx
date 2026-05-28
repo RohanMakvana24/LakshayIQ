@@ -56,7 +56,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
 
       {/* --- MOBILE SIDEBAR DRAWER --- */}
       <div className={cn(
-        "fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-md md:hidden transition-opacity duration-300",
+        "fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-md md:hidden transition-opacity duration-300 print:hidden",
         mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       )} onClick={() => setMobileMenuOpen(false)}>
         <aside
@@ -93,7 +93,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
       {/* --- DESKTOP SIDEBAR --- */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden md:flex md:flex-col bg-white border-r border-zinc-100/80 transition-[width] duration-300 ease-in-out will-change-[width] p-4 justify-between shadow-[1px_0_10px_rgba(0,0,0,0.005)]",
+          "fixed inset-y-0 left-0 z-30 hidden md:flex md:flex-col bg-white border-r border-zinc-100/80 transition-[width] duration-300 ease-in-out will-change-[width] p-4 justify-between shadow-[1px_0_10px_rgba(0,0,0,0.005)] print:hidden",
           isCollapsed ? "w-20" : "w-66"
         )}
       >
@@ -130,10 +130,10 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
       </aside>
 
       {/* --- MAIN CONTENT BAR --- */}
-      <div className={cn("transition-[padding-left] duration-300 ease-in-out will-change-[padding-left]", isCollapsed ? "md:pl-20" : "md:pl-66")}>
+      <div className={cn("transition-[padding-left] duration-300 ease-in-out will-change-[padding-left] print:pl-0 print:p-0 print:m-0 print:block", isCollapsed ? "md:pl-20" : "md:pl-66")}>
 
         {/* Header Bar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-zinc-100/60 bg-white/80 px-4 md:px-8 backdrop-blur-md">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-zinc-100/60 bg-white/80 px-4 md:px-8 backdrop-blur-md print:hidden">
 
           {/* Mobile Menu Toggle */}
           <Button
@@ -201,14 +201,14 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
         </header>
 
         {/* --- MAIN ROUTE VIEW --- */}
-        <main className="p-4 md:p-6 max-w-[1600px] bg-white mx-auto animate-in fade-in duration-500">
+        <main className="p-4 md:p-6 max-w-[1600px] bg-white mx-auto animate-in fade-in duration-500 print:p-0 print:m-0 print:block">
           {children}
         </main>
       </div>
 
       {/* --- FLOATING MOBILE ACTION DOCK (BACK & HOME NAVIGATION) --- */}
       {variant === "student" && pathname !== "/student" && pathname !== "/student/" && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden animate-in slide-in-from-bottom-8 duration-300">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden animate-in slide-in-from-bottom-8 duration-300 print:hidden">
           <div className="flex items-center gap-1.5 p-1.5 bg-white/90 border border-zinc-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-full">
             {/* Elegant Back Button */}
             <button
