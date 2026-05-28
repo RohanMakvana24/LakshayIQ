@@ -753,6 +753,7 @@ function UnitPage() {
                         const isActive = activePreview.type === "material" && activePreview.url === material.file_url;
                         const isNotion = material.file_url?.includes("notion");
                         const isClickUp = material.file_url?.includes("clickup.com");
+                        const isAppFlowy = material.file_url?.includes("appflowy");
 
                         return (
                           <iframe
@@ -765,6 +766,7 @@ function UnitPage() {
                               isActive ? "embed-frame-ready z-10" : "opacity-0 pointer-events-none -z-10",
                               isNotion && "notion-embed-frame",
                               isClickUp && "clickup-embed-frame",
+                              isAppFlowy && "appflowy-embed-frame",
                               isWorkspaceTransitioning && "embed-frame-transitioning"
                             )}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -918,6 +920,10 @@ function UnitPage() {
         .clickup-embed-frame {
           top: -56px !important;
           height: calc(100% + 56px) !important;
+        }
+        .appflowy-embed-frame {
+          top: -48px !important;
+          height: calc(100% + 48px) !important;
         }
         .workspace-content-shell {
           transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
