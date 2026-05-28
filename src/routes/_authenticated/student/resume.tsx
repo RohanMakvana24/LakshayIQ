@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Sparkles, Plus, Trash2, Eye, EyeOff, ArrowLeft, Download, 
-  Settings, Type, Palette, AlignLeft, LayoutGrid, Check, 
+import {
+  Sparkles, Plus, Trash2, Eye, EyeOff, ArrowLeft, Download,
+  Settings, Type, Palette, AlignLeft, LayoutGrid, Check,
   MapPin, Phone, Mail, Linkedin, Github, FileText, Share2, Globe, Save
 } from "lucide-react";
 import { toast } from "sonner";
@@ -160,7 +160,7 @@ const FONTS = ["Sora", "Inter", "Playfair Display", "Fira Code"];
 
 function ResumeBuilderPage() {
   const { user } = useAuth();
-  
+
   // Loading & State
   const [loading, setLoading] = useState(true);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>(DEFAULT_PERSONAL_INFO);
@@ -245,7 +245,7 @@ function ResumeBuilderPage() {
         if (loadedResumes.length > 0) {
           setResumesList(loadedResumes);
           setHasResumeData(true);
-          
+
           // Find the active resume
           const active = loadedResumes[0];
           setActiveResumeId(active.id);
@@ -284,10 +284,10 @@ function ResumeBuilderPage() {
     if (targetList.length === 0) return;
 
     setSavingStatus("Saving...");
-    
+
     // Find active resume
     const activeResume = targetList.find((r) => r.id === activeResumeId) || targetList[0];
-    
+
     try {
       const vaultPayload = {
         isVault: true,
@@ -332,17 +332,17 @@ function ResumeBuilderPage() {
   ) => {
     setSavingStatus("Saving...");
     setHasResumeData(true);
-    
+
     // Update local state list immediately
     const updatedList = resumesList.map((r) =>
       r.id === activeResumeId
         ? {
-            ...r,
-            personalInfo: nextInfo,
-            sections: nextSections,
-            styleConfig: nextStyle,
-            updatedAt: new Date().toISOString(),
-          }
+          ...r,
+          personalInfo: nextInfo,
+          sections: nextSections,
+          styleConfig: nextStyle,
+          updatedAt: new Date().toISOString(),
+        }
         : r
     );
     setResumesList(updatedList);
@@ -385,7 +385,7 @@ function ResumeBuilderPage() {
     if (confirm("Are you sure you want to delete this resume?")) {
       const newList = resumesList.filter((r) => r.id !== resumeId);
       setResumesList(newList);
-      
+
       if (activeResumeId === resumeId) {
         const nextActive = newList[0];
         setActiveResumeId(nextActive.id);
@@ -394,7 +394,7 @@ function ResumeBuilderPage() {
         setStyleConfig(nextActive.styleConfig);
         setIsPublished(nextActive.isPublished);
       }
-      
+
       await saveVault(false, newList);
       toast.success("❌ Resume deleted successfully!");
     }
@@ -423,7 +423,7 @@ function ResumeBuilderPage() {
     setIsPublished(newResume.isPublished);
     setHasResumeData(true);
     setViewMode("editor");
-    
+
     await saveVault(false, newList);
     toast.success("➕ Fresh template created!");
   };
@@ -439,7 +439,7 @@ function ResumeBuilderPage() {
     setSections(resume.sections);
     setStyleConfig(resume.styleConfig);
     setIsPublished(resume.isPublished || false);
-    
+
     toast.info("Generating PDF, please wait...");
     setTimeout(async () => {
       await executeActualActivePDFDownload();
@@ -532,7 +532,7 @@ function ResumeBuilderPage() {
   const updateTimelineItem = (sectionId: string, itemId: string, field: keyof TimelineItem, value: string) => {
     const next = sections.map(s => {
       if (s.id === sectionId) {
-        const nextItems = (s.items || []).map(item => 
+        const nextItems = (s.items || []).map(item =>
           item.id === itemId ? { ...item, [field]: value } : item
         );
         return { ...s, items: nextItems };
@@ -660,11 +660,11 @@ function ResumeBuilderPage() {
 
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
-      
+
       const imgWidth = 210;
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
+
       let heightLeft = imgHeight;
       let position = 0;
 
@@ -743,7 +743,7 @@ function ResumeBuilderPage() {
               Create, customize, host and export your job-ready academic portfolio in seconds.
             </p>
           </div>
-          
+
           <Button
             onClick={handleCreateNewResume}
             className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all active:scale-95 shadow-md shadow-emerald-600/10 flex items-center gap-2 cursor-pointer"
@@ -785,13 +785,13 @@ function ResumeBuilderPage() {
                 My Saved Resumes ({resumesList.length})
               </h3>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {resumesList.map((resume) => {
                 const isCurrentActive = resume.id === activeResumeId;
                 return (
                   <Card key={resume.id} className={`bg-white border rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden ${isCurrentActive ? "border-emerald-500/80 ring-1 ring-emerald-500/10" : "border-zinc-200/60"}`}>
-                    
+
                     {/* Visual Card Header */}
                     <div className="flex items-start justify-between gap-3 mb-4">
                       <div className="flex items-center gap-2.5">
@@ -807,7 +807,7 @@ function ResumeBuilderPage() {
                           </p>
                         </div>
                       </div>
-                      
+
                       {/* Active Indicator or Badges */}
                       <div className="flex items-center gap-1">
                         {isCurrentActive && (
@@ -892,7 +892,7 @@ function ResumeBuilderPage() {
 
   return (
     <div className="w-full bg-white min-h-screen text-zinc-800 antialiased selection:bg-emerald-50 selection:text-emerald-700">
-      
+
       {/* Dynamic Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-zinc-100 pb-4 mb-6 px-4 md:px-6 pt-4 no-print">
         <div className="flex items-center gap-3 w-full md:w-auto">
@@ -900,11 +900,10 @@ function ResumeBuilderPage() {
             variant="outline"
             size="sm"
             onClick={() => setViewMode("dashboard")}
-            className="h-9 px-3 rounded-xl border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition-all active:scale-95 gap-1 font-bold text-xs bg-white cursor-pointer"
+            className="hidden md:inline-flex h-9 px-3 rounded-xl border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition-all active:scale-95 gap-1 font-bold text-xs bg-white cursor-pointer"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Exit Editor</span>
-            <span className="inline sm:hidden">Exit</span>
+            <span>Exit Editor</span>
           </Button>
 
           <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
@@ -976,22 +975,20 @@ function ResumeBuilderPage() {
         <div className="flex w-full max-w-sm bg-zinc-100 p-1 rounded-xl border border-zinc-200/60 shadow-inner">
           <button
             onClick={() => setActiveWorkspaceTab("editor")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
-              activeWorkspaceTab === "editor"
-                ? "bg-white text-zinc-950 shadow-sm"
-                : "text-zinc-500 hover:text-zinc-800"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold rounded-lg transition-all ${activeWorkspaceTab === "editor"
+              ? "bg-white text-zinc-950 shadow-sm"
+              : "text-zinc-500 hover:text-zinc-800"
+              }`}
           >
             <FileText className="h-3.5 w-3.5" />
             <span>Editor</span>
           </button>
           <button
             onClick={() => setActiveWorkspaceTab("preview")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
-              activeWorkspaceTab === "preview"
-                ? "bg-white text-zinc-950 shadow-sm"
-                : "text-zinc-500 hover:text-zinc-800"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold rounded-lg transition-all ${activeWorkspaceTab === "preview"
+              ? "bg-white text-zinc-950 shadow-sm"
+              : "text-zinc-500 hover:text-zinc-800"
+              }`}
           >
             <Eye className="h-3.5 w-3.5" />
             <span>Preview</span>
@@ -1001,12 +998,12 @@ function ResumeBuilderPage() {
 
       {/* Main Split Screen Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start px-4 md:px-6 pb-12">
-        
+
         {/* ========================================================
             LEFT COLUMN: THE FORM EDITOR (no-print)
            ======================================================== */}
         <div className={`lg:col-span-5 space-y-5 no-print ${activeWorkspaceTab === "editor" ? "block" : "hidden lg:block"}`}>
-          
+
           {/* Styles Config Dock */}
           <Card className="p-4 border border-zinc-100 shadow-sm rounded-2xl bg-zinc-50/50">
             <div className="flex items-center gap-2 mb-3 border-b border-zinc-100 pb-2">
@@ -1015,7 +1012,7 @@ function ResumeBuilderPage() {
                 Theme Customization Dock
               </h2>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               {/* Color accents */}
               <div>
@@ -1091,7 +1088,7 @@ function ResumeBuilderPage() {
 
           {/* Collapsible Form Editor Cards */}
           <div className="space-y-3">
-            
+
             {/* 1. Personal branding information */}
             <Card className={`border rounded-2xl transition-all ${activeFormTab === "personal" ? "border-emerald-500/30 shadow-md ring-1 ring-emerald-500/5 bg-white" : "border-zinc-100 hover:border-zinc-200 bg-white"}`}>
               <button
@@ -1105,7 +1102,7 @@ function ResumeBuilderPage() {
                 </span>
                 <span className="text-[10px] text-zinc-400 font-semibold">{activeFormTab === "personal" ? "Hide" : "Edit"}</span>
               </button>
-              
+
               {activeFormTab === "personal" && (
                 <div className="p-4 pt-0 border-t border-zinc-50 space-y-3 mt-1">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1191,7 +1188,7 @@ function ResumeBuilderPage() {
             {/* 2. Modular dynamic sections loop */}
             {sections.map((section, sectionIdx) => {
               const isActive = activeFormTab === section.id;
-              
+
               return (
                 <Card key={section.id} className={`border rounded-2xl transition-all ${isActive ? "border-emerald-500/30 shadow-md ring-1 ring-emerald-500/5 bg-white" : "border-zinc-100 hover:border-zinc-200 bg-white"}`}>
                   <div className="w-full flex items-center justify-between p-4">
@@ -1386,7 +1383,7 @@ function ResumeBuilderPage() {
               <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2.5" style={{ fontFamily: "'Sora', sans-serif" }}>
                 Add Custom Dynamic Block
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   onClick={() => addCustomSection("timeline")}
@@ -1430,19 +1427,19 @@ function ResumeBuilderPage() {
             RIGHT COLUMN: THE PIXEL-PERFECT LIVE A4 CANVAS
            ======================================================== */}
         <div className={`lg:col-span-7 flex flex-col items-center ${activeWorkspaceTab === "preview" ? "block" : "hidden lg:block"}`}>
-          
+
           {/* Real-time scaling layout container for A4 preview */}
           <div className="w-full overflow-hidden p-4 bg-zinc-100/50 border border-zinc-200/50 rounded-3xl flex justify-center no-print canvas-container">
-            
+
             {/* The Live A4 Paper Canvas */}
-            <div 
+            <div
               className={`resume-canvas w-[210mm] min-h-[297mm] bg-white p-8 shadow-[0_16px_40px_rgba(0,0,0,0.06)] border border-zinc-200/60 rounded-xl relative ${getFontFamilyClass()}`}
               style={{
                 fontSize: styleConfig.fontSize === "xs" ? "12px" : styleConfig.fontSize === "sm" ? "13px" : "14px",
                 lineHeight: styleConfig.lineHeight === "tight" ? "1.2" : styleConfig.lineHeight === "relaxed" ? "1.6" : "1.4"
               }}
             >
-              
+
               {/* --- 1. A4 RESUME HEADER --- */}
               <div className="border-b-2 pb-5 mb-5" style={{ borderColor: styleConfig.themeColor }}>
                 <div className="flex justify-between items-start gap-4">
@@ -1454,7 +1451,7 @@ function ResumeBuilderPage() {
                       {personalInfo.title}
                     </p>
                   </div>
-                  
+
                   {/* Contacts matrix */}
                   <div className="text-[11px] text-zinc-500 space-y-1 text-right shrink-0">
                     {personalInfo.location && (
@@ -1493,7 +1490,7 @@ function ResumeBuilderPage() {
 
               {/* --- 2. MODULAR SECTIONS CANVAS RENDERER --- */}
               <div className={`grid gap-6 ${styleConfig.layoutMode === "split" ? "grid-cols-12" : "grid-cols-1"}`}>
-                
+
                 {/* Dynamically handle Single vs Split column flows */}
                 {styleConfig.layoutMode === "split" ? (
                   <>
@@ -1661,7 +1658,7 @@ function ResumeBuilderPage() {
         {showAdModal && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md no-print p-4">
             <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 text-center animate-in fade-in zoom-in-95 duration-200">
-              
+
               {/* Pulsing visual */}
               <div className="h-16 w-16 mx-auto rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center animate-pulse">
                 <Download className="h-8 w-8 text-emerald-500" />
@@ -1681,14 +1678,14 @@ function ResumeBuilderPage() {
                 onClick={() => {
                   // Open Adsterra link in a new tab
                   window.open("https://www.effectivecpmnetwork.com/n7uqb683?key=ddbf42a7d34cc2cee82b22cef3e125f9", "_blank");
-                  
+
                   // Trigger actual PDF generation
                   if (adPendingResume) {
                     executeActualPDFDownload(adPendingResume);
                   } else {
                     executeActualActivePDFDownload();
                   }
-                  
+
                   // Close modal
                   setShowAdModal(false);
                   setAdPendingResume(null);
@@ -1699,7 +1696,7 @@ function ResumeBuilderPage() {
                 <Sparkles className="h-4 w-4 text-emerald-400" />
                 <span>Unlock & Download PDF</span>
               </Button>
-              
+
               <p className="text-[10px] text-zinc-400 font-medium">
                 Secure sponsored download powered by Adsterra Network
               </p>
@@ -1713,30 +1710,32 @@ function ResumeBuilderPage() {
           CSS PRINT ENGINE BLOCK (ONLY ACTIVE DURING window.print)
          ======================================================== */}
       <style>{`
-        /* Bulletproof Viewport-Based Responsive A4 Canvas Scaling */
         .canvas-container {
           width: 100% !important;
-          display: grid !important;
-          place-items: start center !important;
-          overflow: hidden !important;
+          display: flex !important;
+          justify-content: center !important;
+          overflow: auto !important; /* Changed from hidden to auto for scrolling */
           padding: 24px 0 !important;
           transition: all 0.2s ease-in-out;
+          -webkit-overflow-scrolling: touch;
         }
 
         .resume-canvas {
           transform-origin: top center !important;
-          margin: 0 !important;
+          margin: 0 auto !important;
           width: 794px !important;
           min-height: 1122px !important;
           box-shadow: 0 16px 40px rgba(0,0,0,0.06) !important;
           border-radius: 12px !important;
           transition: transform 0.2s ease-in-out;
+          flex-shrink: 0 !important;
         }
 
         /* Large Desktop (1024px and up) - col-span-7 is ~58.3% of viewport */
         @media (min-width: 1024px) {
           .canvas-container {
             height: calc(min(1122px, calc(1.4142 * ((100vw * 0.58) - 80px))) + 48px) !important;
+            overflow: hidden !important; /* Hide scrollbar when fully scaled to fit */
           }
           .resume-canvas {
             transform: scale(min(1, calc(((100vw * 0.58) - 80px) / 794))) !important;
@@ -1747,20 +1746,28 @@ function ResumeBuilderPage() {
         @media (min-width: 640px) and (max-width: 1023px) {
           .canvas-container {
             height: calc(min(1122px, calc(1.4142 * (100vw - 80px))) + 48px) !important;
+            overflow: hidden !important;
           }
           .resume-canvas {
             transform: scale(min(1, calc((100vw - 80px) / 794))) !important;
           }
         }
 
-        /* Mobile (below 640px) - Fit inside tab with both paddings accounted */
+        /* Mobile (below 640px) - Scrollable container without severe scale down */
         @media (max-width: 639px) {
           .canvas-container {
-            padding: 12px 0 !important;
-            height: calc(min(1122px, calc(1.4142 * (100vw - 72px))) + 24px) !important;
+            padding: 16px !important;
+            height: 75vh !important; /* Good height for scrolling */
+            justify-content: flex-start !important; /* Fixes left clipping on overflow */
+            align-items: flex-start !important;
           }
           .resume-canvas {
-            transform: scale(min(1, calc((100vw - 72px) / 794))) !important;
+            /* Scale it slightly so it's not massive, but still readable and requires scroll */
+            transform: scale(0.6) !important;
+            transform-origin: top left !important;
+            /* Compensate layout size for transform scale(0.6) to prevent extra scroll space */
+            margin-right: -317px !important; /* 794 * 0.4 */
+            margin-bottom: -448px !important; /* 1122 * 0.4 */
           }
         }
 
