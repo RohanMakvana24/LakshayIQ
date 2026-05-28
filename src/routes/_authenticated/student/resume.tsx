@@ -1273,7 +1273,7 @@ function ResumeBuilderPage() {
             
             {/* The Live A4 Paper Canvas */}
             <div 
-              className={`resume-canvas w-[210mm] min-h-[297mm] bg-white p-10 shadow-[0_16px_40px_rgba(0,0,0,0.06)] border border-zinc-200/60 rounded-xl relative ${getFontFamilyClass()}`}
+              className={`resume-canvas w-[210mm] min-h-[297mm] bg-white p-8 shadow-[0_16px_40px_rgba(0,0,0,0.06)] border border-zinc-200/60 rounded-xl relative ${getFontFamilyClass()}`}
               style={{
                 fontSize: styleConfig.fontSize === "xs" ? "12px" : styleConfig.fontSize === "sm" ? "13px" : "14px",
                 lineHeight: styleConfig.lineHeight === "tight" ? "1.2" : styleConfig.lineHeight === "relaxed" ? "1.6" : "1.4"
@@ -1530,7 +1530,7 @@ function ResumeBuilderPage() {
             top: 0 !important;
             width: 210mm !important;
             min-height: 297mm !important;
-            padding: 20mm !important;
+            padding: 8mm 10mm !important;
             border: none !important;
             box-shadow: none !important;
             background: white !important;
