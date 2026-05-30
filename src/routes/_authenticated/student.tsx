@@ -1,14 +1,15 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { AppShell, type NavItem } from "@/components/app-shell";
-import { Home, Bookmark, Search, GraduationCap, UserCircle, FileText } from "lucide-react";
+import { Home, Bookmark, Search, GraduationCap, UserCircle, FileText, FolderGit2 } from "lucide-react";
 import { toast } from "sonner";
 
 const items: NavItem[] = [
   { to: "/student", label: "Dashboard", icon: Home },
   { to: "/student/bookmarks", label: "Bookmarks", icon: Bookmark },
   { to: "/student/resume", label: "Resume Builder", icon: FileText },
+  { to: "/student/projects", label: "Project Helper", icon: FolderGit2 },
   { to: "/student/search", label: "Search", icon: Search },
   { to: "/student/profile", label: "My Profile", icon: UserCircle },
 ];
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/student")({
 function StudentLayout() {
   const { role, loading } = useAuth();
   const nav = useNavigate();
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
   
   useEffect(() => { 
     if (!loading && role === "admin") nav({ to: "/admin" }); 
@@ -27,7 +29,7 @@ function StudentLayout() {
 
   // Global Student Security Safeguards
   useEffect(() => {
-    const isResumePath = window.location.pathname.includes("/student/resume");
+    const isResumePath = pathname.includes("/student/resume");
     if (isResumePath) return;
 
     // 1. Block standard developer tools and save/print/view-source shortcuts
@@ -104,9 +106,9 @@ function StudentLayout() {
       window.removeEventListener("dragstart", handleDragStart);
       document.removeEventListener("selectionchange", handleSelectionChange);
     };
-  }, []);
+  }, [pathname]);
 
-  const isResumePath = typeof window !== "undefined" && window.location.pathname.includes("/student/resume");
+  const isResumePath = pathname.includes("/student/resume");
 
   return (
     <>

@@ -619,7 +619,6 @@ function ResumeBuilderPage() {
         const canvas = await html2canvas(element as HTMLElement, {
           scale: 4,
           useCORS: true,
-          allowTaint: true,
           logging: false,
           backgroundColor: "#ffffff",
           windowWidth: 793,
@@ -640,7 +639,6 @@ function ResumeBuilderPage() {
       toast.success("PDF downloaded successfully!");
     } catch (err) {
       console.error("Direct PDF Generation error:", err);
-      toast.error("Direct download failed. Falling back to print menu.");
       window.print();
     }
   };
