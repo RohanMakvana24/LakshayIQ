@@ -197,14 +197,18 @@ function StudentChatPage() {
       }
       setMessages((data ?? []) as ChatMessage[]);
 
-      // Mark admin messages as read
+      // Mark admin messages as read and set expiration to 5 minutes from now
       const unread = (data ?? []).filter(
         (m) => m.sender_id === adminId && !m.is_read
       );
       if (unread.length > 0) {
+        const deleteTime = new Date(Date.now() + 5 * 60 * 1000).toISOString();
         await supabase
           .from("chat_messages")
-          .update({ is_read: true })
+          .update({ 
+            is_read: true,
+            expires_at: deleteTime
+          })
           .eq("receiver_id", userId)
           .eq("sender_id", adminId)
           .eq("is_read", false);
@@ -250,9 +254,16 @@ function StudentChatPage() {
               if (prev.find((m) => m.id === msg.id)) return prev;
               return [...prev, msg];
             });
-            // Mark as read if from admin
+            // Mark as read if from admin and set expiration to 5 minutes from now
             if (msg.sender_id === adminId) {
-              supabase.from("chat_messages").update({ is_read: true }).eq("id", msg.id);
+              const deleteTime = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+              supabase
+                .from("chat_messages")
+                .update({ 
+                  is_read: true,
+                  expires_at: deleteTime
+                })
+                .eq("id", msg.id);
             }
           }
         }
@@ -296,10 +307,15 @@ function StudentChatPage() {
     setInput("");
     setSending(true);
 
+    // Initial message has far future expires_at date (won't expire until read)
+    const farFuture = new Date();
+    farFuture.setFullYear(farFuture.getFullYear() + 50);
+
     const { error } = await supabase.from("chat_messages").insert({
       sender_id: user.id,
       receiver_id: adminProfile.id,
       content,
+      expires_at: farFuture.toISOString(),
     });
 
     if (error) {
@@ -365,7 +381,7 @@ function StudentChatPage() {
           <div className="flex flex-col items-center justify-center flex-1 space-y-3 pb-6">
             <div className="flex items-center justify-center gap-1.5">
               <Clock className="h-3 w-3 text-amber-500" />
-              <span className="text-[10px] font-bold text-amber-500">Messages auto-delete in 2 minutes</span>
+              <span className="text-[10px] font-bold text-amber-500">Auto-deletes 5 min after seen</span>
             </div>
             <p className="text-xs text-slate-400 font-medium text-center max-w-xs">
               Reply to the admin or ask your own question below.
@@ -419,7 +435,7 @@ function StudentChatPage() {
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden sm:flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
             <Clock className="h-3 w-3 text-amber-500" />
-            <span className="text-[10px] font-bold text-amber-600">Messages delete in 2 min</span>
+            <span className="text-[10px] font-bold text-amber-600">Auto-deletes 5 min after seen</span>
           </div>
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold ${
             isConnected
@@ -496,7 +512,7 @@ function StudentChatPage() {
           </Button>
         </div>
         <p className="text-[9px] text-slate-400 font-medium mt-2 text-center">
-          🔒 All messages are end-to-end encrypted and auto-deleted after 2 minutes
+          🔒 Messages auto-delete 5 minutes after being seen
         </p>
       </div>
     </div>

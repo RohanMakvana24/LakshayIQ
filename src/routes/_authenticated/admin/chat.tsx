@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Send, MessageSquare, Wifi, WifiOff, Clock, User, Search, CheckCheck, Sparkles } from "lucide-react";
+import { Send, MessageSquare, Wifi, WifiOff, Clock, User, Search, CheckCheck, Sparkles, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/chat")({
@@ -270,12 +270,16 @@ function AdminChatPage() {
 
       setMessages((data ?? []) as ChatMessage[]);
 
-      // Mark student messages as read
+      // Mark student messages as read and set expiration to 5 minutes from now
       const unread = (data ?? []).filter((m) => m.sender_id === selectedStudentId && !m.is_read);
       if (unread.length > 0) {
+        const deleteTime = new Date(Date.now() + 5 * 60 * 1000).toISOString();
         await supabase
           .from("chat_messages")
-          .update({ is_read: true })
+          .update({ 
+            is_read: true,
+            expires_at: deleteTime
+          })
           .eq("receiver_id", user.id)
           .eq("sender_id", selectedStudentId)
           .eq("is_read", false);
@@ -313,7 +317,14 @@ function AdminChatPage() {
                 return [...prev, msg];
               });
               if (msg.sender_id !== user.id) {
-                supabase.from("chat_messages").update({ is_read: true }).eq("id", msg.id);
+                const deleteTime = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+                supabase
+                  .from("chat_messages")
+                  .update({ 
+                    is_read: true,
+                    expires_at: deleteTime
+                  })
+                  .eq("id", msg.id);
               }
             }
             loadStudents();
@@ -349,10 +360,14 @@ function AdminChatPage() {
     const content = input.trim();
     setInput("");
     setSending(true);
+    const farFuture = new Date();
+    farFuture.setFullYear(farFuture.getFullYear() + 50);
+
     const { error } = await supabase.from("chat_messages").insert({
       sender_id: user.id,
       receiver_id: selectedStudentId,
       content,
+      expires_at: farFuture.toISOString(),
     });
     if (error) { toast.error("Failed to send message."); setInput(content); }
     setSending(false);
@@ -369,7 +384,10 @@ function AdminChatPage() {
     <div className="flex h-[calc(100vh-120px)] bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden">
 
       {/* Left Sidebar — Student List */}
-      <div className="w-72 shrink-0 flex flex-col border-r border-slate-100 bg-slate-50/50">
+      <div className={cn(
+        "w-full md:w-72 shrink-0 flex flex-col border-r border-slate-100 bg-slate-50/50",
+        selectedStudentId ? "hidden md:flex" : "flex"
+      )}>
         {/* Sidebar Header */}
         <div className="px-4 py-4 border-b border-slate-100">
           <div className="flex items-center justify-between mb-3">
@@ -449,7 +467,10 @@ function AdminChatPage() {
       </div>
 
       {/* Right — Conversation Panel */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0",
+        !selectedStudentId ? "hidden md:flex" : "flex"
+      )}>
         {!selectedStudentId ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50/30">
             <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center mx-auto mb-5 shadow-sm">
@@ -461,7 +482,17 @@ function AdminChatPage() {
         ) : (
           <>
             {/* Chat Header */}
-            <div className="flex items-center gap-3 px-5 py-4 bg-white border-b border-slate-100 shrink-0">
+            <div className="flex items-center gap-3 px-4 md:px-5 py-4 bg-white border-b border-slate-100 shrink-0">
+              {/* Back button on mobile */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSelectedStudentId(null)}
+                className="h-8 w-8 rounded-xl md:hidden text-slate-500 hover:bg-slate-100"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+
               <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
                 {(selectedStudent?.full_name || selectedStudent?.email || "S").charAt(0).toUpperCase()}
               </div>
@@ -474,7 +505,7 @@ function AdminChatPage() {
               <div className="ml-auto flex items-center gap-2">
                 <div className="hidden sm:flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
                   <Clock className="h-3 w-3 text-amber-500" />
-                  <span className="text-[10px] font-bold text-amber-600">2-min expiry</span>
+                  <span className="text-[10px] font-bold text-amber-600">Auto-deletes 5 min after seen</span>
                 </div>
                 <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold ${
                   isConnected ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-slate-50 text-slate-400 border border-slate-200"
@@ -543,7 +574,7 @@ function AdminChatPage() {
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="text-[9px] text-slate-400 text-center mt-2">Messages auto-delete after 2 minutes · Ephemeral Chat System</p>
+              <p className="text-[9px] text-slate-400 text-center mt-2">Messages auto-delete 5 minutes after being seen · Ephemeral Chat System</p>
             </div>
           </>
         )}
