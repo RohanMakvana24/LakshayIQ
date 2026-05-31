@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      planner_tasks: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string | null
+          subject: string | null
+          date: string
+          start_time: string | null
+          end_time: string | null
+          status: 'pending' | 'completed' | 'skipped'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description?: string | null
+          subject?: string | null
+          date: string
+          start_time?: string | null
+          end_time?: string | null
+          status?: 'pending' | 'completed' | 'skipped'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string | null
+          subject?: string | null
+          date?: string
+          start_time?: string | null
+          end_time?: string | null
+          status?: 'pending' | 'completed' | 'skipped'
+          created_at?: string
+        }
+        Relationships: []
+      }
       bookmarks: {
         Row: {
           created_at: string

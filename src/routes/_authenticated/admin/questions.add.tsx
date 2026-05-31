@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Plus, Trash2, School, GraduationCap, Calendar, BookMarked, Layers, Sparkles, HelpCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Trash2, School, GraduationCap, Calendar, BookMarked, Layers, Sparkles, HelpCircle, ClipboardPaste, CheckCircle2, X } from "lucide-react";
 import { useSupabaseTable } from "@/hooks/use-supabase-table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -54,6 +54,49 @@ function AddQuestion() {
   const [marks, setMarks] = useState("1");
   const [year, setYear] = useState<number | "">("");
   const [questionFileUrl, setQuestionFileUrl] = useState("");
+
+  // ── Bulk Import State ─────────────────────────────────
+  const [bulkText, setBulkText] = useState("");
+  const [bulkParsed, setBulkParsed] = useState<string[]>([]);
+  const [bulkError, setBulkError] = useState("");
+  const [showBulkImport, setShowBulkImport] = useState(false);
+
+  /** Parse numbered question list like:
+   *  1.\nQuestion text here\n\n2.\nAnother question\n...
+   */
+  const parseBulkText = (raw: string): string[] => {
+    // Split on lines starting with a number followed by '.' (e.g. '1.' or '10.')
+    const parts = raw
+      .split(/\n?\s*\d+\.\s*\n?/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    return parts;
+  };
+
+  const handleBulkImport = () => {
+    const parsed = parseBulkText(bulkText);
+    if (parsed.length === 0) {
+      setBulkError("No questions detected. Make sure each question starts with a number like \"1.\" \"2.\" etc.");
+      return;
+    }
+    setBulkError("");
+    setBulkParsed(parsed);
+  };
+
+  const applyBulkImport = () => {
+    if (bulkParsed.length === 0) return;
+    setQuestions(bulkParsed);
+    setBulkText("");
+    setBulkParsed([]);
+    setShowBulkImport(false);
+  };
+
+  const cancelBulkImport = () => {
+    setBulkText("");
+    setBulkParsed([]);
+    setBulkError("");
+    setShowBulkImport(false);
+  };
 
   // 1. University changes -> filter courses
   useEffect(() => {
@@ -309,23 +352,116 @@ function AddQuestion() {
 
               <div className="border-t border-slate-100 my-2 pt-2" />
 
-              {/* STEP 3: Multiple Question Entries */}
+              {/* STEP 3: Bulk Import + Multiple Question Entries */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
                     <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
                     <span>Questions Pool *</span>
                   </Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addQuestionField}
-                    className="h-7 text-[10px] rounded-lg border-emerald-200 hover:border-emerald-500 text-emerald-700 bg-emerald-50/20 px-2.5 flex items-center gap-1"
-                  >
-                    <Plus className="h-3 w-3" /> Add Question
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowBulkImport((v) => !v)}
+                      className="h-7 text-[10px] rounded-lg border-violet-200 hover:border-violet-500 text-violet-700 bg-violet-50/40 px-2.5 flex items-center gap-1"
+                    >
+                      <ClipboardPaste className="h-3 w-3" />
+                      Bulk Paste
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addQuestionField}
+                      className="h-7 text-[10px] rounded-lg border-emerald-200 hover:border-emerald-500 text-emerald-700 bg-emerald-50/20 px-2.5 flex items-center gap-1"
+                    >
+                      <Plus className="h-3 w-3" /> Add Question
+                    </Button>
+                  </div>
                 </div>
+
+                {/* ── Bulk Import Panel ───────────────────── */}
+                {showBulkImport && (
+                  <div className="rounded-xl border border-violet-200 bg-violet-50/30 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-violet-800">Bulk Paste Questions</p>
+                        <p className="text-[10px] text-violet-500 mt-0.5">
+                          Paste your numbered list below — questions will be auto-detected
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={cancelBulkImport}
+                        className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-violet-100 text-violet-400 transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Format hint */}
+                    <div className="rounded-lg bg-white border border-violet-100 px-3 py-2 text-[10px] text-slate-500 font-mono leading-relaxed">
+                      <span className="text-violet-400 font-bold block mb-1">Expected Format:</span>
+                      1.{"\n"}Explain the concept of class...{"\n\n"}2.{"\n"}Explain member variables...
+                    </div>
+
+                    {/* Paste textarea */}
+                    <Textarea
+                      value={bulkText}
+                      onChange={(e) => { setBulkText(e.target.value); setBulkError(""); setBulkParsed([]); }}
+                      placeholder={`Paste your numbered questions here...\n\n1.\nExplain the concept of class...\n\n2.\nExplain member variables...`}
+                      rows={8}
+                      className="text-xs border-violet-200 focus-visible:ring-0 focus-visible:border-violet-500 rounded-lg bg-white font-mono resize-y"
+                    />
+
+                    {bulkError && (
+                      <p className="text-[11px] text-rose-600 bg-rose-50 rounded-lg px-3 py-2 border border-rose-100">{bulkError}</p>
+                    )}
+
+                    {/* Parsed preview */}
+                    {bulkParsed.length > 0 && (
+                      <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 space-y-2">
+                        <p className="text-[10px] font-bold text-emerald-700 flex items-center gap-1">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          {bulkParsed.length} question{bulkParsed.length !== 1 ? "s" : ""} detected — preview:
+                        </p>
+                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                          {bulkParsed.map((q, i) => (
+                            <div key={i} className="text-[10px] text-slate-700 bg-white rounded-md px-2 py-1.5 border border-emerald-100 flex gap-2">
+                              <span className="font-black text-emerald-600 shrink-0">{i + 1}.</span>
+                              <span className="line-clamp-2 leading-snug">{q}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleBulkImport}
+                        disabled={!bulkText.trim()}
+                        className="flex-1 h-8 text-xs rounded-lg border-violet-300 text-violet-700 hover:bg-violet-100"
+                      >
+                        Parse Questions
+                      </Button>
+                      {bulkParsed.length > 0 && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={applyBulkImport}
+                          className="flex-1 h-8 text-xs rounded-lg bg-violet-600 hover:bg-violet-700 text-white"
+                        >
+                          ✓ Fill {bulkParsed.length} Questions
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-3.5 max-h-[350px] overflow-y-auto pr-1">
                   {questions.map((q, idx) => (

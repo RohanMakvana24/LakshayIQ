@@ -21,6 +21,9 @@ import { Route as AuthenticatedStudentSearchRouteImport } from './routes/_authen
 import { Route as AuthenticatedStudentResumeRouteImport } from './routes/_authenticated/student/resume'
 import { Route as AuthenticatedStudentProjectsRouteImport } from './routes/_authenticated/student/projects'
 import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/student/profile'
+import { Route as AuthenticatedStudentPlannerCalendarRouteImport } from './routes/_authenticated/student/planner-calendar'
+import { Route as AuthenticatedStudentPlannerAnalyticsRouteImport } from './routes/_authenticated/student/planner-analytics'
+import { Route as AuthenticatedStudentPlannerRouteImport } from './routes/_authenticated/student/planner'
 import { Route as AuthenticatedStudentFullscreenTestRouteImport } from './routes/_authenticated/student/fullscreen-test'
 import { Route as AuthenticatedStudentBookmarksRouteImport } from './routes/_authenticated/student/bookmarks'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
@@ -114,6 +117,24 @@ const AuthenticatedStudentProfileRoute =
   AuthenticatedStudentProfileRouteImport.update({
     id: '/profile',
     path: '/profile',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
+const AuthenticatedStudentPlannerCalendarRoute =
+  AuthenticatedStudentPlannerCalendarRouteImport.update({
+    id: '/planner-calendar',
+    path: '/planner-calendar',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
+const AuthenticatedStudentPlannerAnalyticsRoute =
+  AuthenticatedStudentPlannerAnalyticsRouteImport.update({
+    id: '/planner-analytics',
+    path: '/planner-analytics',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
+const AuthenticatedStudentPlannerRoute =
+  AuthenticatedStudentPlannerRouteImport.update({
+    id: '/planner',
+    path: '/planner',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 const AuthenticatedStudentFullscreenTestRoute =
@@ -306,6 +327,9 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
   '/student/fullscreen-test': typeof AuthenticatedStudentFullscreenTestRoute
+  '/student/planner': typeof AuthenticatedStudentPlannerRoute
+  '/student/planner-analytics': typeof AuthenticatedStudentPlannerAnalyticsRoute
+  '/student/planner-calendar': typeof AuthenticatedStudentPlannerCalendarRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/projects': typeof AuthenticatedStudentProjectsRoute
   '/student/resume': typeof AuthenticatedStudentResumeRoute
@@ -347,6 +371,9 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
   '/student/fullscreen-test': typeof AuthenticatedStudentFullscreenTestRoute
+  '/student/planner': typeof AuthenticatedStudentPlannerRoute
+  '/student/planner-analytics': typeof AuthenticatedStudentPlannerAnalyticsRoute
+  '/student/planner-calendar': typeof AuthenticatedStudentPlannerCalendarRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/projects': typeof AuthenticatedStudentProjectsRoute
   '/student/resume': typeof AuthenticatedStudentResumeRoute
@@ -392,6 +419,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
   '/_authenticated/student/fullscreen-test': typeof AuthenticatedStudentFullscreenTestRoute
+  '/_authenticated/student/planner': typeof AuthenticatedStudentPlannerRoute
+  '/_authenticated/student/planner-analytics': typeof AuthenticatedStudentPlannerAnalyticsRoute
+  '/_authenticated/student/planner-calendar': typeof AuthenticatedStudentPlannerCalendarRoute
   '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
   '/_authenticated/student/projects': typeof AuthenticatedStudentProjectsRoute
   '/_authenticated/student/resume': typeof AuthenticatedStudentResumeRoute
@@ -437,6 +467,9 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/student/bookmarks'
     | '/student/fullscreen-test'
+    | '/student/planner'
+    | '/student/planner-analytics'
+    | '/student/planner-calendar'
     | '/student/profile'
     | '/student/projects'
     | '/student/resume'
@@ -478,6 +511,9 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/student/bookmarks'
     | '/student/fullscreen-test'
+    | '/student/planner'
+    | '/student/planner-analytics'
+    | '/student/planner-calendar'
     | '/student/profile'
     | '/student/projects'
     | '/student/resume'
@@ -522,6 +558,9 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/student/bookmarks'
     | '/_authenticated/student/fullscreen-test'
+    | '/_authenticated/student/planner'
+    | '/_authenticated/student/planner-analytics'
+    | '/_authenticated/student/planner-calendar'
     | '/_authenticated/student/profile'
     | '/_authenticated/student/projects'
     | '/_authenticated/student/resume'
@@ -647,6 +686,27 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/student/profile'
       preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
+    '/_authenticated/student/planner-calendar': {
+      id: '/_authenticated/student/planner-calendar'
+      path: '/planner-calendar'
+      fullPath: '/student/planner-calendar'
+      preLoaderRoute: typeof AuthenticatedStudentPlannerCalendarRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
+    '/_authenticated/student/planner-analytics': {
+      id: '/_authenticated/student/planner-analytics'
+      path: '/planner-analytics'
+      fullPath: '/student/planner-analytics'
+      preLoaderRoute: typeof AuthenticatedStudentPlannerAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
+    '/_authenticated/student/planner': {
+      id: '/_authenticated/student/planner'
+      path: '/planner'
+      fullPath: '/student/planner'
+      preLoaderRoute: typeof AuthenticatedStudentPlannerRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/student/fullscreen-test': {
@@ -923,6 +983,9 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedStudentRouteChildren {
   AuthenticatedStudentBookmarksRoute: typeof AuthenticatedStudentBookmarksRoute
   AuthenticatedStudentFullscreenTestRoute: typeof AuthenticatedStudentFullscreenTestRoute
+  AuthenticatedStudentPlannerRoute: typeof AuthenticatedStudentPlannerRoute
+  AuthenticatedStudentPlannerAnalyticsRoute: typeof AuthenticatedStudentPlannerAnalyticsRoute
+  AuthenticatedStudentPlannerCalendarRoute: typeof AuthenticatedStudentPlannerCalendarRoute
   AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
   AuthenticatedStudentProjectsRoute: typeof AuthenticatedStudentProjectsRoute
   AuthenticatedStudentResumeRoute: typeof AuthenticatedStudentResumeRoute
@@ -940,6 +1003,11 @@ const AuthenticatedStudentRouteChildren: AuthenticatedStudentRouteChildren = {
   AuthenticatedStudentBookmarksRoute: AuthenticatedStudentBookmarksRoute,
   AuthenticatedStudentFullscreenTestRoute:
     AuthenticatedStudentFullscreenTestRoute,
+  AuthenticatedStudentPlannerRoute: AuthenticatedStudentPlannerRoute,
+  AuthenticatedStudentPlannerAnalyticsRoute:
+    AuthenticatedStudentPlannerAnalyticsRoute,
+  AuthenticatedStudentPlannerCalendarRoute:
+    AuthenticatedStudentPlannerCalendarRoute,
   AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
   AuthenticatedStudentProjectsRoute: AuthenticatedStudentProjectsRoute,
   AuthenticatedStudentResumeRoute: AuthenticatedStudentResumeRoute,

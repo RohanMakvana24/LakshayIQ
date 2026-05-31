@@ -125,17 +125,20 @@ function StudentProjectsPage() {
   const [visibleMessages, setVisibleMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScrollRef = useRef(true);
 
-  // Initialize sequential chat only after modal is dismissed
+  // Reset chat sequence when modal is closed
   useEffect(() => {
     if (!showModal) {
       setVisibleMessages([]);
       setCurrentStep(0);
       setIsTyping(true);
+      shouldAutoScrollRef.current = true;
     }
   }, [showModal]);
 
+  // Handle chat message sequencing
   useEffect(() => {
     if (showModal || currentStep >= CHAT_STREAM.length) {
       setIsTyping(false);
@@ -151,7 +154,7 @@ function StudentProjectsPage() {
           setIsTyping(true);
           setCurrentStep(prev => prev + 1);
         } else {
-          setCurrentStep(prev => prev + 1); // Finished all steps
+          setCurrentStep(prev => prev + 1);
         }
       }, 900);
 
@@ -161,9 +164,28 @@ function StudentProjectsPage() {
     return () => clearTimeout(typingTimer);
   }, [currentStep, showModal]);
 
-  // Scroll to bottom whenever chat updates
+  // Auto-scroll only the chat container, and only if user hasn't scrolled up manually
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      // If user scrolls up more than 50px from bottom, disable auto-scroll
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+      shouldAutoScrollRef.current = isNearBottom;
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (shouldAutoScrollRef.current) {
+      const container = chatContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   }, [visibleMessages, isTyping]);
 
   const activeHeader = DICTIONARY.header[lang];
@@ -186,7 +208,7 @@ function StudentProjectsPage() {
   };
 
   return (
-    <div className="w-full bg-gradient-to-tr from-slate-50 via-emerald-50/20 to-sky-50/20 text-slate-800 antialiased relative rounded-3xl p-4 md:p-6 md:h-[calc(100vh-120px)] md:overflow-hidden flex flex-col justify-start items-center border border-slate-200/50 shadow-sm overflow-hidden">
+    <div className="w-full bg-gradient-to-tr from-slate-50 via-emerald-50/20 to-sky-50/20 text-slate-800 antialiased relative rounded-3xl p-4 md:p-6 pt-2 md:pt-6 min-h-screen md:h-[calc(100vh-120px)] flex flex-col justify-start items-center border border-slate-200/50 shadow-sm overflow-x-hidden">
       
       {/* Premium Language Selection Modal */}
       {showModal && (
@@ -257,11 +279,11 @@ function StudentProjectsPage() {
       <div className="absolute top-[32%] left-[82%] text-4xl opacity-20 animate-float-medium hidden md:block pointer-events-none -z-10">💬</div>
 
       {/* Main Structural Layout Container */}
-      <div className="w-full max-w-6xl space-y-4 z-10 flex-1 flex flex-col h-full md:overflow-hidden overflow-visible">
+      <div className="w-full max-w-6xl space-y-4 z-10 flex-1 flex flex-col h-full overflow-hidden">
         
-        {/* Fullscreen Premium Workspace Header - Transparent SaaS Style */}
-        <div className="relative mt-5 overflow-hidden w-full flex flex-col sm:flex-row items-center justify-between gap-4 py-2 shrink-0 border-b border-slate-200/80 pb-4">
-          <div className="flex items-center mt-5 gap-3.5 w-full sm:w-auto">
+        {/* Fullscreen Premium Workspace Header - Reduced top margin */}
+        <div className="relative overflow-hidden w-full flex flex-col sm:flex-row items-center justify-between gap-4 py-2 shrink-0 border-b border-slate-200/80 pb-4">
+          <div className="flex items-center gap-3.5 w-full sm:w-auto">
             <Button
               variant="outline"
               size="icon"
@@ -298,12 +320,12 @@ function StudentProjectsPage() {
           </div>
         </div>
 
-        {/* Dynamic Responsive Split-Pane Workspace */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 md:overflow-hidden overflow-visible md:min-h-0 min-h-auto">
+        {/* Dynamic Responsive Split-Pane Workspace - Increased chat height on mobile */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 overflow-hidden min-h-0">
           
-          {/* Left Column - Beautiful Chat Terminal Console */}
-          <div className="lg:col-span-7 flex flex-col md:overflow-hidden overflow-visible md:min-h-0">
-            <Card className="bg-white border border-slate-200/90 shadow-[0_12px_40px_rgba(0,0,0,0.03)] rounded-[24px] overflow-hidden flex flex-col flex-1 md:min-h-0">
+          {/* Left Column - Chat Terminal Console (taller on mobile) */}
+          <div className="lg:col-span-7 flex flex-col overflow-hidden min-h-0 lg:min-h-0 min-h-[60vh]">
+            <Card className="bg-white border border-slate-200/90 shadow-[0_12px_40px_rgba(0,0,0,0.03)] rounded-[24px] overflow-hidden flex flex-col h-full">
               
               {/* Agent status strip */}
               <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/40 flex items-center justify-between shrink-0">
@@ -327,16 +349,18 @@ function StudentProjectsPage() {
                 </Badge>
               </div>
 
-              {/* Chat Scrollable Stream Log */}
-              <div className="flex-1 p-5 md:overflow-y-auto overflow-visible space-y-4 scrollbar-thin scrollbar-thumb-slate-200/80 bg-slate-50/30 md:min-h-0">
+              {/* Chat Scrollable Stream Log - Increased height, auto-scroll only inside */}
+              <div 
+                ref={chatContainerRef}
+                className="flex-1 p-5 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-slate-200/80 bg-slate-50/30 min-h-[300px] md:min-h-0"
+              >
                 {visibleMessages.map((message) => (
                   <div key={message.id} className="flex items-start gap-3.5 animate-bubble-slide-in">
                     <div className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100/60 flex items-center justify-center shrink-0 shadow-sm text-base">
                       {message.icon}
                     </div>
                     <div className="max-w-[85%] bg-white border border-slate-100/80 text-slate-800 rounded-2xl rounded-tl-none p-4 shadow-[0_4px_24px_rgba(0,0,0,0.015)] relative overflow-hidden">
-                      {/* Premium text crystallization animation: blurred-white to solid slate-900 (black) */}
-                      <p className="text-sm sm:text-base font-semibold leading-relaxed text-slate-800 tracking-tight animate-text-reveal">
+                      <p className="text-sm sm:text-base font-semibold leading-relaxed animate-text-reveal">
                         {message[lang]}
                       </p>
                     </div>
@@ -358,8 +382,6 @@ function StudentProjectsPage() {
                     </div>
                   </div>
                 )}
-                
-                <div ref={chatEndRef} />
               </div>
 
               {/* Chat action console */}
@@ -391,8 +413,8 @@ function StudentProjectsPage() {
           </div>
 
           {/* Right Column - Premium Features & Stack Panel */}
-          <div className="lg:col-span-5 flex flex-col md:overflow-y-auto overflow-visible space-y-4 md:min-h-0">
-            <Card className="p-6 border border-slate-200 bg-white shadow-[0_12px_40px_rgba(0,0,0,0.03)] rounded-[24px] flex flex-col justify-between flex-1 gap-6">
+          <div className="lg:col-span-5 flex flex-col overflow-y-auto space-y-4 min-h-0">
+            <Card className="p-6 border border-slate-200 bg-white shadow-[0_12px_40px_rgba(0,0,0,0.03)] rounded-[24px] flex flex-col justify-between gap-6">
               
               <div className="space-y-6">
                 <div>
@@ -428,7 +450,7 @@ function StudentProjectsPage() {
                   })}
                 </div>
 
-                {/* Added Premium Section: Supported Tech Stacks */}
+                {/* Supported Tech Stacks */}
                 <div className="space-y-3 pt-2">
                   <h4 className="text-xs font-bold text-slate-800 tracking-wider uppercase flex items-center gap-1.5">
                     <Cpu className="h-3.5 w-3.5 text-emerald-600" />
@@ -483,23 +505,22 @@ function StudentProjectsPage() {
         }
         .animate-text-reveal {
           animation: textReveal 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          color: transparent;
         }
         @keyframes textReveal {
           0% {
-            color: rgba(226, 232, 240, 0.5); /* blurred white start */
-            opacity: 0.1;
+            color: rgba(148, 163, 184, 0.6);
             filter: blur(2.5px);
+            opacity: 0.3;
           }
-          35% {
-            color: rgba(148, 163, 184, 0.8);
-            opacity: 0.75;
+          40% {
+            color: rgba(51, 65, 85, 0.9);
             filter: blur(1px);
+            opacity: 0.8;
           }
           100% {
-            color: #0f172a; /* high contrast deep slate end */
-            opacity: 1;
+            color: #0f172a;
             filter: blur(0px);
+            opacity: 1;
           }
         }
         .animate-float-slow {
