@@ -501,8 +501,24 @@ function NotificationBell({ variant }: { variant: string }) {
   useEffect(() => { loadNotifications(); }, [loadNotifications]);
 
   // Realtime updates for new messages
-  usePushNotifications(() => {
+  usePushNotifications((senderId, content, senderName) => {
     loadNotifications();
+
+    // Alert the user with a beautiful toast notification if they are NOT on the chat page
+    const isChatPage = window.location.pathname.includes("/chat");
+    if (!isChatPage) {
+      toast.message(`💬 ${senderName || "New Message"}`, {
+        description: content.length > 80 ? content.slice(0, 77) + "..." : content,
+        action: {
+          label: "Reply",
+          onClick: () => {
+            const rolePath = variant === "admin" ? "/admin/chat" : "/student/chat";
+            const searchParams = variant === "admin" ? { userId: senderId } : undefined;
+            nav({ to: rolePath, search: searchParams });
+          },
+        },
+      });
+    }
   });
 
   // Close on outside click

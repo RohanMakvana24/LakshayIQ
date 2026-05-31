@@ -299,8 +299,9 @@ function AdminChatPage() {
       channelRef.current = null;
     }
 
+    const uniqueId = Math.random().toString(36).substring(2, 11);
     const channel = supabase
-      .channel(`admin-chat-${user.id}`)
+      .channel(`admin-chat-${user.id}-${uniqueId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" },
         (payload) => {
           const msg = payload.new as ChatMessage;
