@@ -25,9 +25,11 @@ import { Route as AuthenticatedStudentPlannerCalendarRouteImport } from './route
 import { Route as AuthenticatedStudentPlannerAnalyticsRouteImport } from './routes/_authenticated/student/planner-analytics'
 import { Route as AuthenticatedStudentPlannerRouteImport } from './routes/_authenticated/student/planner'
 import { Route as AuthenticatedStudentFullscreenTestRouteImport } from './routes/_authenticated/student/fullscreen-test'
+import { Route as AuthenticatedStudentChatRouteImport } from './routes/_authenticated/student/chat'
 import { Route as AuthenticatedStudentBookmarksRouteImport } from './routes/_authenticated/student/bookmarks'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin/content'
+import { Route as AuthenticatedAdminChatRouteImport } from './routes/_authenticated/admin/chat'
 import { Route as AuthenticatedAdminVideosIndexRouteImport } from './routes/_authenticated/admin/videos.index'
 import { Route as AuthenticatedAdminUniversitiesIndexRouteImport } from './routes/_authenticated/admin/universities.index'
 import { Route as AuthenticatedAdminUnitsIndexRouteImport } from './routes/_authenticated/admin/units.index'
@@ -143,6 +145,12 @@ const AuthenticatedStudentFullscreenTestRoute =
     path: '/fullscreen-test',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
+const AuthenticatedStudentChatRoute =
+  AuthenticatedStudentChatRouteImport.update({
+    id: '/chat',
+    path: '/chat',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
 const AuthenticatedStudentBookmarksRoute =
   AuthenticatedStudentBookmarksRouteImport.update({
     id: '/bookmarks',
@@ -160,6 +168,11 @@ const AuthenticatedAdminContentRoute =
     path: '/content',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminChatRoute = AuthenticatedAdminChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminVideosIndexRoute =
   AuthenticatedAdminVideosIndexRouteImport.update({
     id: '/videos/',
@@ -323,9 +336,11 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/student': typeof AuthenticatedStudentRouteWithChildren
+  '/admin/chat': typeof AuthenticatedAdminChatRoute
   '/admin/content': typeof AuthenticatedAdminContentRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
+  '/student/chat': typeof AuthenticatedStudentChatRoute
   '/student/fullscreen-test': typeof AuthenticatedStudentFullscreenTestRoute
   '/student/planner': typeof AuthenticatedStudentPlannerRoute
   '/student/planner-analytics': typeof AuthenticatedStudentPlannerAnalyticsRoute
@@ -367,9 +382,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/chat': typeof AuthenticatedAdminChatRoute
   '/admin/content': typeof AuthenticatedAdminContentRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
+  '/student/chat': typeof AuthenticatedStudentChatRoute
   '/student/fullscreen-test': typeof AuthenticatedStudentFullscreenTestRoute
   '/student/planner': typeof AuthenticatedStudentPlannerRoute
   '/student/planner-analytics': typeof AuthenticatedStudentPlannerAnalyticsRoute
@@ -415,9 +432,11 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/student': typeof AuthenticatedStudentRouteWithChildren
+  '/_authenticated/admin/chat': typeof AuthenticatedAdminChatRoute
   '/_authenticated/admin/content': typeof AuthenticatedAdminContentRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
+  '/_authenticated/student/chat': typeof AuthenticatedStudentChatRoute
   '/_authenticated/student/fullscreen-test': typeof AuthenticatedStudentFullscreenTestRoute
   '/_authenticated/student/planner': typeof AuthenticatedStudentPlannerRoute
   '/_authenticated/student/planner-analytics': typeof AuthenticatedStudentPlannerAnalyticsRoute
@@ -463,9 +482,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/student'
+    | '/admin/chat'
     | '/admin/content'
     | '/admin/users'
     | '/student/bookmarks'
+    | '/student/chat'
     | '/student/fullscreen-test'
     | '/student/planner'
     | '/student/planner-analytics'
@@ -507,9 +528,11 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/admin/chat'
     | '/admin/content'
     | '/admin/users'
     | '/student/bookmarks'
+    | '/student/chat'
     | '/student/fullscreen-test'
     | '/student/planner'
     | '/student/planner-analytics'
@@ -554,9 +577,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_authenticated/admin'
     | '/_authenticated/student'
+    | '/_authenticated/admin/chat'
     | '/_authenticated/admin/content'
     | '/_authenticated/admin/users'
     | '/_authenticated/student/bookmarks'
+    | '/_authenticated/student/chat'
     | '/_authenticated/student/fullscreen-test'
     | '/_authenticated/student/planner'
     | '/_authenticated/student/planner-analytics'
@@ -716,6 +741,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentFullscreenTestRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
+    '/_authenticated/student/chat': {
+      id: '/_authenticated/student/chat'
+      path: '/chat'
+      fullPath: '/student/chat'
+      preLoaderRoute: typeof AuthenticatedStudentChatRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
     '/_authenticated/student/bookmarks': {
       id: '/_authenticated/student/bookmarks'
       path: '/bookmarks'
@@ -735,6 +767,13 @@ declare module '@tanstack/react-router' {
       path: '/content'
       fullPath: '/admin/content'
       preLoaderRoute: typeof AuthenticatedAdminContentRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/chat': {
+      id: '/_authenticated/admin/chat'
+      path: '/chat'
+      fullPath: '/admin/chat'
+      preLoaderRoute: typeof AuthenticatedAdminChatRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/videos/': {
@@ -923,6 +962,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminChatRoute: typeof AuthenticatedAdminChatRoute
   AuthenticatedAdminContentRoute: typeof AuthenticatedAdminContentRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -949,6 +989,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminChatRoute: AuthenticatedAdminChatRoute,
   AuthenticatedAdminContentRoute: AuthenticatedAdminContentRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
@@ -982,6 +1023,7 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedStudentRouteChildren {
   AuthenticatedStudentBookmarksRoute: typeof AuthenticatedStudentBookmarksRoute
+  AuthenticatedStudentChatRoute: typeof AuthenticatedStudentChatRoute
   AuthenticatedStudentFullscreenTestRoute: typeof AuthenticatedStudentFullscreenTestRoute
   AuthenticatedStudentPlannerRoute: typeof AuthenticatedStudentPlannerRoute
   AuthenticatedStudentPlannerAnalyticsRoute: typeof AuthenticatedStudentPlannerAnalyticsRoute
@@ -1001,6 +1043,7 @@ interface AuthenticatedStudentRouteChildren {
 
 const AuthenticatedStudentRouteChildren: AuthenticatedStudentRouteChildren = {
   AuthenticatedStudentBookmarksRoute: AuthenticatedStudentBookmarksRoute,
+  AuthenticatedStudentChatRoute: AuthenticatedStudentChatRoute,
   AuthenticatedStudentFullscreenTestRoute:
     AuthenticatedStudentFullscreenTestRoute,
   AuthenticatedStudentPlannerRoute: AuthenticatedStudentPlannerRoute,

@@ -14,7 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          id: string
+          sender_id: string
+          receiver_id: string
+          content: string
+          is_read: boolean
+          created_at: string
+          expires_at: string
+        }
+        Insert: {
+          id?: string
+          sender_id: string
+          receiver_id: string
+          content: string
+          is_read?: boolean
+          created_at?: string
+          expires_at?: string
+        }
+        Update: {
+          id?: string
+          sender_id?: string
+          receiver_id?: string
+          content?: string
+          is_read?: boolean
+          created_at?: string
+          expires_at?: string
+        }
+        Relationships: []
+      }
       planner_tasks: {
+
         Row: {
           id: string
           user_id: string
@@ -567,6 +598,28 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      delete_expired_chat_messages: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      get_admin_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          full_name: string | null
+          email: string | null
+          avatar_url: string | null
+        }[]
+      }
+      get_students: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          full_name: string | null
+          email: string | null
+          avatar_url: string | null
+        }[]
       }
     }
     Enums: {

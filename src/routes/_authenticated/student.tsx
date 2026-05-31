@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { AppShell, type NavItem } from "@/components/app-shell";
-import { Home, Bookmark, Search, GraduationCap, UserCircle, FileText, FolderGit2, CalendarCheck } from "lucide-react";
+import { Home, Bookmark, Search, GraduationCap, UserCircle, FileText, FolderGit2, CalendarCheck, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 const items: NavItem[] = [
@@ -10,6 +10,7 @@ const items: NavItem[] = [
   { to: "/student/bookmarks", label: "Bookmarks", icon: Bookmark },
   { to: "/student/resume", label: "Resume Builder", icon: FileText },
   { to: "/student/projects", label: "Project Helper", icon: FolderGit2 },
+  { to: "/student/chat", label: "Messages", icon: MessageSquare },
   {
     label: "Study Planner",
     icon: CalendarCheck,

@@ -5,7 +5,7 @@ import { AppShell, type NavItem } from "@/components/app-shell";
 import { 
   LayoutDashboard, Building2, BookOpen, Layers, FileText, 
   Boxes, Users, Loader2, Video, FileDown, HelpCircle, 
-  FileSpreadsheet, CalendarDays 
+  FileSpreadsheet, CalendarDays, MessageSquare
 } from "lucide-react";
 
 const adminNavigationRegistry: NavItem[] = [
@@ -71,6 +71,7 @@ const adminNavigationRegistry: NavItem[] = [
     ],
   },
   { to: "/admin/users", label: "Users Registry", icon: Users },
+  { to: "/admin/chat", label: "Messages", icon: MessageSquare },
 ];
 
 export const Route = createFileRoute("/_authenticated/admin")({

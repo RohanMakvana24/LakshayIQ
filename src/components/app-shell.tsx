@@ -1,11 +1,13 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
-import { LogOut, Search, Bell, ChevronRight, Menu, PanelLeftClose, PanelLeft, Sparkles, UserCircle, ChevronDown, Plus, ArrowLeft, Home } from "lucide-react";
+import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
+import { LogOut, Search, Bell, ChevronRight, Menu, PanelLeftClose, PanelLeft, Sparkles, UserCircle, ChevronDown, Plus, ArrowLeft, Home, MessageSquare, X } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 export interface NavItem {
   to?: string;
@@ -189,14 +191,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 relative z-10">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-xl border border-zinc-100 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 relative"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-2 right-2 h-1.5 w-1.5 bg-[#78cc3b] rounded-full" />
-            </Button>
+            <NotificationBell variant={variant} />
           </div>
         </header>
 
@@ -447,10 +442,191 @@ interface FooterProps {
   nav: any;
 }
 
+/* ==========================================================================
+   NOTIFICATION BELL COMPONENT
+   ========================================================================== */
+
+interface NotifItem {
+  id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+  senderName?: string;
+}
+
+function NotificationBell({ variant }: { variant: string }) {
+  const { user } = useAuth();
+  const nav = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotifItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const loadNotifications = useCallback(async () => {
+    if (!user?.id) return;
+    const { data } = await supabase
+      .from("chat_messages")
+      .select("id, sender_id, content, created_at")
+      .eq("receiver_id", user.id)
+      .eq("is_read", false)
+      .gte("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (!data || data.length === 0) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+
+    // Fetch sender names
+    const senderIds = [...new Set(data.map((m) => m.sender_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", senderIds);
+
+    const nameMap: Record<string, string> = {};
+    (profiles ?? []).forEach((p) => { if (p.full_name) nameMap[p.id] = p.full_name; });
+
+    const enriched = data.map((m) => ({
+      ...m,
+      senderName: nameMap[m.sender_id] ?? "Unknown",
+    }));
+
+    setNotifications(enriched);
+    setUnreadCount(data.length);
+  }, [user?.id]);
+
+  useEffect(() => { loadNotifications(); }, [loadNotifications]);
+
+  // Realtime updates for new messages
+  usePushNotifications(() => {
+    loadNotifications();
+  });
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleNotifClick = async (notif: NotifItem) => {
+    setOpen(false);
+    // Mark as read
+    await supabase.from("chat_messages").update({ is_read: true }).eq("id", notif.id);
+    // Navigate to chat
+    if (variant === "admin") {
+      nav({ to: "/admin/chat", search: { userId: notif.sender_id } });
+    } else {
+      nav({ to: "/student/chat" });
+    }
+    loadNotifications();
+  };
+
+  const markAllRead = async () => {
+    if (!user?.id) return;
+    await supabase.from("chat_messages").update({ is_read: true }).eq("receiver_id", user.id).eq("is_read", false);
+    setNotifications([]);
+    setUnreadCount(0);
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 rounded-xl border border-zinc-100 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50 relative"
+        onClick={() => { setOpen((o) => !o); if (!open) loadNotifications(); }}
+      >
+        <Bell className="h-4 w-4" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-rose-500 text-white text-[9px] font-extrabold flex items-center justify-center border border-white shadow-sm animate-bounce">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </Button>
+
+      {/* Notification Dropdown */}
+      {open && (
+        <div className="absolute right-0 top-11 w-80 bg-white border border-zinc-100 rounded-2xl shadow-2xl shadow-zinc-900/10 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 bg-zinc-50/50">
+            <div className="flex items-center gap-2">
+              <Bell className="h-3.5 w-3.5 text-zinc-500" />
+              <span className="text-xs font-extrabold text-zinc-800">Notifications</span>
+              {unreadCount > 0 && (
+                <span className="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{unreadCount}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5">
+              {unreadCount > 0 && (
+                <button onClick={markAllRead} className="text-[10px] font-bold text-zinc-400 hover:text-emerald-600 transition-colors">
+                  Mark all read
+                </button>
+              )}
+              <button onClick={() => setOpen(false)} className="h-5 w-5 flex items-center justify-center rounded-lg hover:bg-zinc-100 text-zinc-400 transition-colors">
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+
+          {/* Notification List */}
+          <div className="max-h-80 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <MessageSquare className="h-8 w-8 text-zinc-200 mb-2" />
+                <p className="text-xs font-medium text-zinc-400">No new notifications</p>
+                <p className="text-[10px] text-zinc-300 mt-0.5">You're all caught up!</p>
+              </div>
+            ) : (
+              notifications.map((n) => (
+                <button
+                  key={n.id}
+                  onClick={() => handleNotifClick(n)}
+                  className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-50 last:border-0 group"
+                >
+                  <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
+                    {(n.senderName || "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-zinc-800 truncate">{n.senderName ?? "Unknown"}</p>
+                    <p className="text-[11px] text-zinc-500 leading-relaxed line-clamp-2 font-medium">{n.content}</p>
+                    <p className="text-[9px] text-zinc-400 font-medium mt-0.5">
+                      {new Date(n.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 py-2.5 border-t border-zinc-100 bg-zinc-50/30">
+            <button
+              onClick={() => { setOpen(false); nav({ to: variant === "admin" ? "/admin/chat" : "/student/chat" }); }}
+              className="w-full text-center text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+            >
+              View all messages →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function UserFooter({ user, profile, variant, isCollapsed, signOut, nav }: FooterProps) {
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? (variant === "admin" ? "Admin Profile" : "User Profile");
   const avatarUrl = profile?.avatar_url ?? null;
-  const initials = displayName ? displayName.trim()[0].toUpperCase() : (user?.email ?? "U")[0].toUpperCase();
+  const initials = (displayName?.trim() || user?.email || "U").charAt(0).toUpperCase();
 
   const avatarEl = avatarUrl ? (
     <img src={avatarUrl} alt={displayName} className="h-9 w-9 shrink-0 rounded-xl object-cover border border-zinc-100" />

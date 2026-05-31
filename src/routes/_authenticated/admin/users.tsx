@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Search, ShieldBan, ShieldCheck, UserCog, Trash2, Edit3, Loader2, ShieldAlert, Mail, Calendar, Activity, Radio } from "lucide-react";
+import { Search, ShieldBan, ShieldCheck, UserCog, Trash2, Edit3, Loader2, ShieldAlert, Mail, Calendar, Activity, Radio, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +36,7 @@ function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<Row | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const nav = useNavigate();
 
   // Edit Buffer Fields
   const [fullName, setFullName] = useState("");
@@ -253,7 +254,7 @@ function UsersPage() {
                         <div className="flex items-center gap-3">
                           <div className="relative">
                             <div className="grid h-8 w-8 place-items-center rounded-xl bg-neutral-900 text-[11px] font-bold font-mono text-white shadow-sm">
-                              {(r.full_name ?? r.email ?? "U")[0].toUpperCase()}
+                              {(r.full_name || r.email || "U").charAt(0).toUpperCase()}
                             </div>
                             {/* Realtime Live Broadcast Green Signal Indicator Ring Overlay */}
                             {isUserOnline && (
@@ -326,6 +327,16 @@ function UsersPage() {
                             ) : (
                               <><ShieldCheck className="h-3 w-3 stroke-[2.5]" /> Promote</>
                             )}
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-[11px] font-bold rounded-lg gap-1 transition-all text-emerald-600 hover:bg-emerald-50"
+                            onClick={() => nav({ to: "/admin/chat", search: { userId: r.id } })}
+                            title="Chat with this user"
+                          >
+                            <MessageSquare className="h-3 w-3 stroke-[2.5]" /> Chat
                           </Button>
 
                           <Button 

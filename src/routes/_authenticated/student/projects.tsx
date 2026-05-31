@@ -1,12 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  X, Globe, MessageCircle, Sparkles, Code, FileText,
-  BarChart3, GraduationCap, Laptop, ChevronRight, CheckCircle2, Cpu
-} from "lucide-react";
+import { X, Sparkles, Code, FileText, BarChart3, GraduationCap, Laptop, ChevronRight, CheckCircle2, Cpu, MessageSquare } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/student/projects")({
   head: () => ({ meta: [{ title: "Project Helper — Lakshay IQ" }] }),
@@ -125,6 +122,7 @@ function StudentProjectsPage() {
   const [visibleMessages, setVisibleMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const nav = useNavigate();
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = useRef(true);
 
@@ -195,12 +193,7 @@ function StudentProjectsPage() {
     whatsappText: DICTIONARY.chat.whatsappText[lang],
   };
 
-  const handleWhatsAppRedirect = () => {
-    const whatsappMessage = DICTIONARY.chat.whatsappText[lang];
-    const cleanNumber = "917043853092"; 
-    const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+
 
   const selectLanguage = (selectedLang: Language) => {
     setLang(selectedLang);
@@ -389,16 +382,16 @@ function StudentProjectsPage() {
                 {currentStep >= CHAT_STREAM.length && !isTyping ? (
                   <div className="w-full space-y-2">
                     <Button
-                      onClick={handleWhatsAppRedirect}
+                      onClick={() => nav({ to: "/student/chat" })}
                       className="w-full h-13 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-sm shadow-md shadow-emerald-600/10 hover:scale-[1.01] active:scale-98 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden group py-3.5 border border-emerald-500/10"
                     >
                       <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                      <MessageCircle className="h-5 w-5 fill-white stroke-none animate-pulse" />
-                      <span>{activeChat.buttonLabel}</span>
+                      <MessageSquare className="h-5 w-5 fill-white stroke-none animate-pulse" />
+                      <span>Chat with Admin</span>
                       <ChevronRight className="h-4.5 w-4.5 ml-0.5 group-hover:translate-x-1 transition-transform" />
                     </Button>
                     <p className="text-[10px] text-slate-400 text-center font-semibold">
-                      🔒 No login required. Click redirects directly to our secure WhatsApp helpdesk.
+                      💬 Chat directly with admin — messages auto-delete in 2 minutes
                     </p>
                   </div>
                 ) : (
