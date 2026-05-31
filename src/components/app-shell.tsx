@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
-import { LogOut, Search, Bell, ChevronRight, Menu, PanelLeftClose, PanelLeft, Sparkles, UserCircle, ChevronDown, Plus, ArrowLeft, Home, MessageSquare, X } from "lucide-react";
+import { LogOut, Search, Bell, ChevronRight, Menu, PanelLeftClose, PanelLeft, Sparkles, UserCircle, ChevronDown, Plus, ArrowLeft, Home, MessageSquare, X, Sun, Moon } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,10 +25,24 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchVal, setSearchVal] = useState("");
 
-  // Revert dark mode on dashboard portals mount
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("theme");
+      if (saved) return saved === "dark";
+      return document.documentElement.classList.contains("dark");
+    }
+    return false;
+  });
+
   useEffect(() => {
-    document.documentElement.classList.remove("dark");
-  }, []);
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +68,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
   }, [pathname, items]);
 
   return (
-    <div className="min-h-screen bg-white text-zinc-600 font-sans antialiased selection:bg-emerald-50 selection:text-emerald-700">
+    <div className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-emerald-500/10 selection:text-emerald-500 transition-colors duration-300">
 
       {/* --- MOBILE SIDEBAR DRAWER --- */}
       <div className={cn(
@@ -191,12 +205,29 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 relative z-10">
+            {/* Real-time Theme Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={cn(
+                "rounded-xl h-9 w-9 border transition-colors",
+                isDarkMode 
+                  ? "border-zinc-800 bg-zinc-900/60 text-yellow-400 hover:bg-zinc-800/80 hover:text-yellow-300" 
+                  : "border-zinc-100 bg-zinc-50/50 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950"
+              )}
+            >
+              {isDarkMode ? <Sun className="h-4.5 w-4.5 animate-[spin_12s_linear_infinite]" /> : <Moon className="h-4.5 w-4.5" />}
+            </Button>
+
+            <span className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 mx-1" />
+
             <NotificationBell variant={variant} />
           </div>
         </header>
 
         {/* --- MAIN ROUTE VIEW --- */}
-        <main className="p-4 md:p-6 max-w-[1600px] bg-white mx-auto animate-in fade-in duration-500 print:p-0 print:m-0 print:block">
+        <main className="p-4 md:p-6 max-w-[1600px] bg-background mx-auto animate-in fade-in duration-500 print:p-0 print:m-0 print:block">
           {children}
         </main>
       </div>
