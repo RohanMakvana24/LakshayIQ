@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { 
   GraduationCap, 
@@ -317,6 +318,13 @@ function Landing() {
   });
   const [activeStation, setActiveStation] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [stats, setStats] = useState({
+    universities: 120,
+    students: 10000,
+    units: 15000,
+    courses: 450,
+    subjects: 3200,
+  });
   
   useEffect(() => {
     if (isDarkMode) {
@@ -334,16 +342,41 @@ function Landing() {
     }
   }, [user, role, loading, nav]);
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [uniRes, courseRes, profileRes, unitRes, subjectRes] = await Promise.all([
+          supabase.from("universities").select("*", { count: "exact", head: true }),
+          supabase.from("courses").select("*", { count: "exact", head: true }),
+          supabase.from("profiles").select("*", { count: "exact", head: true }),
+          supabase.from("units").select("*", { count: "exact", head: true }),
+          supabase.from("subjects").select("*", { count: "exact", head: true }),
+        ]);
+
+        setStats({
+          universities: uniRes.count && uniRes.count > 0 ? uniRes.count : 120,
+          courses: courseRes.count && courseRes.count > 0 ? courseRes.count : 450,
+          students: profileRes.count && profileRes.count > 0 ? profileRes.count : 10000,
+          units: unitRes.count && unitRes.count > 0 ? unitRes.count : 15000,
+          subjects: subjectRes.count && subjectRes.count > 0 ? subjectRes.count : 3200,
+        });
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      }
+    };
+    fetchStats();
+  }, []);
+
   if (loading || user) {
     return <OAuthRedirectLoader role={role} />;
   }
 
   const systemStations = [
-    { id: 0, title: "University", subtitle: "Root Node", desc: "Select your parent institution (e.g., AKTU, SPPU, VTU, GTU).", count: "120+ Hubs", color: "from-[#10B981] to-[#059669]" },
-    { id: 1, title: "Course", subtitle: "Stream Vector", desc: "Branch out into your field—B.Tech, BCA, B.Com, or BSc.", count: "450+ Streams", color: "from-[#8B5CF6] to-[#6D28D9]" },
+    { id: 0, title: "University", subtitle: "Root Node", desc: "Select your parent institution (e.g., AKTU, SPPU, VTU, GTU).", count: `${stats.universities}+ Hubs`, color: "from-[#10B981] to-[#059669]" },
+    { id: 1, title: "Course", subtitle: "Stream Vector", desc: "Branch out into your field—B.Tech, BCA, B.Com, or BSc.", count: `${stats.courses}+ Streams`, color: "from-[#8B5CF6] to-[#6D28D9]" },
     { id: 2, title: "Semester", subtitle: "Timeline Index", desc: "Hop into your current cycle to slice curriculum cleanly.", count: "1-8 Tiers", color: "from-[#3B82F6] to-[#1D4ED8]" },
-    { id: 3, title: "Subject", subtitle: "Module Core", desc: "Target explicit domain structures without noisy cross-talk.", count: "3,200+ Books", color: "from-[#F59E0B] to-[#D97706]" },
-    { id: 4, title: "Unit", subtitle: "Quantum Byte", desc: "Pinpoint micro-chapters containing exact Notes, PYQs & Reels.", count: "15,000+ Units", color: "from-[#EC4899] to-[#BE185D]" }
+    { id: 3, title: "Subject", subtitle: "Module Core", desc: "Target explicit domain structures without noisy cross-talk.", count: `${stats.subjects.toLocaleString()}+ Books`, color: "from-[#F59E0B] to-[#D97706]" },
+    { id: 4, title: "Unit", subtitle: "Quantum Byte", desc: "Pinpoint micro-chapters containing exact Notes, PYQs & Reels.", count: `${stats.units.toLocaleString()}+ Units`, color: "from-[#EC4899] to-[#BE185D]" }
   ];
 
   return (
@@ -508,7 +541,7 @@ function Landing() {
               </div>
               <div className="text-left leading-tight">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-extrabold text-emerald-500">10,000+</span>
+                  <span className="text-xs font-extrabold text-emerald-500">{stats.students.toLocaleString()}+</span>
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/80" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -533,11 +566,13 @@ function Landing() {
           isDarkMode ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-200 shadow-md"
         }`}>
           <div className="text-center space-y-1">
-            <h3 className={`text-2xl sm:text-3xl font-black ${isDarkMode ? "text-white" : "text-slate-900"}`} style={{ fontFamily: "'Sora', sans-serif" }}>120+</h3>
+            <h3 className={`text-2xl sm:text-3xl font-black ${isDarkMode ? "text-white" : "text-slate-900"}`} style={{ fontFamily: "'Sora', sans-serif" }}>{stats.universities}+</h3>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Campus Hubs</p>
           </div>
           <div className={`text-center space-y-1 border-l ${isDarkMode ? "border-white/5" : "border-slate-200"}`}>
-            <h3 className="text-2xl sm:text-3xl font-black text-emerald-500" style={{ fontFamily: "'Sora', sans-serif" }}>10K+</h3>
+            <h3 className="text-2xl sm:text-3xl font-black text-emerald-500" style={{ fontFamily: "'Sora', sans-serif" }}>
+              {stats.students >= 1000 ? `${(stats.students / 1000).toFixed(0)}K+` : stats.students}
+            </h3>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Active Students</p>
           </div>
           <div className={`text-center space-y-1 border-l ${isDarkMode ? "border-white/5" : "border-slate-200"}`}>
@@ -545,7 +580,9 @@ function Landing() {
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Project Success</p>
           </div>
           <div className={`text-center space-y-1 border-l ${isDarkMode ? "border-white/5" : "border-slate-200"}`}>
-            <h3 className="text-2xl sm:text-3xl font-black text-indigo-500" style={{ fontFamily: "'Sora', sans-serif" }}>15K+</h3>
+            <h3 className="text-2xl sm:text-3xl font-black text-indigo-500" style={{ fontFamily: "'Sora', sans-serif" }}>
+              {stats.units >= 1000 ? `${(stats.units / 1000).toFixed(0)}K+` : stats.units}
+            </h3>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Syllabus Units</p>
           </div>
         </div>
@@ -799,7 +836,7 @@ function Landing() {
             </div>
             <div className={`mt-6 pt-4 border-t flex items-center justify-between ${isDarkMode ? "border-white/5" : "border-slate-100"}`}>
               <span className="text-[9px] font-bold bg-teal-500/10 text-teal-500 px-2.5 py-1 rounded-full">
-                📚 15,000+ Units
+                📚 {stats.units.toLocaleString()}+ Units
               </span>
               <Link to="/signup" className="text-[11px] font-bold text-slate-500 hover:text-teal-500 transition-colors flex items-center gap-1 group-hover:gap-2">
                 Explore Vault <ArrowRight className="w-3.5 h-3.5 transition-all" />
@@ -807,14 +844,14 @@ function Landing() {
             </div>
           </div>
         </div>
-
+ 
         {/* Additional Trust Badge */}
         <div className="mt-12 flex justify-center">
           <div className={`inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-xs font-semibold backdrop-blur-md transition-colors duration-300 ${
             isDarkMode ? "bg-white/[0.02] border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-500 shadow-sm"
           }`}>
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-            Empowering 10,000+ Indian university students to prepare faster and smarter.
+            Empowering {stats.students.toLocaleString()}+ Indian university students to prepare faster and smarter.
           </div>
         </div>
       </section>
