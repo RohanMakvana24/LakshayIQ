@@ -531,12 +531,18 @@ function Landing() {
             <div className="flex items-center gap-6 pt-6 border-t border-slate-300/10 w-full">
               <div className="flex -space-x-2.5">
                 {[
-                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
-                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80"
-                ].map((src, i) => (
-                  <img key={i} src={src} className="w-8 h-8 rounded-full border border-slate-950 object-cover ring-2 ring-emerald-500/20" alt="Student avatar" />
+                  { name: "R", grad: "from-[#8B5CF6] to-[#6D28D9]" },
+                  { name: "M", grad: "from-[#EC4899] to-[#BE185D]" },
+                  { name: "L", grad: "from-[#10B981] to-[#059669]" },
+                  { name: "Y", grad: "from-[#F59E0B] to-[#D97706]" }
+                ].map((item, i) => (
+                  <div 
+                    key={i} 
+                    className={`w-8 h-8 rounded-full border ${isDarkMode ? "border-slate-950" : "border-white"} bg-gradient-to-br ${item.grad} flex items-center justify-center text-[10px] font-black text-white ring-2 ring-emerald-500/20 shadow-sm hover:scale-115 hover:z-20 transition-all duration-200`}
+                    title="Active Student"
+                  >
+                    {item.name}
+                  </div>
                 ))}
               </div>
               <div className="text-left leading-tight">
