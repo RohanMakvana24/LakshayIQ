@@ -501,17 +501,14 @@ function StudentProjectsPage() {
         }
         @keyframes textReveal {
           0% {
-            color: rgba(148, 163, 184, 0.6);
             filter: blur(2.5px);
             opacity: 0.3;
           }
           40% {
-            color: rgba(51, 65, 85, 0.9);
             filter: blur(1px);
             opacity: 0.8;
           }
           100% {
-            color: #0f172a;
             filter: blur(0px);
             opacity: 1;
           }

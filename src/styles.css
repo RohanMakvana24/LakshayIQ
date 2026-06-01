@@ -116,6 +116,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.16 0.03 260);
   --foreground: oklch(0.97 0.01 250);
   --surface: oklch(0.2 0.04 260);
@@ -158,6 +159,113 @@
   
   .bg-slate-50, .bg-zinc-50, .bg-neutral-50, .bg-slate-50\/50, .bg-slate-50\/30, .bg-zinc-50\/50, .bg-zinc-50\/30 {
     background-color: var(--surface) !important;
+  }
+  
+  .bg-slate-100, .bg-zinc-100, .bg-neutral-100,
+  .bg-slate-100\/80, .bg-zinc-100\/80, .bg-neutral-100\/80,
+  .bg-slate-100\/50, .bg-zinc-100\/50, .bg-neutral-100\/50 {
+    background-color: var(--accent) !important;
+  }
+
+  .bg-slate-200, .bg-zinc-200, .bg-neutral-200 {
+    background-color: var(--secondary) !important;
+  }
+
+  /* --- Semi-transparent Light Backgrounds in Dark Mode --- */
+  .bg-white\/95, .bg-white\/90, .bg-white\/80,
+  .bg-slate-50\/95, .bg-slate-50\/90, .bg-slate-50\/80,
+  .bg-zinc-50\/95, .bg-zinc-50\/90, .bg-zinc-50\/80,
+  .bg-neutral-50\/95, .bg-neutral-50\/90, .bg-neutral-50\/80 {
+    background-color: oklch(0.2 0.04 260 / 85%) !important;
+  }
+  .bg-white\/50, .bg-slate-50\/50, .bg-zinc-50\/50, .bg-neutral-50\/50 {
+    background-color: oklch(0.2 0.04 260 / 50%) !important;
+  }
+  .bg-white\/40, .bg-slate-50\/40, .bg-zinc-50\/40, .bg-neutral-50\/40 {
+    background-color: oklch(0.2 0.04 260 / 40%) !important;
+  }
+  .bg-white\/30, .bg-slate-50\/30, .bg-zinc-50\/30, .bg-neutral-50\/30 {
+    background-color: oklch(0.2 0.04 260 / 30%) !important;
+  }
+  .bg-white\/20, .bg-slate-50\/20, .bg-zinc-50\/20, .bg-neutral-50\/20 {
+    background-color: oklch(0.2 0.04 260 / 20%) !important;
+  }
+  .bg-white\/10, .bg-slate-50\/10, .bg-zinc-50\/10, .bg-neutral-50\/10 {
+    background-color: oklch(0.2 0.04 260 / 10%) !important;
+  }
+
+  /* --- Translucent Semantic Badge Backgrounds in Dark Mode --- */
+  .bg-emerald-50, .bg-teal-50 {
+    background-color: oklch(0.25 0.06 150 / 35%) !important;
+  }
+  .bg-amber-50, .bg-yellow-50 {
+    background-color: oklch(0.25 0.06 80 / 35%) !important;
+  }
+  .bg-sky-50, .bg-blue-50, .bg-indigo-50 {
+    background-color: oklch(0.25 0.06 250 / 35%) !important;
+  }
+  .bg-violet-50, .bg-purple-50 {
+    background-color: oklch(0.25 0.06 290 / 35%) !important;
+  }
+  .bg-rose-50, .bg-red-50 {
+    background-color: oklch(0.25 0.06 25 / 35%) !important;
+  }
+
+  /* --- Vibrant Semantic Badge Text in Dark Mode --- */
+  .text-emerald-700, .text-emerald-600, .text-teal-700, .text-teal-600 {
+    color: oklch(0.75 0.15 150) !important;
+  }
+  .text-amber-700, .text-amber-600, .text-yellow-700, .text-yellow-600 {
+    color: oklch(0.75 0.15 80) !important;
+  }
+  .text-sky-700, .text-sky-600, .text-blue-700, .text-blue-600, .text-indigo-700, .text-indigo-600 {
+    color: oklch(0.75 0.15 250) !important;
+  }
+  .text-violet-700, .text-violet-600, .text-purple-700, .text-purple-600 {
+    color: oklch(0.75 0.15 290) !important;
+  }
+  .text-rose-700, .text-rose-600, .text-red-700, .text-red-600, .text-red-500 {
+    color: oklch(0.75 0.15 25) !important;
+  }
+
+  /* --- Translucent Semantic Badge Borders in Dark Mode --- */
+  .border-emerald-200, .border-teal-200, .border-emerald-100, .border-teal-100 {
+    border-color: oklch(0.68 0.15 155 / 30%) !important;
+  }
+  .border-amber-200, .border-yellow-200, .border-amber-100, .border-yellow-100 {
+    border-color: oklch(0.78 0.16 75 / 30%) !important;
+  }
+  .border-sky-200, .border-blue-200, .border-indigo-200, .border-sky-100, .border-blue-100, .border-indigo-100 {
+    border-color: oklch(0.72 0.17 260 / 30%) !important;
+  }
+  .border-violet-200, .border-purple-200, .border-violet-100, .border-purple-100 {
+    border-color: oklch(0.7 0.18 290 / 30%) !important;
+  }
+  .border-rose-200, .border-red-200, .border-rose-100, .border-red-100 {
+    border-color: oklch(0.65 0.22 25 / 30%) !important;
+  }
+
+  /* --- Override light/soft gradients to dark/premium gradients in dark mode --- */
+  .bg-gradient-to-br, 
+  .bg-gradient-to-r, 
+  .bg-gradient-to-tr, 
+  .bg-gradient-to-t, 
+  .bg-gradient-to-b, 
+  .bg-gradient-to-l {
+    &[class*="from-white"],
+    &[class*="from-slate-50"],
+    &[class*="from-zinc-50"],
+    &[class*="from-neutral-50"],
+    &[class*="from-slate-100"],
+    &[class*="from-zinc-100"],
+    &[class*="from-neutral-100"],
+    &[class*="from-emerald-50"],
+    &[class*="from-violet-50"],
+    &[class*="from-violet-100"],
+    &[class*="from-sky-50"],
+    &[class*="from-blue-50"] {
+      background-image: linear-gradient(135deg, var(--card), var(--surface)) !important;
+    }
   }
 
   .border-slate-100, .border-slate-200, .border-slate-200\/60, .border-slate-200\/80,

@@ -635,7 +635,7 @@ function UnitPage() {
                             "text-xs font-semibold uppercase tracking-wider transition-all duration-500 ease-workspace",
                             isFullscreenSecure
                               ? "hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 font-black items-center gap-1.5"
-                              : "text-slate-500"
+                              : "hidden sm:inline-flex text-slate-500"
                           )}
                         >
                           {isFullscreenSecure ? (
@@ -666,11 +666,11 @@ function UnitPage() {
                       >
                         {!isFullscreenSecure && activePreview.type === "material" && (
                           <>
-                            <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-200/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm transition-transform duration-300 hover:scale-[1.02]">
+                            <span className="hidden md:inline-flex bg-emerald-500/10 text-emerald-700 border border-emerald-200/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider items-center gap-1 shadow-sm transition-transform duration-300 hover:scale-[1.02]">
                               <Lock className="h-2.5 w-2.5" /> Security Mode
                             </span>
                             {isNotionMaterial && (
-                              <span className="bg-slate-900/95 text-slate-100 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
+                              <span className="hidden md:inline-flex bg-slate-900/95 text-slate-100 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
                                 Notion Turbo
                               </span>
                             )}
@@ -678,15 +678,15 @@ function UnitPage() {
                               onClick={handleMaximize}
                               disabled={isWorkspaceTransitioning}
                               size="sm"
-                              className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2.5 transition-all duration-300 ease-workspace hover:scale-[1.03] active:scale-95 disabled:opacity-60"
+                              className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2 transition-all duration-300 ease-workspace hover:scale-[1.03] active:scale-95 disabled:opacity-60 shrink-0"
                             >
                               <Maximize
                                 className={cn(
-                                  "h-3 w-3 transition-transform duration-500 ease-workspace",
+                                  "h-3.5 w-3.5 transition-transform duration-500 ease-workspace",
                                   isFullscreenEntering && "scale-110 rotate-90"
                                 )}
                               />
-                              Maximize
+                              <span className="hidden sm:inline">Maximize</span>
                             </Button>
                           </>
                         )}
@@ -705,10 +705,11 @@ function UnitPage() {
                           <Button
                             onClick={handleMinimize}
                             disabled={isWorkspaceTransitioning}
-                            className="rounded-xl h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all duration-300 ease-workspace flex items-center gap-1 md:gap-1.5 hover:scale-[1.02] active:scale-95 disabled:opacity-60 animate-workspace-reveal"
+                            className="rounded-xl h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all duration-300 ease-workspace flex items-center gap-1 md:gap-1.5 hover:scale-[1.02] active:scale-95 disabled:opacity-60 animate-workspace-reveal shrink-0"
                           >
                             <X className="h-3.5 w-3.5 transition-transform duration-300 group-hover:rotate-90" />
-                            Close Secure View
+                            <span className="hidden sm:inline">Close Secure View</span>
+                            <span className="sm:hidden">Close</span>
                           </Button>
                         )}
                       </div>

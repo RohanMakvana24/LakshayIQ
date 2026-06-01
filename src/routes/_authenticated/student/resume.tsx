@@ -682,26 +682,28 @@ function ResumeBuilderPage() {
   const getHeaderHeight = () => {
     let height = 20; // base margins & padding
     
-    // Name + Title block
+    // Name + Title block vs Avatar height (Left Side of layout)
+    let leftHeight = 0;
     if (personalInfo.fullName) {
       const nameSize = 24; // text-2xl
-      height += nameSize * 1.3;
+      leftHeight += nameSize * 1.3;
     }
     if (personalInfo.title) {
-      height += 18; // text-sm
+      leftHeight += 18; // text-sm
     }
-    
-    // Avatar vs Name/Title height
     if (styleConfig.showAvatar !== "false" && personalInfo.avatarUrl) {
-      height = Math.max(height, 56 + 10); // avatar is h-14 (56px) + margin
+      leftHeight = Math.max(leftHeight, 56 + 10); // avatar is h-14 (56px) + margin
     }
     
-    // Contact Info lines (Email, Phone, Location)
+    // Contact Info lines (Email, Phone, Location) are rendered on the RIGHT side,
+    // so they are side-by-side with the left block! We take the max height, not the sum!
     let contactCount = 0;
     if (personalInfo.location) contactCount++;
     if (personalInfo.phone) contactCount++;
     if (personalInfo.email) contactCount++;
-    height += contactCount * 14;
+    const rightHeight = contactCount * 14;
+
+    height += Math.max(leftHeight, rightHeight);
     
     // Social Links
     if (personalInfo.socials && personalInfo.socials.length > 0) {
@@ -774,15 +776,15 @@ function ResumeBuilderPage() {
         itemHeight += 14; 
         
         // Description wrapping lines (width-calibrated for columns)
-        const charsPerLine = layoutMode === "split" ? 85 : 135;
+        const charsPerLine = layoutMode === "split" ? 90 : 140;
         const descLines = Math.max(1, Math.ceil((item.description || "").length / charsPerLine));
-        itemHeight += descLines * 13.5; 
+        itemHeight += descLines * 12.5; 
         
         height += itemHeight + (idx === section.items!.length - 1 ? 0 : itemGap);
       });
     } else if (section.type === "tags" && section.categories) {
-      section.categories.forEach(cat => {
-        let catHeight = 12; 
+      section.categories.forEach((cat, idx) => {
+        let catHeight = 12; // Category title (10px) + spacing
         
         const columnWidth = layoutMode === "split" ? 230 : 730;
         let totalTagsWidth = 0;
@@ -790,12 +792,12 @@ function ResumeBuilderPage() {
           totalTagsWidth += (tag.length + 4) * 5.2 + 4; 
         });
         const tagLines = Math.max(1, Math.ceil(totalTagsWidth / columnWidth));
-        catHeight += 4 + tagLines * 18; 
+        catHeight += tagLines * 16; // Tag lines are about 16px high
         
-        height += catHeight + 8; 
+        height += catHeight + (idx === section.categories!.length - 1 ? 0 : 8); 
       });
     } else if (section.type === "text" && section.textContent) {
-      const charsPerLine = layoutMode === "split" ? 85 : 135;
+      const charsPerLine = layoutMode === "split" ? 90 : 140;
       const lines = Math.max(1, Math.ceil(section.textContent.length / charsPerLine));
       height += lines * 14 + 6;
     }
@@ -1895,7 +1897,9 @@ function ResumeBuilderPage() {
           .no-print, [data-sonner-toaster] { display: none !important; }
           html, body { background: white; margin: 0; padding: 0; height: auto; overflow: visible; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .canvas-container { display: block; overflow: visible; padding: 0; border: none; height: auto; background: white; }
-          .resume-page { width: 210mm; height: 297mm; padding: 10mm 15mm; border: none; box-shadow: none; background: white; margin: 0 auto; transform: none; page-break-after: always; break-after: page; }
+          .resume-page { width: 210mm; height: 297mm; padding: 10mm 15mm; border: none; box-shadow: none; background: white; margin: 0 auto; transform: none; overflow: hidden; }
+          .resume-page:not(:last-of-type) { page-break-after: always !important; break-after: page !important; }
+          .resume-page:last-of-type { page-break-after: avoid !important; break-after: avoid !important; }
         }
         .animate-fade-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
