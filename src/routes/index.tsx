@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { 
-  GraduationCap, 
-  BookOpen, 
-  FileText, 
-  Video, 
+import {
+  GraduationCap,
+  BookOpen,
+  FileText,
+  Video,
   Sparkles,
   Search,
   BookMarked,
@@ -71,7 +71,7 @@ function InteractiveSandbox({ isDarkMode }: { isDarkMode: boolean }) {
   // Chat message simulator loop
   useEffect(() => {
     if (activeTab !== "chat") return;
-    
+
     // Cycle messages
     const timer = setTimeout(() => {
       if (chatMessages.length === 1) {
@@ -116,20 +116,17 @@ function InteractiveSandbox({ isDarkMode }: { isDarkMode: boolean }) {
   };
 
   return (
-    <div className={`w-full max-w-lg rounded-3xl border p-2 backdrop-blur-md relative group transition-colors duration-300 ${
-      isDarkMode ? "border-white/5 bg-slate-950/40" : "border-slate-200 bg-white/60 shadow-xl"
-    }`}>
+    <div className={`w-full max-w-lg rounded-3xl border p-2 backdrop-blur-md relative group transition-colors duration-300 ${isDarkMode ? "border-white/5 bg-slate-950/40" : "border-slate-200 bg-white/60 shadow-xl"
+      }`}>
       {/* Glow highlight */}
       <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-emerald-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-      
-      <div className={`rounded-2xl border overflow-hidden transition-all relative w-full ${
-        isDarkMode ? "border-white/5 bg-[#090c12]" : "border-slate-100 bg-white shadow-md"
-      }`}>
-        
-        {/* Tab selection bar */}
-        <div className={`flex border-b text-[10px] sm:text-xs font-black select-none ${
-          isDarkMode ? "border-white/5 bg-slate-950/30" : "border-slate-100 bg-slate-50/50"
+
+      <div className={`rounded-2xl border overflow-hidden transition-all relative w-full ${isDarkMode ? "border-white/5 bg-[#090c12]" : "border-slate-100 bg-white shadow-md"
         }`}>
+
+        {/* Tab selection bar */}
+        <div className={`flex border-b text-[10px] sm:text-xs font-black select-none ${isDarkMode ? "border-white/5 bg-slate-950/30" : "border-slate-100 bg-slate-50/50"
+          }`}>
           {[
             { id: "syllabus", label: "Syllabus Track", icon: GraduationCap },
             { id: "resume", label: "ATS Resume Scan", icon: FileSearch },
@@ -144,11 +141,10 @@ function InteractiveSandbox({ isDarkMode }: { isDarkMode: boolean }) {
                   setChatMessages([{ sender: "admin", content: "🎓 શું તમારે Final Year નો Project જોઈએ છે? Documents સાથે! 📄✨", time: "10:00" }]);
                 }
               }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 transition-colors relative ${
-                activeTab === tab.id
-                  ? isDarkMode ? "text-emerald-400 bg-white/[0.02]" : "text-emerald-600 bg-white shadow-sm"
-                  : isDarkMode ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-800"
-              }`}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-3 transition-colors relative ${activeTab === tab.id
+                ? isDarkMode ? "text-emerald-400 bg-white/[0.02]" : "text-emerald-600 bg-white shadow-sm"
+                : isDarkMode ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-800"
+                }`}
             >
               <tab.icon className="h-3.5 w-3.5 shrink-0" />
               <span>{tab.label}</span>
@@ -161,7 +157,7 @@ function InteractiveSandbox({ isDarkMode }: { isDarkMode: boolean }) {
 
         {/* Tab contents viewport */}
         <div className="p-5 h-72 overflow-y-auto [scrollbar-width:none]">
-          
+
           {/* TAB 1: SYLLABUS TRACKER */}
           {activeTab === "syllabus" && (
             <div className="space-y-4 animate-in fade-in duration-300 text-left">
@@ -181,9 +177,8 @@ function InteractiveSandbox({ isDarkMode }: { isDarkMode: boolean }) {
                   { name: "Unit 2: Computer Graphics & Visualization", files: "Notes + Lecture Reels", complete: 70 },
                   { name: "Unit 3: Web Technology & its Applications", files: "Projects + Pinned Documents", complete: 100 }
                 ].map((unit, i) => (
-                  <div key={i} className={`p-3 rounded-xl border flex items-center justify-between ${
-                    isDarkMode ? "bg-white/[0.01] border-white/5" : "bg-slate-50/50 border-slate-100"
-                  }`}>
+                  <div key={i} className={`p-3 rounded-xl border flex items-center justify-between ${isDarkMode ? "bg-white/[0.01] border-white/5" : "bg-slate-50/50 border-slate-100"
+                    }`}>
                     <div className="space-y-1 max-w-[75%]">
                       <h5 className={`text-[10px] font-black leading-tight ${isDarkMode ? "text-slate-200" : "text-slate-800"}`}>{unit.name}</h5>
                       <div className="flex items-center gap-2">
@@ -234,9 +229,8 @@ function InteractiveSandbox({ isDarkMode }: { isDarkMode: boolean }) {
                   { check: "Correct contact details, Github linkage verified", pass: true },
                   { check: "No multi-column complex parser failures detected", pass: true }
                 ].map((item, i) => (
-                  <div key={i} className={`p-2.5 rounded-xl border flex items-center gap-2.5 ${
-                    isDarkMode ? "bg-white/[0.01] border-white/5" : "bg-slate-50/50 border-slate-100"
-                  }`}>
+                  <div key={i} className={`p-2.5 rounded-xl border flex items-center gap-2.5 ${isDarkMode ? "bg-white/[0.01] border-white/5" : "bg-slate-50/50 border-slate-100"
+                    }`}>
                     <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 shrink-0" />
                     <span className={`text-[9px] font-bold ${isDarkMode ? "text-slate-350" : "text-slate-700"}`}>{item.check}</span>
                   </div>
@@ -250,16 +244,14 @@ function InteractiveSandbox({ isDarkMode }: { isDarkMode: boolean }) {
             <div className="flex flex-col h-full animate-in fade-in duration-300 text-left">
               <div className="flex-1 space-y-2 pr-1 overflow-y-auto [scrollbar-width:none]">
                 {chatMessages.map((msg, i) => (
-                  <div key={i} className={`flex items-end gap-1.5 ${
-                    msg.sender === "student" ? "flex-row-reverse" : "flex-row"
-                  }`}>
-                    <div className={`px-3 py-1.5 rounded-2xl text-[9px] font-bold max-w-[80%] leading-relaxed ${
-                      msg.sender === "student"
-                        ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-br-sm"
-                        : isDarkMode
-                          ? "bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-sm"
-                          : "bg-slate-100 border border-slate-200 text-slate-800 rounded-bl-sm"
+                  <div key={i} className={`flex items-end gap-1.5 ${msg.sender === "student" ? "flex-row-reverse" : "flex-row"
                     }`}>
+                    <div className={`px-3 py-1.5 rounded-2xl text-[9px] font-bold max-w-[80%] leading-relaxed ${msg.sender === "student"
+                      ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-br-sm"
+                      : isDarkMode
+                        ? "bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-sm"
+                        : "bg-slate-100 border border-slate-200 text-slate-800 rounded-bl-sm"
+                      }`}>
                       {msg.content}
                     </div>
                   </div>
@@ -283,11 +275,10 @@ function InteractiveSandbox({ isDarkMode }: { isDarkMode: boolean }) {
                   value={chatInput}
                   onChange={e => setChatInput(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && handleSendMessage()}
-                  className={`flex-1 h-8 rounded-lg pl-3 pr-2 text-[10px] font-medium outline-none border focus:ring-0 focus:border-emerald-500/50 ${
-                    isDarkMode 
-                      ? "border-slate-800 bg-slate-950 text-white" 
-                      : "border-slate-200 bg-slate-50 text-slate-850"
-                  }`}
+                  className={`flex-1 h-8 rounded-lg pl-3 pr-2 text-[10px] font-medium outline-none border focus:ring-0 focus:border-emerald-500/50 ${isDarkMode
+                    ? "border-slate-800 bg-slate-950 text-white"
+                    : "border-slate-200 bg-slate-50 text-slate-850"
+                    }`}
                 />
                 <button
                   onClick={handleSendMessage}
@@ -338,7 +329,7 @@ function Landing() {
     courses: 450,
     subjects: 3200,
   });
-  
+
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
@@ -348,7 +339,7 @@ function Landing() {
       localStorage.setItem("theme", "light");
     }
   }, [isDarkMode]);
-  
+
   useEffect(() => {
     if (!loading && user && role) {
       nav({ to: role === "admin" ? "/admin" : "/student" });
@@ -393,55 +384,46 @@ function Landing() {
   ];
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 selection:bg-emerald-500/20 selection:text-emerald-400 overflow-hidden relative ${
-      isDarkMode ? "bg-[#07090e] text-slate-100" : "bg-[#f8fafc] text-slate-900"
-    }`}>
-      
+    <div className={`min-h-screen transition-colors duration-500 selection:bg-emerald-500/20 selection:text-emerald-400 overflow-hidden relative ${isDarkMode ? "bg-[#07090e] text-slate-100" : "bg-[#f8fafc] text-slate-900"
+      }`}>
+
       {/* Dynamic Background Glowing Spheres */}
-      <div className={`absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${
-        isDarkMode ? "bg-emerald-500/5" : "bg-emerald-500/10"
-      }`} />
-      <div className={`absolute top-[30%] right-[-10%] w-[50vw] h-[50vw] rounded-full blur-[130px] pointer-events-none transition-all duration-1000 ${
-        isDarkMode ? "bg-violet-600/5" : "bg-violet-600/10"
-      }`} />
-      <div className={`absolute bottom-[-10%] left-[20%] w-[55vw] h-[55vw] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${
-        isDarkMode ? "bg-blue-500/5" : "bg-blue-500/10"
-      }`} />
+      <div className={`absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${isDarkMode ? "bg-emerald-500/5" : "bg-emerald-500/10"
+        }`} />
+      <div className={`absolute top-[30%] right-[-10%] w-[50vw] h-[50vw] rounded-full blur-[130px] pointer-events-none transition-all duration-1000 ${isDarkMode ? "bg-violet-600/5" : "bg-violet-600/10"
+        }`} />
+      <div className={`absolute bottom-[-10%] left-[20%] w-[55vw] h-[55vw] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${isDarkMode ? "bg-blue-500/5" : "bg-blue-500/10"
+        }`} />
 
       {/* Futuristic Grid Line Overlays */}
-      <div className={`absolute inset-0 pointer-events-none opacity-20 transition-all ${
-        isDarkMode 
-          ? "bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:4rem_4rem]" 
-          : "bg-[linear-gradient(to_right,#cbd5e120_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e120_1px,transparent_1px)] bg-[size:4rem_4rem]"
-      }`} />
+      <div className={`absolute inset-0 pointer-events-none opacity-20 transition-all ${isDarkMode
+        ? "bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:4rem_4rem]"
+        : "bg-[linear-gradient(to_right,#cbd5e120_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e120_1px,transparent_1px)] bg-[size:4rem_4rem]"
+        }`} />
 
       {/* HEADER / NAVIGATION */}
-      <header className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-colors duration-300 ${
-        isDarkMode ? "border-white/5 bg-[#07090e]/60" : "border-slate-200/80 bg-white/70"
-      }`}>
+      <header className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-colors duration-300 ${isDarkMode ? "border-white/5 bg-[#07090e]/60" : "border-slate-200/80 bg-white/70"
+        }`}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative flex h-10 w-10 items-center justify-center">
-              <div className={`absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] ${
-                isDarkMode ? "border-emerald-500/40" : "border-emerald-500/60"
-              }`} />
+              <div className={`absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] ${isDarkMode ? "border-emerald-500/40" : "border-emerald-500/60"
+                }`} />
               <div className="absolute inset-1.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md transition-transform duration-500 group-hover:scale-105 group-hover:rotate-12 flex items-center justify-center">
                 <BiSolidBookHeart className="h-5 w-5 text-white" />
               </div>
             </div>
             <div className="flex flex-col">
-              <span className={`text-sm font-black tracking-tight group-hover:text-emerald-500 transition-colors leading-tight ${
-                isDarkMode ? "text-white" : "text-slate-900"
-              }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+              <span className={`text-sm font-black tracking-tight group-hover:text-emerald-500 transition-colors leading-tight ${isDarkMode ? "text-white" : "text-slate-900"
+                }`} style={{ fontFamily: "'Sora', sans-serif" }}>
                 Lakshay<span className="text-emerald-500 text-[10px] font-black">.IQ</span>
               </span>
               <span className="text-[7px] font-bold uppercase tracking-widest text-slate-500 leading-none">Smart Platform</span>
             </div>
           </Link>
 
-          <nav className={`hidden items-center gap-8 text-xs font-bold uppercase tracking-wider md:flex ${
-            isDarkMode ? "text-slate-400" : "text-slate-600"
-          }`}>
+          <nav className={`hidden items-center gap-8 text-xs font-bold uppercase tracking-wider md:flex ${isDarkMode ? "text-slate-400" : "text-slate-600"
+            }`}>
             <Link to="/" className="text-emerald-500 transition-colors">Home</Link>
             <a href="#features" className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Products</a>
             <a href="#tools" className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Tools</a>
@@ -449,16 +431,15 @@ function Landing() {
             <span className="h-3 w-px bg-slate-300/20" />
             <form onSubmit={handleSearchSubmit} className="relative flex items-center">
               <Search className="absolute left-3 h-3.5 w-3.5 text-slate-500" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search your university..." 
-                className={`h-8 w-44 rounded-full border pl-9 pr-4 text-[11px] font-medium outline-none transition-all focus:w-56 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 ${
-                  isDarkMode 
-                    ? "border-white/10 bg-white/5 text-white placeholder:text-slate-500" 
-                    : "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400"
-                }`}
+                placeholder="Search your university..."
+                className={`h-8 w-44 rounded-full border pl-9 pr-4 text-[11px] font-medium outline-none transition-all focus:w-56 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 ${isDarkMode
+                  ? "border-white/10 bg-white/5 text-white placeholder:text-slate-500"
+                  : "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400"
+                  }`}
               />
             </form>
           </nav>
@@ -469,20 +450,18 @@ function Landing() {
               variant="ghost"
               size="icon"
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`rounded-full h-9 w-9 transition-colors ${
-                isDarkMode 
-                  ? "text-yellow-400 hover:bg-white/5" 
-                  : "text-slate-600 hover:bg-slate-100"
-              }`}
+              className={`rounded-full h-9 w-9 transition-colors ${isDarkMode
+                ? "text-yellow-400 hover:bg-white/5"
+                : "text-slate-600 hover:bg-slate-100"
+                }`}
             >
               {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
 
             <span className="h-4 w-px bg-slate-300/20 mr-1" />
 
-            <Button asChild variant="ghost" className={`rounded-full text-xs font-bold ${
-              isDarkMode ? "text-slate-300 hover:text-white hover:bg-white/5" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-            }`}>
+            <Button asChild variant="ghost" className={`rounded-full text-xs font-bold ${isDarkMode ? "text-slate-300 hover:text-white hover:bg-white/5" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              }`}>
               <Link to="/login">Log In</Link>
             </Button>
             <Button asChild className="rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition-all active:scale-95">
@@ -494,36 +473,31 @@ function Landing() {
 
       {/* HERO SECTION */}
       <section className="relative w-full py-16 md:py-24 px-6 max-w-7xl mx-auto">
-        <div className={`absolute top-[5%] left-[5%] w-80 h-80 rounded-full blur-[100px] pointer-events-none transition-all duration-1000 ${
-          isDarkMode ? "bg-emerald-500/10" : "bg-emerald-500/20"
-        }`} />
-        <div className={`absolute bottom-[5%] right-[5%] w-96 h-96 rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${
-          isDarkMode ? "bg-indigo-500/5" : "bg-indigo-500/15"
-        }`} />
+        <div className={`absolute top-[5%] left-[5%] w-80 h-80 rounded-full blur-[100px] pointer-events-none transition-all duration-1000 ${isDarkMode ? "bg-emerald-500/10" : "bg-emerald-500/20"
+          }`} />
+        <div className={`absolute bottom-[5%] right-[5%] w-96 h-96 rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${isDarkMode ? "bg-indigo-500/5" : "bg-indigo-500/15"
+          }`} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center relative z-10">
-          
+
           {/* LEFT COLUMN: HERO MARKETING COPY */}
           <div className="lg:col-span-6 text-left space-y-6 flex flex-col items-start">
-            <div className={`inline-flex items-center gap-2 rounded-full border backdrop-blur-md px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-emerald-500 shadow-inner ${
-              isDarkMode ? "bg-white/5 border-white/10" : "bg-emerald-50 border-emerald-100"
-            }`}>
-              <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse" /> 
+            <div className={`inline-flex items-center gap-2 rounded-full border backdrop-blur-md px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-emerald-500 shadow-inner ${isDarkMode ? "bg-white/5 border-white/10" : "bg-emerald-50 border-emerald-100"
+              }`}>
+              <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
               NEON LEVEL SEMESTER ENGINE
             </div>
 
-            <h1 className={`text-4xl sm:text-6xl font-black leading-[1.08] tracking-tight transition-colors ${
-              isDarkMode ? "text-white" : "text-slate-900"
-            }`} style={{ fontFamily: "'Sora', sans-serif", letterSpacing: "-0.04em" }}>
-              Simplify Semesters.<br/>
+            <h1 className={`text-4xl sm:text-6xl font-black leading-[1.08] tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-900"
+              }`} style={{ fontFamily: "'Sora', sans-serif", letterSpacing: "-0.04em" }}>
+              Simplify Semesters.<br />
               <span className="bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-500 bg-clip-text text-transparent">
                 Elevate Your IQ.
               </span>
             </h1>
 
-            <p className={`max-w-xl text-sm sm:text-base leading-relaxed transition-colors ${
-              isDarkMode ? "text-slate-400" : "text-slate-500"
-            }`}>
+            <p className={`max-w-xl text-sm sm:text-base leading-relaxed transition-colors ${isDarkMode ? "text-slate-400" : "text-slate-500"
+              }`}>
               A premium structured academic highway providing campus notes, curated question papers, dynamic ATS resumes, final year project guidance, and instant chat assistance.
             </p>
 
@@ -531,11 +505,10 @@ function Landing() {
               <Button asChild size="lg" className="rounded-full w-full sm:w-auto bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 px-8 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition-all active:scale-95">
                 <Link to="/signup" className="flex items-center justify-center">Create Free Account <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className={`rounded-full w-full sm:w-auto text-xs font-bold border transition-colors ${
-                isDarkMode 
-                  ? "border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10" 
-                  : "border-slate-200 bg-white text-slate-600 hover:text-slate-950 hover:bg-slate-50"
-              }`}>
+              <Button asChild variant="outline" size="lg" className={`rounded-full w-full sm:w-auto text-xs font-bold border transition-colors ${isDarkMode
+                ? "border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10"
+                : "border-slate-200 bg-white text-slate-600 hover:text-slate-950 hover:bg-slate-50"
+                }`}>
                 <a href="#features" className="flex items-center justify-center">Inspect Services</a>
               </Button>
             </div>
@@ -549,8 +522,8 @@ function Landing() {
                   { name: "L", grad: "from-[#10B981] to-[#059669]" },
                   { name: "Y", grad: "from-[#F59E0B] to-[#D97706]" }
                 ].map((item, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className={`w-8 h-8 rounded-full border ${isDarkMode ? "border-slate-950" : "border-white"} bg-gradient-to-br ${item.grad} flex items-center justify-center text-[10px] font-black text-white ring-2 ring-emerald-500/20 shadow-sm hover:scale-115 hover:z-20 transition-all duration-200`}
                     title="Active Student"
                   >
@@ -581,9 +554,8 @@ function Landing() {
 
       {/* STATS TELEMETRY VAULT */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className={`grid grid-cols-2 md:grid-cols-4 gap-6 border rounded-3xl p-8 backdrop-blur-xl transition-all duration-300 ${
-          isDarkMode ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-200 shadow-md"
-        }`}>
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-6 border rounded-3xl p-8 backdrop-blur-xl transition-all duration-300 ${isDarkMode ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-200 shadow-md"
+          }`}>
           <div className="text-center space-y-1">
             <h3 className={`text-2xl sm:text-3xl font-black ${isDarkMode ? "text-white" : "text-slate-900"}`} style={{ fontFamily: "'Sora', sans-serif" }}>{stats.universities}+</h3>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Campus Hubs</p>
@@ -612,9 +584,8 @@ function Landing() {
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
           <GraduationCap className="w-3.5 h-3.5 text-emerald-500" /> SYLLABUS DIRECTORY
         </span>
-        <h2 className={`text-3xl font-black tracking-tight mt-4 sm:text-4xl transition-colors ${
-          isDarkMode ? "text-white" : "text-slate-900"
-        }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+        <h2 className={`text-3xl font-black tracking-tight mt-4 sm:text-4xl transition-colors ${isDarkMode ? "text-white" : "text-slate-900"
+          }`} style={{ fontFamily: "'Sora', sans-serif" }}>
           Everything Required to Ace Your Semester
         </h2>
         <p className="text-sm text-slate-500 max-w-xl mx-auto mt-2 leading-relaxed">
@@ -623,11 +594,10 @@ function Landing() {
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {/* Card 1 */}
-          <div className={`group relative rounded-3xl border p-8 text-left transition-all duration-300 hover:-translate-y-1 overflow-hidden ${
-            isDarkMode 
-              ? "border-white/5 bg-gradient-to-br from-emerald-500/10 to-emerald-500/0 hover:border-emerald-500/30" 
-              : "border-slate-200 bg-white hover:border-emerald-500/50 hover:shadow-lg"
-          }`}>
+          <div className={`group relative rounded-3xl border p-8 text-left transition-all duration-300 hover:-translate-y-1 overflow-hidden ${isDarkMode
+            ? "border-white/5 bg-gradient-to-br from-emerald-500/10 to-emerald-500/0 hover:border-emerald-500/30"
+            : "border-slate-200 bg-white hover:border-emerald-500/50 hover:shadow-lg"
+            }`}>
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
               <FileText className="h-5 w-5" />
@@ -637,11 +607,10 @@ function Landing() {
           </div>
 
           {/* Card 2 */}
-          <div className={`group relative rounded-3xl border p-8 text-left transition-all duration-300 hover:-translate-y-1 overflow-hidden ${
-            isDarkMode 
-              ? "border-white/5 bg-gradient-to-br from-blue-500/10 to-blue-500/0 hover:border-blue-500/30" 
-              : "border-slate-200 bg-white hover:border-blue-500/50 hover:shadow-lg"
-          }`}>
+          <div className={`group relative rounded-3xl border p-8 text-left transition-all duration-300 hover:-translate-y-1 overflow-hidden ${isDarkMode
+            ? "border-white/5 bg-gradient-to-br from-blue-500/10 to-blue-500/0 hover:border-blue-500/30"
+            : "border-slate-200 bg-white hover:border-blue-500/50 hover:shadow-lg"
+            }`}>
             <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-full pointer-events-none" />
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20">
               <BookMarked className="h-5 w-5" />
@@ -651,11 +620,10 @@ function Landing() {
           </div>
 
           {/* Card 3 */}
-          <div className={`group relative rounded-3xl border p-8 text-left transition-all duration-300 hover:-translate-y-1 overflow-hidden ${
-            isDarkMode 
-              ? "border-white/5 bg-gradient-to-br from-rose-500/10 to-rose-500/0 hover:border-rose-500/30" 
-              : "border-slate-200 bg-white hover:border-rose-500/50 hover:shadow-lg"
-          }`}>
+          <div className={`group relative rounded-3xl border p-8 text-left transition-all duration-300 hover:-translate-y-1 overflow-hidden ${isDarkMode
+            ? "border-white/5 bg-gradient-to-br from-rose-500/10 to-rose-500/0 hover:border-rose-500/30"
+            : "border-slate-200 bg-white hover:border-rose-500/50 hover:shadow-lg"
+            }`}>
             <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-bl-full pointer-events-none" />
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50/10 text-rose-500 border border-rose-500/20">
               <Video className="h-5 w-5" />
@@ -672,9 +640,8 @@ function Landing() {
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
             <Rocket className="w-3.5 h-3.5 text-emerald-500 animate-pulse" /> NEWLY DEPLOYED MODULES
           </span>
-          <h2 className={`text-3xl font-black tracking-tight mt-4 sm:text-4xl transition-colors ${
-            isDarkMode ? "text-white" : "text-slate-900"
-          }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+          <h2 className={`text-3xl font-black tracking-tight mt-4 sm:text-4xl transition-colors ${isDarkMode ? "text-white" : "text-slate-900"
+            }`} style={{ fontFamily: "'Sora', sans-serif" }}>
             Discover Our Smart Academic Engine
           </h2>
           <p className="text-sm text-slate-500 mt-2 leading-relaxed">
@@ -684,19 +651,17 @@ function Landing() {
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {/* Card 1: Live Messenger */}
-          <div 
-            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${
-              isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-emerald-500/30" : "border-slate-200 bg-white hover:border-emerald-500/50 hover:shadow-2xl"
-            }`}
+          <div
+            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-emerald-500/30" : "border-slate-200 bg-white hover:border-emerald-500/50 hover:shadow-2xl"
+              }`}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 rounded-bl-3xl pointer-events-none" />
             <div className="relative z-10">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20">
                 <MessageSquare className="h-5 w-5" />
               </div>
-              <h3 className={`mt-5 text-lg font-black group-hover:text-emerald-500 transition-colors ${
-                isDarkMode ? "text-white" : "text-slate-950"
-              }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+              <h3 className={`mt-5 text-lg font-black group-hover:text-emerald-500 transition-colors ${isDarkMode ? "text-white" : "text-slate-950"
+                }`} style={{ fontFamily: "'Sora', sans-serif" }}>
                 Ephemeral Live Chat
               </h3>
               <p className="mt-2.5 text-xs text-slate-500 leading-relaxed">
@@ -714,19 +679,17 @@ function Landing() {
           </div>
 
           {/* Card 2: Study Planner */}
-          <div 
-            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${
-              isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-violet-500/30" : "border-slate-200 bg-white hover:border-violet-500/50 hover:shadow-2xl"
-            }`}
+          <div
+            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-violet-500/30" : "border-slate-200 bg-white hover:border-violet-500/50 hover:shadow-2xl"
+              }`}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 rounded-bl-3xl pointer-events-none" />
             <div className="relative z-10">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-md shadow-violet-500/20">
                 <CalendarCheck className="h-5 w-5" />
               </div>
-              <h3 className={`mt-5 text-lg font-black group-hover:text-violet-500 transition-colors ${
-                isDarkMode ? "text-white" : "text-slate-950"
-              }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+              <h3 className={`mt-5 text-lg font-black group-hover:text-violet-500 transition-colors ${isDarkMode ? "text-white" : "text-slate-950"
+                }`} style={{ fontFamily: "'Sora', sans-serif" }}>
                 Semester Study Planner
               </h3>
               <p className="mt-2.5 text-xs text-slate-500 leading-relaxed">
@@ -744,19 +707,17 @@ function Landing() {
           </div>
 
           {/* Card 3: Task Manager */}
-          <div 
-            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${
-              isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-amber-500/30" : "border-slate-200 bg-white hover:border-amber-500/50 hover:shadow-2xl"
-            }`}
+          <div
+            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-amber-500/30" : "border-slate-200 bg-white hover:border-amber-500/50 hover:shadow-2xl"
+              }`}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/5 to-orange-500/5 rounded-bl-3xl pointer-events-none" />
             <div className="relative z-10">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20">
                 <ListTodo className="h-5 w-5" />
               </div>
-              <h3 className={`mt-5 text-lg font-black group-hover:text-amber-500 transition-colors ${
-                isDarkMode ? "text-white" : "text-slate-950"
-              }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+              <h3 className={`mt-5 text-lg font-black group-hover:text-amber-500 transition-colors ${isDarkMode ? "text-white" : "text-slate-950"
+                }`} style={{ fontFamily: "'Sora', sans-serif" }}>
                 Interactive Task Manager
               </h3>
               <p className="mt-2.5 text-xs text-slate-500 leading-relaxed">
@@ -774,19 +735,17 @@ function Landing() {
           </div>
 
           {/* Card 4: AI Resume Builder */}
-          <div 
-            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${
-              isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-blue-500/30" : "border-slate-200 bg-white hover:border-blue-500/50 hover:shadow-2xl"
-            }`}
+          <div
+            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-blue-500/30" : "border-slate-200 bg-white hover:border-blue-500/50 hover:shadow-2xl"
+              }`}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-bl-3xl pointer-events-none" />
             <div className="relative z-10">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-md shadow-blue-500/20">
                 <FileText className="h-5 w-5" />
               </div>
-              <h3 className={`mt-5 text-lg font-black group-hover:text-blue-500 transition-colors ${
-                isDarkMode ? "text-white" : "text-slate-950"
-              }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+              <h3 className={`mt-5 text-lg font-black group-hover:text-blue-500 transition-colors ${isDarkMode ? "text-white" : "text-slate-950"
+                }`} style={{ fontFamily: "'Sora', sans-serif" }}>
                 ATS Resume Builder
               </h3>
               <p className="mt-2.5 text-xs text-slate-500 leading-relaxed">
@@ -804,19 +763,17 @@ function Landing() {
           </div>
 
           {/* Card 5: Project Finder */}
-          <div 
-            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${
-              isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-rose-500/30" : "border-slate-200 bg-white hover:border-rose-500/50 hover:shadow-2xl"
-            }`}
+          <div
+            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-rose-500/30" : "border-slate-200 bg-white hover:border-rose-500/50 hover:shadow-2xl"
+              }`}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-rose-500/5 to-pink-500/5 rounded-bl-3xl pointer-events-none" />
             <div className="relative z-10">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/20">
                 <Briefcase className="h-5 w-5" />
               </div>
-              <h3 className={`mt-5 text-lg font-black group-hover:text-rose-500 transition-colors ${
-                isDarkMode ? "text-white" : "text-slate-950"
-              }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+              <h3 className={`mt-5 text-lg font-black group-hover:text-rose-500 transition-colors ${isDarkMode ? "text-white" : "text-slate-950"
+                }`} style={{ fontFamily: "'Sora', sans-serif" }}>
                 Project Assistant & Helper
               </h3>
               <p className="mt-2.5 text-xs text-slate-500 leading-relaxed">
@@ -834,19 +791,17 @@ function Landing() {
           </div>
 
           {/* Card 6: Study Vault */}
-          <div 
-            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${
-              isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-teal-500/30" : "border-slate-200 bg-white hover:border-teal-500/50 hover:shadow-2xl"
-            }`}
+          <div
+            className={`group relative rounded-3xl border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${isDarkMode ? "border-white/5 bg-slate-950/40 hover:border-teal-500/30" : "border-slate-200 bg-white hover:border-teal-500/50 hover:shadow-2xl"
+              }`}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-teal-500/5 to-emerald-500/5 rounded-bl-3xl pointer-events-none" />
             <div className="relative z-10">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-md shadow-teal-500/20">
                 <BookMarked className="h-5 w-5" />
               </div>
-              <h3 className={`mt-5 text-lg font-black group-hover:text-teal-500 transition-colors ${
-                isDarkMode ? "text-white" : "text-slate-950"
-              }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+              <h3 className={`mt-5 text-lg font-black group-hover:text-teal-500 transition-colors ${isDarkMode ? "text-white" : "text-slate-950"
+                }`} style={{ fontFamily: "'Sora', sans-serif" }}>
                 Academic Syllabus Vault
               </h3>
               <p className="mt-2.5 text-xs text-slate-500 leading-relaxed">
@@ -863,12 +818,11 @@ function Landing() {
             </div>
           </div>
         </div>
- 
+
         {/* Additional Trust Badge */}
         <div className="mt-12 flex justify-center">
-          <div className={`inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-xs font-semibold backdrop-blur-md transition-colors duration-300 ${
-            isDarkMode ? "bg-white/[0.02] border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-500 shadow-sm"
-          }`}>
+          <div className={`inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-xs font-semibold backdrop-blur-md transition-colors duration-300 ${isDarkMode ? "bg-white/[0.02] border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-500 shadow-sm"
+            }`}>
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             Empowering {stats.students.toLocaleString()}+ Indian university students to prepare faster and smarter.
           </div>
@@ -881,9 +835,8 @@ function Landing() {
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
             <Network className="w-3.5 h-3.5 text-emerald-400" /> INTERACTIVE PIPELINE
           </span>
-          <h2 className={`text-3xl font-black tracking-tight mt-4 sm:text-4xl transition-colors ${
-            isDarkMode ? "text-white" : "text-slate-900"
-          }`} style={{ fontFamily: "'Sora', sans-serif" }}>
+          <h2 className={`text-3xl font-black tracking-tight mt-4 sm:text-4xl transition-colors ${isDarkMode ? "text-white" : "text-slate-900"
+            }`} style={{ fontFamily: "'Sora', sans-serif" }}>
             Lakshay IQ Infrastructure Map
           </h2>
           <p className="text-sm text-slate-500 mt-2">
@@ -893,14 +846,13 @@ function Landing() {
 
         <div className="max-w-4xl mx-auto">
           {/* THE SUBWAY INTERCONNECTED LINE */}
-          <div className={`relative flex flex-col md:flex-row items-center justify-between gap-12 md:gap-0 border p-8 rounded-3xl backdrop-blur-md transition-all duration-300 ${
-            isDarkMode ? "bg-white/[0.01] border-white/5" : "bg-white border-slate-200 shadow-sm"
-          }`}>
-            
+          <div className={`relative flex flex-col md:flex-row items-center justify-between gap-12 md:gap-0 border p-8 rounded-3xl backdrop-blur-md transition-all duration-300 ${isDarkMode ? "bg-white/[0.01] border-white/5" : "bg-white border-slate-200 shadow-sm"
+            }`}>
+
             {/* Highlighting Pipeline Line */}
             <div className="absolute top-1/2 left-10 right-10 h-[2px] bg-emerald-500/10 -translate-y-1/2 hidden md:block z-0">
-              <div 
-                className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-500 rounded-full transition-all duration-500 ease-out" 
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-500 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${(activeStation / (systemStations.length - 1)) * 100}%` }}
               />
               <div className="absolute top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-full bg-white shadow-md border-2 border-emerald-500 energy-pulse" />
@@ -917,21 +869,19 @@ function Landing() {
                   onClick={() => setActiveStation(index)}
                   className="relative z-10 flex flex-col items-center group focus:outline-none w-full md:w-auto"
                 >
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-xs shadow-md transition-all duration-300 ${
-                    isCurrent 
-                      ? 'bg-slate-905 border-2 border-emerald-500 text-emerald-500 scale-110 ring-4 ring-emerald-500/10 bg-white font-extrabold'
-                      : isPast 
-                      ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white border border-white/10' 
-                      : isDarkMode 
-                      ? 'bg-slate-950 text-slate-500 border border-white/5 hover:border-white/20 hover:text-white'
-                      : 'bg-slate-100 text-slate-400 border border-slate-200 hover:border-slate-400 hover:text-slate-700'
-                  }`}>
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-xs shadow-md transition-all duration-300 ${isCurrent
+                    ? 'bg-slate-905 border-2 border-emerald-500 text-emerald-500 scale-110 ring-4 ring-emerald-500/10 bg-white font-extrabold'
+                    : isPast
+                      ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white border border-white/10'
+                      : isDarkMode
+                        ? 'bg-slate-950 text-slate-500 border border-white/5 hover:border-white/20 hover:text-white'
+                        : 'bg-slate-100 text-slate-400 border border-slate-200 hover:border-slate-400 hover:text-slate-700'
+                    }`}>
                     {index + 1}
                   </div>
 
-                  <span className={`mt-3 text-[10px] font-black tracking-wider uppercase transition-colors duration-200 ${
-                    isCurrent ? 'text-emerald-500' : 'text-slate-500 group-hover:text-emerald-400'
-                  }`}>
+                  <span className={`mt-3 text-[10px] font-black tracking-wider uppercase transition-colors duration-200 ${isCurrent ? 'text-emerald-500' : 'text-slate-500 group-hover:text-emerald-400'
+                    }`}>
                     {station.title}
                   </span>
                 </button>
@@ -940,9 +890,8 @@ function Landing() {
           </div>
 
           {/* DYNAMIC TELEMETRY DISPLAY BOX */}
-          <div className={`mt-8 relative min-h-[150px] rounded-3xl border p-6 sm:p-8 shadow-xl overflow-hidden backdrop-blur-md transition-all duration-300 ${
-            isDarkMode ? "border-white/5 bg-slate-950/40" : "border-slate-200 bg-white shadow-md"
-          }`}>
+          <div className={`mt-8 relative min-h-[150px] rounded-3xl border p-6 sm:p-8 shadow-xl overflow-hidden backdrop-blur-md transition-all duration-300 ${isDarkMode ? "border-white/5 bg-slate-950/40" : "border-slate-200 bg-white shadow-md"
+            }`}>
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-10 blur-3xl rounded-bl-full transition-all duration-500 ${systemStations[activeStation].color}`} />
 
             <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-10 animate-telemetry-fade">
@@ -957,15 +906,14 @@ function Landing() {
                 <h3 className={`mt-2 text-xl font-black tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-900"}`} style={{ fontFamily: "'Sora', sans-serif" }}>
                   {systemStations[activeStation].title} Segment Architecture
                 </h3>
-                
+
                 <p className="mt-2 text-xs leading-relaxed text-slate-500 max-w-xl">
                   {systemStations[activeStation].desc}
                 </p>
               </div>
 
-              <div className={`flex flex-col items-start sm:items-end justify-center border-t sm:border-t-0 sm:border-l pt-4 sm:pt-0 sm:pl-8 min-w-[130px] ${
-                isDarkMode ? "border-white/5" : "border-slate-100"
-              }`}>
+              <div className={`flex flex-col items-start sm:items-end justify-center border-t sm:border-t-0 sm:border-l pt-4 sm:pt-0 sm:pl-8 min-w-[130px] ${isDarkMode ? "border-white/5" : "border-slate-100"
+                }`}>
                 <span className={`text-xl font-black tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-900"}`} style={{ fontFamily: "'Sora', sans-serif" }}>
                   {systemStations[activeStation].count}
                 </span>
@@ -979,14 +927,13 @@ function Landing() {
       </section>
 
       {/* PREMIUM FOOTER */}
-      <footer className={`border-t text-slate-400 mt-20 pt-16 pb-8 relative transition-colors duration-300 ${
-        isDarkMode ? "bg-slate-950 border-white/5" : "bg-slate-50 border-slate-200"
-      }`}>
+      <footer className={`border-t text-slate-400 mt-20 pt-16 pb-8 relative transition-colors duration-300 ${isDarkMode ? "bg-slate-950 border-white/5" : "bg-slate-50 border-slate-200"
+        }`}>
         <div className="absolute top-0 left-[40%] w-[40vw] h-[40vw] rounded-full bg-emerald-500/[0.02] blur-[100px] pointer-events-none" />
-        
+
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-12">
-            
+
             {/* Brand Status */}
             <div className="sm:col-span-2 md:col-span-5 space-y-5 text-left">
               <div className="flex items-center gap-3 group">
@@ -1005,14 +952,13 @@ function Landing() {
                   </span>
                 </div>
               </div>
-              
+
               <p className="max-w-sm text-xs leading-relaxed text-slate-500">
                 Simplifying Indian collegiate systems by deploying modular study architecture right to structural portals. Access high-quality syllabus frameworks, concept notes, and custom question vaults.
               </p>
 
-              <div className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-500 shadow-inner ${
-                isDarkMode ? "bg-white/[0.01] border-white/5" : "bg-white border-slate-200"
-              }`}>
+              <div className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-500 shadow-inner ${isDarkMode ? "bg-white/[0.01] border-white/5" : "bg-white border-slate-200"
+                }`}>
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/80" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -1052,25 +998,22 @@ function Landing() {
                 <li className="hover:text-emerald-500 transition-colors cursor-pointer">Privacy Protocol</li>
               </ul>
               <div className="flex items-center gap-2.5 pt-2">
-                <a href="https://github.com" target="_blank" rel="noreferrer" className={`p-2 rounded-lg border transition-all hover:scale-105 shadow-sm ${
-                  isDarkMode 
-                    ? "bg-white/5 border-white/5 text-slate-400 hover:text-white hover:border-white/10" 
-                    : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300"
-                }`}>
+                <a href="https://github.com" target="_blank" rel="noreferrer" className={`p-2 rounded-lg border transition-all hover:scale-105 shadow-sm ${isDarkMode
+                  ? "bg-white/5 border-white/5 text-slate-400 hover:text-white hover:border-white/10"
+                  : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300"
+                  }`}>
                   <Github className="h-3.5 w-3.5" />
                 </a>
-                <a href="https://twitter.com" target="_blank" rel="noreferrer" className={`p-2 rounded-lg border transition-all hover:scale-105 shadow-sm ${
-                  isDarkMode 
-                    ? "bg-white/5 border-white/5 text-slate-400 hover:text-white hover:border-white/10" 
-                    : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300"
-                }`}>
+                <a href="https://twitter.com" target="_blank" rel="noreferrer" className={`p-2 rounded-lg border transition-all hover:scale-105 shadow-sm ${isDarkMode
+                  ? "bg-white/5 border-white/5 text-slate-400 hover:text-white hover:border-white/10"
+                  : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300"
+                  }`}>
                   <Twitter className="h-3.5 w-3.5" />
                 </a>
-                <a href="https://lakshay.iq" target="_blank" rel="noreferrer" className={`p-2 rounded-lg border transition-all hover:scale-105 shadow-sm ${
-                  isDarkMode 
-                    ? "bg-white/5 border-white/5 text-slate-400 hover:text-white hover:border-white/10" 
-                    : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300"
-                }`}>
+                <a href="https://lakshay.iq" target="_blank" rel="noreferrer" className={`p-2 rounded-lg border transition-all hover:scale-105 shadow-sm ${isDarkMode
+                  ? "bg-white/5 border-white/5 text-slate-400 hover:text-white hover:border-white/10"
+                  : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300"
+                  }`}>
                   <Globe className="h-3.5 w-3.5" />
                 </a>
               </div>
@@ -1078,13 +1021,11 @@ function Landing() {
 
           </div>
 
-          <div className={`mt-16 border-t pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-bold uppercase tracking-wider ${
-            isDarkMode ? "border-white/5 text-slate-500" : "border-slate-200 text-slate-400"
-          }`}>
-            <p>© {new Date().getFullYear()} Lakshay IQ — Smart University Learning Platform. All rights reserved.</p>
-            <span className={`border px-3 py-1 rounded-full transition-colors ${
-              isDarkMode ? "bg-white/5 border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-500 shadow-sm"
+          <div className={`mt-16 border-t pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "border-white/5 text-slate-500" : "border-slate-200 text-slate-400"
             }`}>
+            <p>© {new Date().getFullYear()} Lakshay IQ — Smart University Learning Platform. All rights reserved.</p>
+            <span className={`border px-3 py-1 rounded-full transition-colors ${isDarkMode ? "bg-white/5 border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-500 shadow-sm"
+              }`}>
               Made for Indian Universities
             </span>
           </div>

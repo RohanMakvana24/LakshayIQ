@@ -93,6 +93,26 @@ function Login() {
     toast.success("Welcome back!");
   };
 
+  const handleForgotPassword = async () => {
+    const emailTrim = email.trim();
+    if (!emailTrim) {
+      toast.error("Please enter your email address in the field above first.");
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(emailTrim, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Reset link sent! Please check your email to change your password.", { duration: 6000 });
+    }
+  };
+
   const onGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -267,6 +287,15 @@ function Login() {
                 >
                   <Lock className="h-3.5 w-3.5" /> Password
                 </Label>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className={`text-[9px] font-black uppercase tracking-widest transition-colors outline-none focus:underline ${
+                    isDarkMode ? "text-emerald-400 hover:text-emerald-300" : "text-emerald-600 hover:text-emerald-700"
+                  }`}
+                >
+                  Forgot Password?
+                </button>
               </div>
               <div className={`relative rounded-lg border transition-all duration-300 overflow-hidden shadow-inner ${
                 isDarkMode 
