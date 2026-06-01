@@ -9,12 +9,20 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, ArrowRight, Database, Layers, Milestone, PlayCircle, FileText, ArrowUpRight, Sparkles, Mail, Lock, Sun, Moon } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 
+interface LoginSearchParams {
+  redirect?: string;
+}
+
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>): LoginSearchParams => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
   head: () => ({ meta: [{ title: "Log In to Your Account — Lakshay IQ" }] }),
   component: Login,
 });
 
 function Login() {
+  const { redirect } = Route.useSearch();
   const { user, role, loading: authLoading } = useAuth();
   const nav = useNavigate();
   const [email, setEmail] = useState("");
@@ -43,9 +51,13 @@ function Login() {
   // Redirect if user is already authenticated
   useEffect(() => {
     if (!authLoading && user && role) {
-      nav({ to: role === "admin" ? "/admin" : "/student" });
+      if (redirect) {
+        nav({ to: redirect });
+      } else {
+        nav({ to: role === "admin" ? "/admin" : "/student" });
+      }
     }
-  }, [user, role, authLoading, nav]);
+  }, [user, role, authLoading, nav, redirect]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

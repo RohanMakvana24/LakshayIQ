@@ -9,12 +9,20 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, ArrowRight, ShieldCheck, Database, Layers, Milestone, PlayCircle, FileText, ArrowUpRight, Sparkles, Mail, Lock, User, Sun, Moon } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 
+interface SignupSearchParams {
+  redirect?: string;
+}
+
 export const Route = createFileRoute("/signup")({
+  validateSearch: (search: Record<string, unknown>): SignupSearchParams => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
   head: () => ({ meta: [{ title: "Create Your Account — Lakshay IQ" }] }),
   component: Signup,
 });
 
 function Signup() {
+  const { redirect } = Route.useSearch();
   const { user, role, loading: authLoading } = useAuth();
   const nav = useNavigate();
   const [fullName, setFullName] = useState("");
@@ -43,9 +51,13 @@ function Signup() {
 
   useEffect(() => {
     if (!authLoading && user && role) {
-      nav({ to: role === "admin" ? "/admin" : "/student" });
+      if (redirect) {
+        nav({ to: redirect });
+      } else {
+        nav({ to: role === "admin" ? "/admin" : "/student" });
+      }
     }
-  }, [user, role, authLoading, nav]);
+  }, [user, role, authLoading, nav, redirect]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

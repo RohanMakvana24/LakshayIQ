@@ -318,6 +318,19 @@ function Landing() {
   });
   const [activeStation, setActiveStation] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    if (user) {
+      nav({ to: "/student/search", search: { q: query } as any });
+    } else {
+      const searchDest = `/student/search?q=${encodeURIComponent(query)}`;
+      nav({ to: "/login", search: { redirect: searchDest } as any });
+    }
+  };
+
   const [stats, setStats] = useState({
     universities: 120,
     students: 10000,
@@ -434,7 +447,7 @@ function Landing() {
             <a href="#tools" className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Tools</a>
             <a href="#flow" className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Infrastructure</a>
             <span className="h-3 w-px bg-slate-300/20" />
-            <div className="relative flex items-center">
+            <form onSubmit={handleSearchSubmit} className="relative flex items-center">
               <Search className="absolute left-3 h-3.5 w-3.5 text-slate-500" />
               <input 
                 type="text" 
@@ -447,7 +460,7 @@ function Landing() {
                     : "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400"
                 }`}
               />
-            </div>
+            </form>
           </nav>
 
           <div className="flex items-center gap-2">
