@@ -8,6 +8,7 @@ import { toast } from "sonner";
 const items: NavItem[] = [
   { to: "/student", label: "Dashboard", icon: Home },
   { to: "/student/bookmarks", label: "Bookmarks", icon: Bookmark },
+  { to: "/student/search", label: "Search", icon: Search },
   { to: "/student/resume", label: "Resume Builder", icon: FileText },
   { to: "/student/projects", label: "Project Helper", icon: FolderGit2 },
   { to: "/student/chat", label: "Messages", icon: MessageSquare },
@@ -20,7 +21,6 @@ const items: NavItem[] = [
       { to: "/student/planner-analytics", label: "Analytics" },
     ],
   },
-  { to: "/student/search", label: "Search", icon: Search },
   { to: "/student/profile", label: "My Profile", icon: UserCircle },
 ];
 
@@ -32,9 +32,9 @@ function StudentLayout() {
   const { role, loading } = useAuth();
   const nav = useNavigate();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  
-  useEffect(() => { 
-    if (!loading && role === "admin") nav({ to: "/admin" }); 
+
+  useEffect(() => {
+    if (!loading && role === "admin") nav({ to: "/admin" });
   }, [role, loading, nav]);
 
   // Global Student Security Safeguards
@@ -73,7 +73,7 @@ function StudentLayout() {
     const handleCopy = (e: ClipboardEvent) => {
       const selection = window.getSelection();
       const selectedText = selection ? selection.toString().trim() : "";
-      
+
       if (selectedText.length > 30) {
         e.preventDefault();
         toast.warning("🔒 Bulk copying is disabled to protect academic resources.");
@@ -93,7 +93,7 @@ function StudentLayout() {
       const selection = window.getSelection();
       if (!selection) return;
       const selectedText = selection.toString().trim();
-      
+
       // If student tries to select a large block (more than 30 characters)
       if (selectedText.length > 30) {
         selection.removeAllRanges(); // Clear selection instantly
