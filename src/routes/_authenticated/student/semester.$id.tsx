@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { useState, useMemo } from "react";
+import { ShareButton } from "@/components/share-course";
 
 export const Route = createFileRoute("/_authenticated/student/semester/$id")({
   loader: async ({ params }) => {
@@ -79,7 +80,7 @@ function SemesterPage() {
   const [sortBy, setSortBy] = useState<"name-asc" | "units-desc" | "units-asc">("name-asc");
 
   const totalUnits = useMemo(() => {
-    return subjects.reduce((acc, s) => acc + (s.units?.length || 0), 0);
+    return subjects.reduce((acc: number, s: any) => acc + (s.units?.length || 0), 0);
   }, [subjects]);
 
   const filteredAndSortedSubjects = useMemo(() => {
@@ -145,7 +146,7 @@ function SemesterPage() {
                   Curriculum mapping framework for <span className="text-white font-semibold">{course.name}</span>. Select any core module below to extract dynamic units, videos, and study papers.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2 shrink-0">
+              <div className="flex flex-wrap gap-2 shrink-0 items-center">
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/20 flex items-center gap-1.5">
                   <BookOpen className="h-3.5 w-3.5 text-emerald-300" />
                   <span className="text-xs font-medium text-white">{subjects.length} Subjects</span>
@@ -154,6 +155,11 @@ function SemesterPage() {
                   <Layers className="h-3.5 w-3.5 text-emerald-300" />
                   <span className="text-xs font-medium text-white">{totalUnits} Units</span>
                 </div>
+                <ShareButton
+                  title={semester.title || `Semester ${semester.semester_number}`}
+                  type="Semester"
+                  path={`/student/semester/${semester.id}`}
+                />
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { toast } from "sonner";
 
 export interface NavItem {
   to?: string;

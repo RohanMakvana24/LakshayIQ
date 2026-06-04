@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { useState, useMemo } from "react";
+import { ShareButton } from "@/components/share-course";
 
 export const Route = createFileRoute("/_authenticated/student/subject/$id")({
   loader: async ({ params }) => {
@@ -175,12 +176,17 @@ function SubjectPage() {
               </div>
 
               {/* Right: Stats Badge */}
-              <div className="shrink-0">
+              <div className="shrink-0 flex items-center gap-2">
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20 flex items-center gap-2">
                   <Layers className="h-4 w-4 text-emerald-300" />
                   <span className="text-sm font-bold text-white">{units.length}</span>
                   <span className="text-xs text-slate-300">Syllabus Units</span>
                 </div>
+                <ShareButton
+                  title={subject.name}
+                  type="Subject"
+                  path={`/student/subject/${subject.id}`}
+                />
               </div>
             </div>
           </div>
@@ -207,7 +213,7 @@ function SubjectPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {papers.map((paper) => (
+                  {papers.map((paper: any) => (
                     <div key={paper.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 hover:border-slate-300 transition-all">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <FileText className="h-3.5 w-3.5 text-slate-500 shrink-0" />
@@ -246,7 +252,7 @@ function SubjectPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {timetables.map((sched) => (
+                  {timetables.map((sched: any) => (
                     <div key={sched.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-medium text-slate-700 truncate">{sched.title}</p>

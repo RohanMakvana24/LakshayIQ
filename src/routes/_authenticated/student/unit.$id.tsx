@@ -8,6 +8,120 @@ import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, Monit
 import { PageLoader } from "@/components/page-loader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import Prism from "prismjs";
+if (typeof window !== "undefined") {
+  (window as any).Prism = Prism;
+}
+import "prismjs/components/prism-c";
+import "prismjs/components/prism-cpp";
+
+const preprocessMarkdown = (text: string): string => {
+  if (!text) return "";
+  return text
+    // Replace block math $$...$$
+    .replace(/\$\$(.*?)\$\$/gs, (match, formula) => {
+      let clean = formula
+        .replace(/\\text\{(.*?)\}/g, "$1")
+        .replace(/\\times/g, "×")
+        .replace(/\\log/g, "log")
+        .replace(/\\le/g, "≤")
+        .replace(/\\ge/g, "≥")
+        .replace(/\\ne/g, "≠")
+        .replace(/\\pm/g, "±")
+        .trim();
+      return `\n\n> 📐 **Formula:**\n> **${clean}**\n\n`;
+    })
+    // Replace inline math $...$
+    .replace(/\$([^\$\n]+?)\$/g, (match, formula) => {
+      let clean = formula
+        .replace(/\\text\{(.*?)\}/g, "$1")
+        .replace(/\\times/g, "×")
+        .replace(/\\log/g, "log")
+        .replace(/\\le/g, "≤")
+        .replace(/\\ge/g, "≥")
+        .replace(/\\ne/g, "≠")
+        .replace(/n\^2/g, "n²")
+        .trim();
+      return `**${clean}**`;
+    });
+};
+
+function MermaidDiagram({ chart }: { chart: string }) {
+  const [svg, setSvg] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const elementId = useRef(`mermaid-${Math.random().toString(36).substring(2, 9)}`);
+
+  useEffect(() => {
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
+
+    const renderChart = async () => {
+      const m = (window as any).mermaid;
+      if (!m) {
+        timeoutId = setTimeout(renderChart, 100);
+        return;
+      }
+      try {
+        m.initialize({
+          startOnLoad: false,
+          theme: "default",
+          securityLevel: "loose",
+        });
+        const { svg: renderedSvg } = await m.render(elementId.current, chart);
+        if (isMounted) {
+          setSvg(renderedSvg);
+          setError("");
+        }
+      } catch (err: any) {
+        console.error("Mermaid render error:", err);
+        const badElement = document.getElementById(elementId.current);
+        if (badElement) {
+          badElement.remove();
+        }
+        const bindElements = document.querySelectorAll(`[id^="${elementId.current}"]`);
+        bindElements.forEach(el => el.remove());
+        
+        if (isMounted) {
+          setError("Failed to render diagram.");
+        }
+      }
+    };
+
+    renderChart();
+
+    return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [chart]);
+
+  if (error) {
+    return (
+      <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-600 text-xs font-mono my-4">
+        {error}
+        <pre className="mt-2 opacity-70 text-[10px] overflow-auto max-h-32">{chart}</pre>
+      </div>
+    );
+  }
+
+  if (!svg) {
+    return (
+      <div className="py-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2 bg-[#f6f8fa] rounded-xl border border-[#d0d7de] my-4">
+        <div className="animate-spin rounded-full h-4 w-4 border-2 border-emerald-500 border-t-transparent" />
+        Rendering diagram...
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="mermaid-svg-container bg-[#f6f8fa] p-4 rounded-xl border border-[#d0d7de] flex justify-center overflow-x-auto my-6 shadow-sm selection:bg-transparent"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/student/unit/$id")({
   loader: async ({ params }) => {
@@ -86,12 +200,15 @@ function UnitPage() {
   const [shouldPreload, setShouldPreload] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isHovered, setIsHovered] = useState(false);
+  const [markdownContent, setMarkdownContent] = useState<string>("");
+  const [isMarkdownLoading, setIsMarkdownLoading] = useState<boolean>(false);
 
   const workspaceRef = useRef<HTMLDivElement>(null);
   const isNotionMaterial = activePreview.type === "material" && activePreview.url.includes("notion");
   const isClickUpMaterial = activePreview.type === "material" && activePreview.url.includes("clickup.com");
+  const isMarkdownMaterial = activePreview.type === "material" && activePreview.url.includes(".md");
   const isCurrentIframeLoading = activePreview.type === "material" && activePreview.url
-    ? !loadedIframes[activePreview.url]
+    ? (isMarkdownMaterial ? isMarkdownLoading : !loadedIframes[activePreview.url])
     : isIframeLoading;
   const isWorkspaceTransitioning = isFullscreenEntering || isFullscreenExiting;
 
@@ -109,6 +226,41 @@ function UnitPage() {
   useEffect(() => {
     checkBookmark();
   }, [unit.id]);
+
+  useEffect(() => {
+    if (activePreview.type === "material" && activePreview.url.includes(".md")) {
+      setIsMarkdownLoading(true);
+      fetch(activePreview.url)
+        .then((res) => {
+          if (!res.ok) throw new Error("Could not fetch markdown");
+          return res.text();
+        })
+        .then((text) => {
+          setMarkdownContent(preprocessMarkdown(text));
+          setIsMarkdownLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setMarkdownContent("### ⚠️ Error\nFailed to load the study material from GitHub. Please check if the file is public and try again.");
+          setIsMarkdownLoading(false);
+        });
+    } else {
+      setMarkdownContent("");
+    }
+  }, [activePreview.url, activePreview.type]);
+
+  useEffect(() => {
+    if (activePreview.type === "material" && activePreview.url.includes(".md") && markdownContent) {
+      const existingScript = document.getElementById("mermaid-script");
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.id = "mermaid-script";
+        script.src = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
+        script.async = true;
+        document.body.appendChild(script);
+      }
+    }
+  }, [markdownContent, activePreview.url, activePreview.type]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -370,6 +522,16 @@ function UnitPage() {
   const formatEmbedUrl = (url: string, type: "video" | "material") => {
     if (!url) return "";
     if (type === "material") {
+      // Auto-convert Google Drive and Google Docs links to embeddable preview format
+      if (url.includes("drive.google.com") || url.includes("docs.google.com")) {
+        let formattedUrl = url;
+        if (url.includes("/view")) {
+          formattedUrl = url.replace(/\/view(\?.*)?$/, "/preview");
+        } else if (url.includes("/edit")) {
+          formattedUrl = url.replace(/\/edit(\?.*)?$/, "/preview");
+        }
+        return formattedUrl;
+      }
       // Auto-convert standard private application notion.so URLs to public notion.site domain
       if (url.includes("notion.so")) {
         return url.replace(/(www\.)?notion\.so/i, "notion.site");
@@ -603,7 +765,8 @@ function UnitPage() {
                     onMouseMove={() => { if (!isHovered) setIsHovered(true); }}
                     onTouchStart={() => setIsHovered(true)}
                     className={cn(
-                      "flex flex-col relative overflow-hidden bg-slate-900 fullscreen-workspace",
+                      "flex flex-col relative overflow-hidden fullscreen-workspace",
+                      isMarkdownMaterial ? "bg-white" : "bg-slate-900",
                       "transition-[box-shadow,filter] duration-500 ease-workspace",
                       isWorkspaceTransitioning && "workspace-phase-transition",
                       isFullscreenSecure ? "workspace-phase-active min-h-0 p-0" : "flex-1 min-h-0"
@@ -618,24 +781,32 @@ function UnitPage() {
                       className={cn(
                         "preview-workspace-header shrink-0 z-30 flex items-center justify-between gap-3 border-b",
                         "transition-all duration-500 ease-workspace",
-                        isFullscreenSecure
-                          ? "bg-slate-900 border-slate-800 px-3 py-2.5 md:px-6 md:py-4"
-                          : "bg-slate-100 border-slate-200 px-4 py-3"
+                        isMarkdownMaterial
+                          ? "bg-[#f6f8fa] border-[#d0d7de] text-[#24292f] px-4 py-3"
+                          : isFullscreenSecure
+                            ? "bg-slate-900 border-slate-800 px-3 py-2.5 md:px-6 md:py-4"
+                            : "bg-slate-100 border-slate-200 px-4 py-3"
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0 truncate">
                         <Sparkles
                           className={cn(
                             "h-3.5 w-3.5 shrink-0 transition-colors duration-500",
-                            isFullscreenSecure ? "text-emerald-400 animate-pulse" : "text-emerald-600 animate-pulse"
+                            isMarkdownMaterial
+                              ? "text-emerald-600 animate-pulse"
+                              : isFullscreenSecure
+                                ? "text-emerald-400 animate-pulse"
+                                : "text-emerald-600 animate-pulse"
                           )}
                         />
                         <span
                           className={cn(
                             "text-xs font-semibold uppercase tracking-wider transition-all duration-500 ease-workspace",
-                            isFullscreenSecure
-                              ? "hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 font-black items-center gap-1.5"
-                              : "hidden sm:inline-flex text-slate-500"
+                            isMarkdownMaterial
+                              ? "hidden sm:inline-flex bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 font-black items-center gap-1.5"
+                              : isFullscreenSecure
+                                ? "hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 font-black items-center gap-1.5"
+                                : "hidden sm:inline-flex text-slate-500"
                           )}
                         >
                           {isFullscreenSecure ? (
@@ -649,9 +820,11 @@ function UnitPage() {
                         <span
                           className={cn(
                             "truncate transition-colors duration-500",
-                            isFullscreenSecure
-                              ? "text-xs md:text-sm font-bold text-white max-w-xl"
-                              : "text-sm font-medium text-slate-800"
+                            isMarkdownMaterial
+                              ? "text-sm font-bold text-[#24292f]"
+                              : isFullscreenSecure
+                                ? "text-xs md:text-sm font-bold text-white max-w-xl"
+                                : "text-sm font-medium text-slate-800"
                           )}
                         >
                           {activePreview.title}
@@ -725,9 +898,15 @@ function UnitPage() {
                       )}
                     >
                       {isCurrentIframeLoading && (
-                        <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6 workspace-loading-veil">
+                        <div className={cn(
+                          "absolute inset-0 z-40 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6 workspace-loading-veil",
+                          isMarkdownMaterial ? "bg-white/80" : "bg-slate-950/80"
+                        )}>
                           <Loader2 className="h-8 w-8 text-emerald-500 animate-spin mb-3" />
-                          <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider animate-pulse">
+                          <p className={cn(
+                            "text-xs font-semibold uppercase tracking-wider animate-pulse",
+                            isMarkdownMaterial ? "text-slate-600" : "text-slate-300"
+                          )}>
                             Loading Material...
                           </p>
                         </div>
@@ -752,6 +931,56 @@ function UnitPage() {
                       {/* For Material Preview: Pre-rendered persistent cached iframes */}
                       {unit.unit_materials?.map((material: any) => {
                         const isActive = activePreview.type === "material" && activePreview.url === material.file_url;
+                        
+                        if (material.file_url?.includes(".md")) {
+                          if (!isActive) return null;
+                          return (
+                            <div
+                              key={`material-md-${material.id}`}
+                              className="absolute inset-0 z-10 overflow-y-auto px-5 py-6 md:px-8 md:py-10 bg-white text-[#24292f] font-sans selection:bg-[#c8e1ff] selection:text-[#24292f] select-none scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent markdown-body animate-workspace-reveal"
+                            >
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                  code(props) {
+                                    const { className, children } = props;
+                                    const match = /language-(\w+)/.exec(className || "");
+                                    const isMermaid = match && match[1] === "mermaid";
+                                    if (isMermaid) {
+                                      return <MermaidDiagram chart={String(children).replace(/\n$/, "")} />;
+                                    }
+                                    if (className) {
+                                      const lang = match ? match[1] : "cpp";
+                                      let highlighted = String(children);
+                                      try {
+                                        const grammar = Prism.languages[lang] || Prism.languages.cpp || Prism.languages.clike;
+                                        highlighted = Prism.highlight(String(children).replace(/\n$/, ""), grammar, lang);
+                                      } catch (err) {
+                                        console.error("Prism highlighting error:", err);
+                                      }
+                                      return (
+                                        <pre className="bg-[#f6f8fa] border border-[#d0d7de] rounded-lg p-4 my-4 overflow-x-auto font-mono text-sm text-[#24292f] select-text">
+                                          <code 
+                                            className={className}
+                                            dangerouslySetInnerHTML={{ __html: highlighted }}
+                                          />
+                                        </pre>
+                                      );
+                                    }
+                                    return (
+                                      <code className="bg-[rgba(175,184,193,0.2)] text-[#24292f] px-1.5 py-0.5 rounded font-mono text-sm">
+                                        {children}
+                                      </code>
+                                    );
+                                  }
+                                }}
+                              >
+                                {markdownContent}
+                              </ReactMarkdown>
+                            </div>
+                          );
+                        }
+
                         const isNotion = material.file_url?.includes("notion");
                         const isClickUp = material.file_url?.includes("clickup.com");
                         const isAppFlowy = material.file_url?.includes("appflowy");
@@ -791,12 +1020,17 @@ function UnitPage() {
 
                       {/* Hover to Reveal Shield Overlay (Only active when not in fullscreen) */}
                       {!isHovered && !isCurrentIframeLoading && !isFullscreenSecure && activePreview.type === "material" && (
-                        <div className="absolute inset-0 z-20 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay">
+                        <div className={cn(
+                          "absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay",
+                          isMarkdownMaterial ? "bg-white/98" : "bg-slate-950/98"
+                        )}>
                           <div className="h-12 w-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
                             <Shield className="h-5 w-5 text-emerald-500 animate-pulse" />
                           </div>
-                          <h4 className="text-white font-bold text-sm uppercase tracking-wider">🔒 Secure Content Shield</h4>
-                          <p className="text-slate-400 text-[10px] max-w-xs mt-1.5 leading-relaxed">
+                          <h4 className={cn("font-bold text-sm uppercase tracking-wider", isMarkdownMaterial ? "text-slate-800" : "text-white")}>
+                            🔒 Secure Content Shield
+                          </h4>
+                          <p className={cn("text-[10px] max-w-xs mt-1.5 leading-relaxed", isMarkdownMaterial ? "text-slate-500" : "text-slate-400")}>
                             Move cursor or tap inside this workspace area to reveal secure material.
                           </p>
                         </div>
@@ -804,15 +1038,20 @@ function UnitPage() {
 
                       {/* Screenshot Shield overlay inside the exact same container */}
                       {isWindowBlurred && activePreview.type === "material" && (
-                        <div className="absolute inset-0 z-50 bg-slate-950/98 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay">
+                        <div className={cn(
+                          "absolute inset-0 z-50 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay",
+                          isMarkdownMaterial ? "bg-white/98" : "bg-slate-950/98"
+                        )}>
                           <div className="h-16 w-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
                             <Shield className="h-7 w-7 text-emerald-500 animate-pulse" />
                           </div>
                           <h2 className="text-emerald-500 font-black text-3xl tracking-widest mb-1 uppercase">
                             LAKSHAY IQ
                           </h2>
-                          <h3 className="text-white font-bold text-sm uppercase tracking-wider">🔒 Security Mode Active</h3>
-                          <p className="text-slate-400 text-[10px] max-w-sm mt-1 leading-relaxed">
+                          <h3 className={cn("font-bold text-sm uppercase tracking-wider", isMarkdownMaterial ? "text-slate-800" : "text-white")}>
+                            🔒 Security Mode Active
+                          </h3>
+                          <p className={cn("text-[10px] max-w-sm mt-1 leading-relaxed", isMarkdownMaterial ? "text-slate-500" : "text-slate-400")}>
                             Screen capture and background viewing are restricted to protect intellectual property and academic integrity.
                           </p>
                         </div>
@@ -885,6 +1124,183 @@ function UnitPage() {
           body {
             display: none !important;
           }
+        }
+        .markdown-body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+          line-height: 1.6;
+          color: #24292f;
+          background-color: #ffffff;
+        }
+        .markdown-body h1 {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+          font-size: 1.85rem;
+          font-weight: 600;
+          color: #1f2328;
+          margin-top: 24px;
+          margin-bottom: 16px;
+          border-bottom: 1px solid #d0d7de;
+          padding-bottom: 0.3em;
+        }
+        .markdown-body h2 {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+          font-size: 1.45rem;
+          font-weight: 600;
+          color: #1f2328;
+          margin-top: 24px;
+          margin-bottom: 16px;
+          border-bottom: 1px solid #d0d7de;
+          padding-bottom: 0.3em;
+        }
+        .markdown-body h3 {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: #1f2328;
+          margin-top: 24px;
+          margin-bottom: 8px;
+        }
+        .markdown-body p {
+          font-size: 0.95rem;
+          margin-bottom: 16px;
+          color: #24292f;
+        }
+        .markdown-body strong {
+          color: #1f2328;
+          font-weight: 600;
+        }
+        .markdown-body blockquote {
+          border-left: 0.25em solid #d0d7de;
+          padding: 0.5em 1em;
+          color: #656d76;
+          margin: 0 0 16px 0;
+          background-color: #f6f8fa;
+          border-radius: 4px;
+        }
+        .markdown-body table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+          display: block;
+          overflow-x: auto;
+        }
+        .markdown-body th, .markdown-body td {
+          border: 1px solid #d0d7de;
+          padding: 8px 13px;
+          font-size: 0.9rem;
+        }
+        .markdown-body th {
+          background-color: #f6f8fa;
+          font-weight: 600;
+          color: #1f2328;
+        }
+        .markdown-body tr:hover {
+          background-color: #f6f8fa;
+        }
+        .markdown-body tr:nth-child(2n) {
+          background-color: #f6f8fa;
+        }
+        .markdown-body pre {
+          background-color: #f6f8fa;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          padding: 16px;
+          margin: 16px 0;
+          overflow-x: auto;
+          font-family: monospace;
+          font-size: 0.85rem;
+        }
+        .markdown-body code {
+          background-color: rgba(175, 184, 193, 0.2);
+          color: #24292f;
+          padding: 0.2em 0.4em;
+          border-radius: 6px;
+          font-family: ui-monospace, SFMono-Regular, SF Pro Text, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+          font-size: 85%;
+        }
+         .markdown-body pre code {
+          background-color: transparent !important;
+          color: inherit !important;
+          padding: 0 !important;
+          border-radius: 0 !important;
+          font-size: 100%;
+        }
+        /* Prism GitHub Light Theme Token Styles */
+        .token.comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+          color: #6a737d !important;
+          font-style: italic;
+        }
+        .token.namespace {
+          opacity: .7;
+        }
+        .token.string,
+        .token.attr-value {
+          color: #032f62 !important;
+        }
+        .token.punctuation {
+          color: #24292e !important;
+        }
+        .token.operator {
+          color: #d73a49 !important;
+        }
+        .token.entity,
+        .token.url,
+        .token.symbol,
+        .token.number,
+        .token.boolean,
+        .token.variable,
+        .token.constant,
+        .token.property,
+        .token.regex,
+        .token.inserted {
+          color: #005cc5 !important;
+        }
+        .token.atrule,
+        .token.keyword,
+        .token.attr-name,
+        .token.selector {
+          color: #d73a49 !important;
+          font-weight: 600;
+        }
+        .token.function,
+        .token.class-name,
+        .token.classname {
+          color: #6f42c1 !important;
+        }
+        .token.deleted,
+        .token.tag {
+          color: #d73a49 !important;
+        }
+        .token.important,
+        .token.bold {
+          font-weight: bold;
+        }
+        .token.italic {
+          font-style: italic;
+        }
+        .markdown-body ul {
+          list-style-type: disc;
+          padding-left: 2rem;
+          margin-bottom: 16px;
+        }
+        .markdown-body ol {
+          list-style-type: decimal;
+          padding-left: 2rem;
+          margin-bottom: 16px;
+        }
+        .markdown-body li {
+          font-size: 0.95rem;
+          margin-top: 0.25em;
+          color: #24292f;
+        }
+        .markdown-body hr {
+          height: 0.25em;
+          padding: 0;
+          margin: 24px 0;
+          background-color: #d0d7de;
+          border: 0;
         }
         .ease-workspace {
           transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);

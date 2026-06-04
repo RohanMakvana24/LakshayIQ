@@ -81,7 +81,7 @@ function UniversityPage() {
   }, [courses, searchQuery, sortBy]);
 
   const totalSemesters = useMemo(() => {
-    return courses.reduce((acc, c) => acc + (c.total_semesters || 0), 0);
+    return courses.reduce((acc: number, c: any) => acc + (c.total_semesters || 0), 0);
   }, [courses]);
 
   return (

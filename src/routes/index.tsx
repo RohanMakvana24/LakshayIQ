@@ -464,7 +464,7 @@ function Landing() {
               }`}>
               <Link to="/login">Log In</Link>
             </Button>
-            <Button asChild className="rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition-all active:scale-95">
+            <Button asChild className="hidden sm:inline-flex rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition-all active:scale-95">
               <Link to="/signup">Get Started</Link>
             </Button>
           </div>

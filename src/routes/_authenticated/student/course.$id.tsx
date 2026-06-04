@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { ArrowRight, Clock, GraduationCap, Layers, Sparkles, BookOpen, Star, Zap } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
+import { ShareCourse } from "@/components/share-course";
+
 
 export const Route = createFileRoute("/_authenticated/student/course/$id")({
   loader: async ({ params }) => {
@@ -53,7 +55,7 @@ function CoursePage() {
   const { course, university, semesters } = Route.useLoaderData();
 
   // Calculate total subjects across all semesters for additional stats
-  const totalSubjects = semesters.reduce((acc, s) => acc + (s.subjects?.length || 0), 0);
+  const totalSubjects = semesters.reduce((acc: number, s: any) => acc + (s.subjects?.length || 0), 0);
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -97,7 +99,7 @@ function CoursePage() {
               </div>
 
               {/* Right: Stats Badges */}
-              <div className="flex flex-wrap gap-2 shrink-0">
+              <div className="flex flex-wrap gap-2 shrink-0 items-center">
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/20 flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5 text-emerald-300" />
                   <span className="text-xs font-medium text-white">{course.duration || "3 Years"}</span>
@@ -110,6 +112,7 @@ function CoursePage() {
                   <BookOpen className="h-3.5 w-3.5 text-emerald-300" />
                   <span className="text-xs font-medium text-white">{totalSubjects} Subjects</span>
                 </div>
+                <ShareCourse courseName={course.name} courseId={course.id} />
               </div>
             </div>
           </div>
@@ -140,7 +143,7 @@ function CoursePage() {
           </div>
         ) : (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {semesters.map((semester, idx) => {
+            {semesters.map((semester: any, idx: number) => {
               const subjectsCount = semester.subjects?.length || 0;
               // Alternate gradient for visual variety
               const gradientClass = idx % 2 === 0 
@@ -193,7 +196,7 @@ function CoursePage() {
                     <div className="h-0.5 bg-slate-100 w-full">
                       <div 
                         className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500 group-hover:w-full" 
-                        style={{ width: `${(subjectsCount / (Math.max(...semesters.map(s => s.subjects?.length || 0), 1))) * 100}%` }}
+                        style={{ width: `${(subjectsCount / (Math.max(...semesters.map((s: any) => s.subjects?.length || 0), 1))) * 100}%` }}
                       />
                     </div>
                   </Card>
