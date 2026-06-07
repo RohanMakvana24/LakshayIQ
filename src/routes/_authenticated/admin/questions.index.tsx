@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { useSupabaseTable } from "@/hooks/use-supabase-table";
+import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Edit3, Loader2, BookOpen, Calendar, Layers, FileText, School, GraduationCap, BookMarked, Filter, RefreshCcw, HelpCircle } from "lucide-react";
+import { Plus, Trash2, Edit3, Loader2, Calendar, Layers, FileText, School, GraduationCap, BookMarked, Filter, RefreshCcw, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -37,8 +38,8 @@ export const Route = createFileRoute("/_authenticated/admin/questions/")({
 });
 
 function ManageQuestions() {
-  const { data, loading, remove, update } = useSupabaseTable<Row>("important_questions");
-  
+  const { data, loading, remove, update, refresh } = useSupabaseTable<Row>("important_questions");
+
   // relational master tables
   const { data: universities } = useSupabaseTable<University>("universities", { orderBy: "name" });
   const { data: courses } = useSupabaseTable<Course>("courses", { orderBy: "name" });
@@ -59,6 +60,32 @@ function ManageQuestions() {
   const [filterSemestersList, setFilterSemestersList] = useState<Sem[]>([]);
   const [filterSubjectsList, setFilterSubjectsList] = useState<Subject[]>([]);
   const [filterUnitsList, setFilterUnitsList] = useState<Unit[]>([]);
+
+  // Selection and bulk deletion states (declared after filters to avoid TDZ)
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Clear selection whenever any filter changes
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [filterUniversity, filterCourse, filterSemester, filterSubject, filterUnit, filterMarks, filterCategory]);
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`Are you sure you want to delete the ${selectedIds.length} selected question(s)?`)) return;
+    try {
+      const { error } = await supabase.from("important_questions").delete().in("id", selectedIds);
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success(`Successfully deleted ${selectedIds.length} question(s)`);
+        setSelectedIds([]);
+        refresh();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete selected questions.");
+    }
+  };
 
   // Edit / Update Dialog States
   const [selectedQuestion, setSelectedQuestion] = useState<Row | null>(null);
@@ -269,17 +296,29 @@ function ManageQuestions() {
   // Submit edit specifications
   const handleCommitUpdates = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedQuestion || !editUnitId || !editQuestionText.trim()) return;
+    if (!selectedQuestion || !editUnitId) return;
 
     setUpdating(true);
     try {
+      let text = editQuestionText.trim();
+      const fileUrl = editQuestionFileUrl.trim() || null;
+      if (!text && fileUrl) {
+        text = fileUrl.split("/").pop()?.replace(/\.md$/i, "").replace(/[-_]/g, " ") || "Important Question File";
+        text = text.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") + " File";
+      }
+      if (!text) {
+        toast.error("Please enter a question prompt or attachment/file URL.");
+        setUpdating(false);
+        return;
+      }
+
       const ok = await update(selectedQuestion.id, {
         unit_id: editUnitId,
-        question_text: editQuestionText.trim(),
+        question_text: text,
         marks: Number(editMarks),
         category: editCategory,
         year: editYear === "" ? null : Number(editYear),
-        question_file_url: editQuestionFileUrl || null,
+        question_file_url: fileUrl,
       });
       if (ok) setIsModalOpen(false);
     } catch (err) {
@@ -306,6 +345,38 @@ function ManageQuestions() {
   });
 
   const columns: DataTableColumn<Row>[] = [
+    {
+      key: "select",
+      header: (
+        <input
+          type="checkbox"
+          checked={filteredQuestions.length > 0 && filteredQuestions.every(q => selectedIds.includes(q.id))}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedIds(filteredQuestions.map(q => q.id));
+            } else {
+              setSelectedIds([]);
+            }
+          }}
+          className="h-4 w-4 rounded border-slate-300 text-neutral-900 focus:ring-neutral-900 cursor-pointer"
+        />
+      ),
+      className: "w-10 px-4",
+      accessor: (r) => (
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(r.id)}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedIds(prev => [...prev, r.id]);
+            } else {
+              setSelectedIds(prev => prev.filter(id => id !== r.id));
+            }
+          }}
+          className="h-4 w-4 rounded border-slate-300 text-neutral-900 focus:ring-neutral-900 cursor-pointer"
+        />
+      )
+    },
     { 
       key: "q", 
       header: "Question Prompt", 
@@ -602,6 +673,19 @@ function ManageQuestions() {
             columns={columns} 
             searchableKeys={["question_text"]} 
             rowKey={(r) => r.id} 
+            toolbar={
+              selectedIds.length > 0 && (
+                <Button
+                  onClick={handleBulkDelete}
+                  variant="destructive"
+                  size="sm"
+                  className="h-9 px-4 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white border-none shadow-sm animate-in fade-in slide-in-from-right-2 duration-200"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete Selected ({selectedIds.length})
+                </Button>
+              )
+            }
           />
         </div>
       ) : (
@@ -717,14 +801,15 @@ function ManageQuestions() {
             </div>
 
             {/* Question Text Prompt */}
+            {/* Question Text Prompt */}
             <div className="space-y-1">
-              <Label className="text-[10px] font-bold text-slate-700">Question Text *</Label>
+              <Label className="text-[10px] font-bold text-slate-700">Question Text / Description</Label>
               <Textarea 
-                required 
                 rows={3}
                 value={editQuestionText} 
                 onChange={(e) => setEditQuestionText(e.target.value)} 
                 className="border-slate-200 rounded-lg text-xs focus-visible:ring-0 focus-visible:border-slate-400 bg-white"
+                placeholder="Write exam question prompt here (optional if attachment URL is provided)"
               />
             </div>
 
@@ -776,7 +861,7 @@ function ManageQuestions() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold text-slate-700">Attachment File URL</Label>
+                <Label className="text-[10px] font-bold text-slate-700">Attachment / GitHub Raw .md URL</Label>
                 <Input 
                   placeholder="Optional"
                   value={editQuestionFileUrl} 

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword, X, Shield, Lock, Maximize, Loader2 } from "lucide-react";
+import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword, X, Shield, Lock, Maximize, Loader2, HelpCircle } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -207,8 +207,40 @@ function UnitPage() {
   const isNotionMaterial = activePreview.type === "material" && activePreview.url.includes("notion");
   const isClickUpMaterial = activePreview.type === "material" && activePreview.url.includes("clickup.com");
   const isMarkdownMaterial = activePreview.type === "material" && activePreview.url.includes(".md");
+  
+  const [activeMarksTab, setActiveMarksTab] = useState<number>(1);
+  const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null);
+
+  const dynamicQuestions = (unit.important_questions || []) as any[];
+
+  // Group dynamic questions by marks: 1, 2, 3, 5
+  const groupedQuestions: Record<number, any[]> = {
+    1: [],
+    2: [],
+    3: [],
+    5: [],
+  };
+
+  dynamicQuestions.forEach((q) => {
+    const m = q.marks || 1;
+    if (groupedQuestions[m] !== undefined) {
+      groupedQuestions[m].push(q);
+    }
+  });
+
+  const activeQuestions = groupedQuestions[activeMarksTab] || [];
+  
+  const totalQuestions = Object.values(groupedQuestions).reduce(
+    (acc, qs) => acc + qs.length,
+    0
+  );
+
   const isCurrentIframeLoading = activePreview.type === "material" && activePreview.url
-    ? (isMarkdownMaterial ? isMarkdownLoading : !loadedIframes[activePreview.url])
+    ? (isMarkdownMaterial 
+        ? isMarkdownLoading 
+        : (unit.unit_materials?.some((m: any) => m.file_url === activePreview.url)
+            ? !loadedIframes[activePreview.url]
+            : isIframeLoading))
     : isIframeLoading;
   const isWorkspaceTransitioning = isFullscreenEntering || isFullscreenExiting;
 
@@ -701,56 +733,153 @@ function UnitPage() {
               )}
             </div>
 
-            {/* Important Questions Portal Card */}
-            <Card className="overflow-hidden border border-slate-200 bg-white rounded-2xl p-5 shadow-md relative group">
-              {/* Subtle brand ambient glow background */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all duration-300 pointer-events-none" />
-
-              <div className="relative z-10 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold tracking-widest text-emerald-600 uppercase flex items-center gap-1.5">
-                      <Sparkles className="h-3 w-3 animate-pulse text-emerald-500" /> Syllabus Focus Active
-                    </span>
-                    <h3 className="text-sm font-black tracking-tight text-slate-800 uppercase flex items-center gap-1.5">
-                      📚 Important Questions Bank
-                    </h3>
+            {/* Important Questions Section */}
+            <div className="space-y-4 border-t border-slate-100 pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center animate-pulse">
+                    <Sparkles className="h-4 w-4 text-emerald-600" />
                   </div>
-                  <Badge variant="secondary" className="bg-emerald-50 border-emerald-100 text-emerald-700 font-mono text-[9px] uppercase tracking-wider">
-                    4 Tiers
+                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                    Important Questions
+                  </h2>
+                  <Badge variant="secondary" className="text-[10px] bg-emerald-50 border border-emerald-200/50 text-emerald-700 font-mono">
+                    {totalQuestions} Files/Qs
                   </Badge>
                 </div>
-
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Get exam-ready with high-yield syllabus questions. Explore important topics sorted by standard exam weightage (1, 2, 3, and 5 Marks).
-                </p>
-
-                <div className="grid grid-cols-2 gap-2 pt-1 text-[10px] font-semibold text-slate-500">
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center gap-2">
-                    <span className="text-sm">📖</span>
-                    <div>
-                      <p className="text-slate-800 font-bold">Curated List</p>
-                      <p className="text-[9px] text-slate-400">1 to 5 Marks</p>
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center gap-2">
-                    <span className="text-sm">🎯</span>
-                    <div>
-                      <p className="text-slate-800 font-bold">Target Study</p>
-                      <p className="text-[9px] text-slate-400">Syllabus blueprint</p>
-                    </div>
-                  </div>
-                </div>
-
-                <Link
-                  to={`/student/arena/${unit.id}`}
-                  className="w-full h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-sm transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 text-center"
-                >
-                  <Star className="h-3.5 w-3.5 fill-white" />
-                  VIEW IMPORTANT QUESTIONS
-                </Link>
               </div>
-            </Card>
+
+              {/* Difficulty Level Tabs */}
+              <div className="grid grid-cols-4 gap-1.5 mb-2">
+                {[
+                  { value: 1, label: "1 Mark", emoji: "🌱", color: "emerald", bg: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                  { value: 2, label: "2 Marks", emoji: "⚡", color: "blue", bg: "bg-blue-50 text-blue-700 border-blue-200" },
+                  { value: 3, label: "3 Marks", emoji: "🎯", color: "purple", bg: "bg-purple-50 text-purple-700 border-purple-200" },
+                  { value: 5, label: "5 Marks", emoji: "🏆", color: "amber", bg: "bg-amber-50 text-amber-700 border-amber-200" }
+                ].map((opt) => {
+                  const isActive = activeMarksTab === opt.value;
+                  const count = groupedQuestions[opt.value]?.length || 0;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => setActiveMarksTab(opt.value)}
+                      className={cn(
+                        "py-1.5 px-1 rounded-lg border text-center transition-all flex flex-col items-center justify-center gap-0.5",
+                        isActive 
+                          ? `${opt.bg} font-bold ring-1 ring-emerald-500/20 scale-[1.02] shadow-sm` 
+                          : "bg-white border-slate-200 hover:bg-slate-50 text-slate-500"
+                      )}
+                    >
+                      <span className="text-xs">{opt.emoji}</span>
+                      <span className="text-[9px] font-bold leading-none">{opt.label}</span>
+                      <span className={cn("text-[8px] font-semibold mt-0.5 px-1 rounded-full", isActive ? "bg-white/60" : "bg-slate-100 text-slate-400")}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Active Questions list */}
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                {activeQuestions.length > 0 ? (
+                  activeQuestions.map((q, idx) => {
+                    const isSelected = selectedQuestion === q.id;
+                    const hasFile = !!q.question_file_url;
+                    const isPdf = q.question_file_url?.toLowerCase().includes(".pdf");
+                    const isMd = q.question_file_url?.toLowerCase().includes(".md");
+                    const isPreviewActive = activePreview.url === q.question_file_url;
+
+                    return (
+                      <Card
+                        key={q.id}
+                        onClick={() => {
+                          setSelectedQuestion(isSelected ? null : q.id);
+                          if (hasFile && q.question_file_url) {
+                            setActivePreview({
+                              type: "material",
+                              title: q.question_text,
+                              url: q.question_file_url
+                            });
+                          }
+                        }}
+                        className={cn(
+                          "p-3 border rounded-xl transition-all cursor-pointer bg-white hover:shadow-md",
+                          isPreviewActive && hasFile
+                            ? "border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500/20"
+                            : isSelected
+                              ? "border-slate-300 bg-slate-50/30"
+                              : "border-slate-200"
+                        )}
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <div className={cn(
+                            "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-extrabold",
+                            isPreviewActive && hasFile
+                              ? "bg-emerald-600 text-white"
+                              : "bg-slate-100 text-slate-500"
+                          )}>
+                            {hasFile ? (
+                              isMd ? "MD" : isPdf ? "PDF" : "📄"
+                            ) : (
+                              idx + 1
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                              <Badge variant="outline" className="text-[8px] font-mono uppercase bg-slate-50 px-1 border-slate-200 text-slate-500 leading-none py-0.5">
+                                {q.category}
+                              </Badge>
+                              {q.year && (
+                                <span className="text-[8px] font-mono font-bold text-slate-400 bg-slate-100 px-1 rounded">
+                                  Year {q.year}
+                                </span>
+                              )}
+                              {hasFile && (
+                                <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded flex items-center gap-0.5">
+                                  <Lock className="h-2 w-2" /> Secure File
+                                </span>
+                              )}
+                            </div>
+                            <p className="font-semibold text-xs sm:text-sm text-slate-800 leading-snug">
+                              {q.question_text}
+                            </p>
+
+                            {/* Detailed Context expanded on click */}
+                            {isSelected && (
+                              <div className="mt-2 pt-2 border-t border-slate-100/70 text-[10px] text-slate-500 space-y-1">
+                                <p>
+                                  <span className="font-bold text-emerald-600">Category:</span>{" "}
+                                  <span className="capitalize">{q.category}</span>
+                                </p>
+                                {q.year && (
+                                  <p>
+                                    <span className="font-bold text-slate-700">Exam year:</span> {q.year}
+                                  </p>
+                                )}
+                                {hasFile ? (
+                                  <p className="text-emerald-600 font-bold flex items-center gap-0.5">
+                                    <Sparkles className="h-2.5 w-2.5 animate-pulse" /> Click to open secure preview in right panel
+                                  </p>
+                                ) : (
+                                  <p className="text-slate-400">
+                                    No attachment file for this question entry.
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <ChevronRight className={cn("h-4 w-4 text-slate-400 shrink-0 self-center transition-transform", isSelected && "rotate-90")} />
+                        </div>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <EmptyStateRow icon={HelpCircle} message={`No questions/files for ${activeMarksTab} Marks`} />
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Preview Panel */}
@@ -928,59 +1057,55 @@ function UnitPage() {
                         />
                       )}
 
-                      {/* For Material Preview: Pre-rendered persistent cached iframes */}
-                      {unit.unit_materials?.map((material: any) => {
-                        const isActive = activePreview.type === "material" && activePreview.url === material.file_url;
-                        
-                        if (material.file_url?.includes(".md")) {
-                          if (!isActive) return null;
-                          return (
-                            <div
-                              key={`material-md-${material.id}`}
-                              className="absolute inset-0 z-10 overflow-y-auto px-5 py-6 md:px-8 md:py-10 bg-white text-[#24292f] font-sans selection:bg-[#c8e1ff] selection:text-[#24292f] select-none scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent markdown-body animate-workspace-reveal"
-                            >
-                              <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={{
-                                  code(props) {
-                                    const { className, children } = props;
-                                    const match = /language-(\w+)/.exec(className || "");
-                                    const isMermaid = match && match[1] === "mermaid";
-                                    if (isMermaid) {
-                                      return <MermaidDiagram chart={String(children).replace(/\n$/, "")} />;
-                                    }
-                                    if (className) {
-                                      const lang = match ? match[1] : "cpp";
-                                      let highlighted = String(children);
-                                      try {
-                                        const grammar = Prism.languages[lang] || Prism.languages.cpp || Prism.languages.clike;
-                                        highlighted = Prism.highlight(String(children).replace(/\n$/, ""), grammar, lang);
-                                      } catch (err) {
-                                        console.error("Prism highlighting error:", err);
-                                      }
-                                      return (
-                                        <pre className="bg-[#f6f8fa] border border-[#d0d7de] rounded-lg p-4 my-4 overflow-x-auto font-mono text-sm text-[#24292f] select-text">
-                                          <code 
-                                            className={className}
-                                            dangerouslySetInnerHTML={{ __html: highlighted }}
-                                          />
-                                        </pre>
-                                      );
-                                    }
-                                    return (
-                                      <code className="bg-[rgba(175,184,193,0.2)] text-[#24292f] px-1.5 py-0.5 rounded font-mono text-sm">
-                                        {children}
-                                      </code>
-                                    );
+                      {/* Markdown Preview Overlay (for both study materials and important questions) */}
+                      {activePreview.type === "material" && activePreview.url?.includes(".md") && (
+                        <div
+                          className="absolute inset-0 z-10 overflow-y-auto px-5 py-6 md:px-8 md:py-10 bg-white text-[#24292f] font-sans selection:bg-[#c8e1ff] selection:text-[#24292f] select-none scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent markdown-body animate-workspace-reveal"
+                        >
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              code(props) {
+                                const { className, children } = props;
+                                const match = /language-(\w+)/.exec(className || "");
+                                const isMermaid = match && match[1] === "mermaid";
+                                if (isMermaid) {
+                                  return <MermaidDiagram chart={String(children).replace(/\n$/, "")} />;
+                                }
+                                if (className) {
+                                  const lang = match ? match[1] : "cpp";
+                                  let highlighted = String(children);
+                                  try {
+                                    const grammar = Prism.languages[lang] || Prism.languages.cpp || Prism.languages.clike;
+                                    highlighted = Prism.highlight(String(children).replace(/\n$/, ""), grammar, lang);
+                                  } catch (err) {
+                                    console.error("Prism highlighting error:", err);
                                   }
-                                }}
-                              >
-                                {markdownContent}
-                              </ReactMarkdown>
-                            </div>
-                          );
-                        }
+                                  return (
+                                    <pre className="bg-[#f6f8fa] border border-[#d0d7de] rounded-lg p-4 my-4 overflow-x-auto font-mono text-sm text-[#24292f] select-text">
+                                      <code 
+                                        className={className}
+                                        dangerouslySetInnerHTML={{ __html: highlighted }}
+                                      />
+                                    </pre>
+                                  );
+                                }
+                                return (
+                                  <code className="bg-[rgba(175,184,193,0.2)] text-[#24292f] px-1.5 py-0.5 rounded font-mono text-sm">
+                                    {children}
+                                  </code>
+                                );
+                              }
+                            }}
+                          >
+                            {markdownContent}
+                          </ReactMarkdown>
+                        </div>
+                      )}
 
+                      {/* For Material Preview: Pre-rendered persistent cached non-markdown iframes */}
+                      {unit.unit_materials?.filter((m: any) => !m.file_url?.includes(".md")).map((material: any) => {
+                        const isActive = activePreview.type === "material" && activePreview.url === material.file_url;
                         const isNotion = material.file_url?.includes("notion");
                         const isClickUp = material.file_url?.includes("clickup.com");
                         const isAppFlowy = material.file_url?.includes("appflowy");
@@ -1003,6 +1128,23 @@ function UnitPage() {
                           />
                         );
                       })}
+
+                      {/* For Important Questions / Files: Dynamic iframe viewer fallback for non-markdown attachments */}
+                      {activePreview.type === "material" && 
+                       !activePreview.url?.includes(".md") && 
+                       !unit.unit_materials?.some((m: any) => m.file_url === activePreview.url) && (
+                        <iframe
+                          key={`important-question-frame`}
+                          title={activePreview.title}
+                          src={formatEmbedUrl(activePreview.url, "material")}
+                          onLoad={() => setIsIframeLoading(false)}
+                          className={cn(
+                            "embed-frame border-0 embed-frame-ready z-10",
+                            isWorkspaceTransitioning && "embed-frame-transitioning"
+                          )}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        />
+                      )}
 
                       {/* Dynamic Security Watermark Overlay */}
                       {activePreview.type === "material" && (

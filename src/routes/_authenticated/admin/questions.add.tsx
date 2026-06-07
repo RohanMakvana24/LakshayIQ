@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Plus, Trash2, School, GraduationCap, Calendar, BookMarked, Layers, Sparkles, HelpCircle, ClipboardPaste, CheckCircle2, X } from "lucide-react";
+import { ArrowLeft, Loader2, School, GraduationCap, Calendar, BookMarked, Layers, HelpCircle, FileText } from "lucide-react";
 import { useSupabaseTable } from "@/hooks/use-supabase-table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -49,54 +49,11 @@ function AddQuestion() {
   const [filteredUnits, setFilteredUnits] = useState<Unit[]>([]);
 
   // Core Question Fields
-  const [questions, setQuestions] = useState<string[]>([""]);
+  const [title, setTitle] = useState("");
   const [category, setCategory] = useState("important");
   const [marks, setMarks] = useState("1");
   const [year, setYear] = useState<number | "">("");
   const [questionFileUrl, setQuestionFileUrl] = useState("");
-
-  // ── Bulk Import State ─────────────────────────────────
-  const [bulkText, setBulkText] = useState("");
-  const [bulkParsed, setBulkParsed] = useState<string[]>([]);
-  const [bulkError, setBulkError] = useState("");
-  const [showBulkImport, setShowBulkImport] = useState(false);
-
-  /** Parse numbered question list like:
-   *  1.\nQuestion text here\n\n2.\nAnother question\n...
-   */
-  const parseBulkText = (raw: string): string[] => {
-    // Split on lines starting with a number followed by '.' (e.g. '1.' or '10.')
-    const parts = raw
-      .split(/\n?\s*\d+\.\s*\n?/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-    return parts;
-  };
-
-  const handleBulkImport = () => {
-    const parsed = parseBulkText(bulkText);
-    if (parsed.length === 0) {
-      setBulkError("No questions detected. Make sure each question starts with a number like \"1.\" \"2.\" etc.");
-      return;
-    }
-    setBulkError("");
-    setBulkParsed(parsed);
-  };
-
-  const applyBulkImport = () => {
-    if (bulkParsed.length === 0) return;
-    setQuestions(bulkParsed);
-    setBulkText("");
-    setBulkParsed([]);
-    setShowBulkImport(false);
-  };
-
-  const cancelBulkImport = () => {
-    setBulkText("");
-    setBulkParsed([]);
-    setBulkError("");
-    setShowBulkImport(false);
-  };
 
   // 1. University changes -> filter courses
   useEffect(() => {
@@ -155,54 +112,47 @@ function AddQuestion() {
     setUnitId("");
   }, [subjectId, allUnits]);
 
-  // Questions dynamic fields management
-  const addQuestionField = () => setQuestions([...questions, ""]);
-  const removeQuestionField = (index: number) => {
-    if (questions.length > 1) {
-      setQuestions(questions.filter((_, idx) => idx !== index));
-    }
-  };
-  const handleQuestionChange = (index: number, val: string) => {
-    const updated = [...questions];
-    updated[index] = val;
-    setQuestions(updated);
-  };
-
-  // Submit and bulk insert questions
+  // Submit and insert question file
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!unitId) {
       toast.error("Please select a target Unit.");
       return;
     }
-    const validQuestions = questions.filter(q => q.trim() !== "");
-    if (validQuestions.length === 0) {
-      toast.error("Please enter at least one question.");
+    const fileUrl = questionFileUrl.trim();
+    if (!fileUrl) {
+      toast.error("Please enter a GitHub Raw Markdown URL.");
       return;
+    }
+
+    let finalTitle = title.trim();
+    if (!finalTitle) {
+      finalTitle = fileUrl.split("/").pop()?.replace(/\.md$/i, "").replace(/[-_]/g, " ") || "Important Questions File";
+      finalTitle = finalTitle.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") + " File";
     }
 
     setSaving(true);
     try {
-      const payload = validQuestions.map(q => ({
+      const payload = [{
         unit_id: unitId,
-        question_text: q.trim(),
+        question_text: finalTitle,
         category,
         year: year === "" ? null : Number(year),
-        question_file_url: questionFileUrl || null,
+        question_file_url: fileUrl,
         marks: Number(marks),
-      }));
+      }];
 
       const { error } = await supabase.from("important_questions").insert(payload);
 
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success(`Successfully saved ${validQuestions.length} question(s)`);
+        toast.success("Successfully saved Important Questions File URL");
         nav({ to: "/admin/questions" });
       }
     } catch (err) {
       console.error(err);
-      toast.error("An error occurred while saving questions.");
+      toast.error("An error occurred while saving.");
     } finally {
       setSaving(false);
     }
@@ -233,14 +183,14 @@ function AddQuestion() {
             type="button"
             size="sm"
             onClick={handleSubmit}
-            disabled={saving || !unitId || questions.filter(q => q.trim() !== "").length === 0}
+            disabled={saving || !unitId || !questionFileUrl.trim()}
             className="bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 rounded-xl text-xs font-semibold px-5 shadow-sm transition-all"
           >
             {saving ? (
               <span className="flex items-center gap-1.5">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Deploying Questions...
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Deploying File...
               </span>
-            ) : `Deploy ${questions.filter(q => q.trim() !== "").length} Question(s)`}
+            ) : "Deploy Questions File"}
           </Button>
         </div>
       </div>
@@ -352,149 +302,40 @@ function AddQuestion() {
 
               <div className="border-t border-slate-100 my-2 pt-2" />
 
-              {/* STEP 3: Bulk Import + Multiple Question Entries */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
+              {/* STEP 3: Questions File Details */}
+              <div className="space-y-4">
+                <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
-                    <span>Questions Pool *</span>
+                    <FileText className="h-3.5 w-3.5 text-slate-400" />
+                    <span>Questions File Title / Description (Optional)</span>
                   </Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowBulkImport((v) => !v)}
-                      className="h-7 text-[10px] rounded-lg border-violet-200 hover:border-violet-500 text-violet-700 bg-violet-50/40 px-2.5 flex items-center gap-1"
-                    >
-                      <ClipboardPaste className="h-3 w-3" />
-                      Bulk Paste
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addQuestionField}
-                      className="h-7 text-[10px] rounded-lg border-emerald-200 hover:border-emerald-500 text-emerald-700 bg-emerald-50/20 px-2.5 flex items-center gap-1"
-                    >
-                      <Plus className="h-3 w-3" /> Add Question
-                    </Button>
-                  </div>
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Unit 1 Important Questions (leave blank to auto-derive from filename)"
+                    className="h-10 border-slate-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-slate-900 bg-white"
+                  />
                 </div>
 
-                {/* ── Bulk Import Panel ───────────────────── */}
-                {showBulkImport && (
-                  <div className="rounded-xl border border-violet-200 bg-violet-50/30 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-bold text-violet-800">Bulk Paste Questions</p>
-                        <p className="text-[10px] text-violet-500 mt-0.5">
-                          Paste your numbered list below — questions will be auto-detected
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={cancelBulkImport}
-                        className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-violet-100 text-violet-400 transition-colors"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-
-                    {/* Format hint */}
-                    <div className="rounded-lg bg-white border border-violet-100 px-3 py-2 text-[10px] text-slate-500 font-mono leading-relaxed">
-                      <span className="text-violet-400 font-bold block mb-1">Expected Format:</span>
-                      1.{"\n"}Explain the concept of class...{"\n\n"}2.{"\n"}Explain member variables...
-                    </div>
-
-                    {/* Paste textarea */}
-                    <Textarea
-                      value={bulkText}
-                      onChange={(e) => { setBulkText(e.target.value); setBulkError(""); setBulkParsed([]); }}
-                      placeholder={`Paste your numbered questions here...\n\n1.\nExplain the concept of class...\n\n2.\nExplain member variables...`}
-                      rows={8}
-                      className="text-xs border-violet-200 focus-visible:ring-0 focus-visible:border-violet-500 rounded-lg bg-white font-mono resize-y"
-                    />
-
-                    {bulkError && (
-                      <p className="text-[11px] text-rose-600 bg-rose-50 rounded-lg px-3 py-2 border border-rose-100">{bulkError}</p>
-                    )}
-
-                    {/* Parsed preview */}
-                    {bulkParsed.length > 0 && (
-                      <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 space-y-2">
-                        <p className="text-[10px] font-bold text-emerald-700 flex items-center gap-1">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          {bulkParsed.length} question{bulkParsed.length !== 1 ? "s" : ""} detected — preview:
-                        </p>
-                        <div className="space-y-1 max-h-32 overflow-y-auto">
-                          {bulkParsed.map((q, i) => (
-                            <div key={i} className="text-[10px] text-slate-700 bg-white rounded-md px-2 py-1.5 border border-emerald-100 flex gap-2">
-                              <span className="font-black text-emerald-600 shrink-0">{i + 1}.</span>
-                              <span className="line-clamp-2 leading-snug">{q}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleBulkImport}
-                        disabled={!bulkText.trim()}
-                        className="flex-1 h-8 text-xs rounded-lg border-violet-300 text-violet-700 hover:bg-violet-100"
-                      >
-                        Parse Questions
-                      </Button>
-                      {bulkParsed.length > 0 && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={applyBulkImport}
-                          className="flex-1 h-8 text-xs rounded-lg bg-violet-600 hover:bg-violet-700 text-white"
-                        >
-                          ✓ Fill {bulkParsed.length} Questions
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-3.5 max-h-[350px] overflow-y-auto pr-1">
-                  {questions.map((q, idx) => (
-                    <div key={idx} className="flex gap-2 items-start bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-                      <span className="h-7 w-7 rounded-lg bg-slate-200/60 text-slate-600 text-xs font-extrabold flex items-center justify-center shrink-0 mt-1">
-                        {idx + 1}
-                      </span>
-                      <Textarea
-                        required
-                        rows={2}
-                        value={q}
-                        onChange={(e) => handleQuestionChange(idx, e.target.value)}
-                        placeholder="Write exam question prompt here..."
-                        className="text-xs border-slate-200 focus-visible:ring-0 focus-visible:border-slate-900 rounded-lg min-h-[50px] bg-white"
-                      />
-                      {questions.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeQuestionField(idx)}
-                          className="h-8 w-8 text-rose-500 hover:text-rose-700 hover:bg-rose-50 shrink-0 mt-1 rounded-lg"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    <FileText className="h-3.5 w-3.5 text-slate-400" />
+                    <span>GitHub Raw Markdown (.md) URL / Attachment URL *</span>
+                  </Label>
+                  <Input
+                    value={questionFileUrl}
+                    onChange={(e) => setQuestionFileUrl(e.target.value)}
+                    placeholder="https://raw.githubusercontent.com/.../questions.md"
+                    className="h-10 border-slate-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-slate-900 bg-white"
+                  />
+                  <span className="text-[10px] text-slate-400 leading-normal block pl-1">
+                    Please provide the raw URL. Typically starts with <code>https://raw.githubusercontent.com/</code> or similar file hosting address.
+                  </span>
                 </div>
               </div>
 
-              {/* STEP 4: Parameters (Marks, Category, Year, File Url) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* STEP 4: Parameters (Marks, Category, Year) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-700">Marks *</Label>
                   <Select value={marks} onValueChange={setMarks}>
@@ -523,9 +364,7 @@ function AddQuestion() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-700">Exam Year</Label>
                   <Input
@@ -535,16 +374,6 @@ function AddQuestion() {
                     value={year}
                     onChange={(e) => setYear(e.target.value === "" ? "" : Number(e.target.value))}
                     placeholder="e.g. 2024"
-                    className="h-10 border-slate-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-slate-900 bg-white"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-slate-700">Question Attachment URL</Label>
-                  <Input
-                    value={questionFileUrl}
-                    onChange={(e) => setQuestionFileUrl(e.target.value)}
-                    placeholder="https://example.com/asset.pdf"
                     className="h-10 border-slate-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-slate-900 bg-white"
                   />
                 </div>
@@ -577,36 +406,48 @@ function AddQuestion() {
 
             {/* Questions list simulation */}
             <div className="space-y-2.5 max-h-[220px] overflow-y-auto">
-              {questions.filter(q => q.trim() !== "").length > 0 ? (
-                questions.filter(q => q.trim() !== "").map((q, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 border border-slate-200/70 rounded-xl space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="inline-flex items-center gap-1 text-[8px] uppercase font-bold tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md">
-                        {category} question
+              {questionFileUrl.trim() !== "" ? (
+                <div className="p-4 bg-slate-50 border border-slate-200/70 rounded-xl space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1 text-[8px] uppercase font-bold tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md">
+                      {category} file
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[8px] font-mono font-bold text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
+                        Markdown (.md)
                       </span>
                       {year && (
                         <span className="text-[8px] font-mono font-bold text-slate-400">Year: {year}</span>
                       )}
                     </div>
+                  </div>
+
+                  <div className="space-y-1">
                     <p className="text-xs font-bold text-slate-800 leading-snug">
-                      {q}
+                      {title.trim() || (() => {
+                        let autoTitle = questionFileUrl.split("/").pop()?.replace(/\.md$/i, "").replace(/[-_]/g, " ") || "Important Questions File";
+                        return autoTitle.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") + " File";
+                      })()}
+                    </p>
+                    <p className="text-[9px] text-slate-400 truncate leading-none">
+                      Url: {questionFileUrl}
                     </p>
                   </div>
-                ))
+                </div>
               ) : (
-                <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl">
-                  <p className="text-xs text-slate-400">Start writing a question to see the mockup preview.</p>
+                <div className="text-center py-8 border border-dashed border-slate-200 rounded-xl">
+                  <p className="text-xs text-slate-400">Enter a Markdown file URL to see the mockup preview.</p>
                 </div>
               )}
             </div>
 
             <div className={cn(
               "p-3 rounded-xl border text-[10px] leading-normal flex items-center justify-center text-center font-medium transition-all",
-              unitId && questions.filter(q => q.trim() !== "").length > 0
+              unitId && questionFileUrl.trim() !== ""
                 ? "bg-emerald-50/40 border-emerald-100 text-emerald-600"
                 : "bg-amber-50/40 border-amber-100 text-amber-600"
             )}>
-              {unitId && questions.filter(q => q.trim() !== "").length > 0
+              {unitId && questionFileUrl.trim() !== ""
                 ? "Questions validation integrity check: PASS. Ready to deploy."
                 : "Awaiting valid inputs and unit associations before question registration."}
             </div>

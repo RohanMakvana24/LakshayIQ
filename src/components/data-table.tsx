@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export interface DataTableColumn<T> {
   key: string;
-  header: string;
+  header: ReactNode;
   accessor: (row: T) => ReactNode;
   sortValue?: (row: T) => string | number;
   className?: string;
