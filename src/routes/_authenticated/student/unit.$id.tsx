@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword, X, Shield, Lock, Maximize, Loader2, HelpCircle } from "lucide-react";
+import { Play, FileText, Bookmark, Star, Download, ExternalLink, Sparkles, MonitorPlay, Clock, ChevronRight, Flame, Sword, X, Maximize, Loader2, HelpCircle, Plus, Minus } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -191,17 +191,18 @@ function UnitPage() {
     title: string;
     url: string;
   }>({ type: null, title: "", url: "" });
-  const [isWindowBlurred, setIsWindowBlurred] = useState(false);
-  const [isFullscreenSecure, setIsFullscreenSecure] = useState(false);
-  const [isFullscreenEntering, setIsFullscreenEntering] = useState(false);
-  const [isFullscreenExiting, setIsFullscreenExiting] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
   const [loadedIframes, setLoadedIframes] = useState<Record<string, boolean>>({});
   const [shouldPreload, setShouldPreload] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
-  const [isHovered, setIsHovered] = useState(false);
   const [markdownContent, setMarkdownContent] = useState<string>("");
   const [isMarkdownLoading, setIsMarkdownLoading] = useState<boolean>(false);
+  const [zoomLevel, setZoomLevel] = useState<number>(1.0);
+
+  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, 2.5));
+  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, 0.5));
+  const handleZoomReset = () => setZoomLevel(1.0);
 
   const workspaceRef = useRef<HTMLDivElement>(null);
   const isNotionMaterial = activePreview.type === "material" && activePreview.url.includes("notion");
@@ -242,18 +243,7 @@ function UnitPage() {
             ? !loadedIframes[activePreview.url]
             : isIframeLoading))
     : isIframeLoading;
-  const isWorkspaceTransitioning = isFullscreenEntering || isFullscreenExiting;
 
-  const runViewTransition = async (update: () => void | Promise<void>) => {
-    if (typeof document !== "undefined" && "startViewTransition" in document) {
-      const doc = document as Document & {
-        startViewTransition: (callback: () => void | Promise<void>) => { finished: Promise<void> };
-      };
-      await doc.startViewTransition(update).finished;
-      return;
-    }
-    await update();
-  };
 
   useEffect(() => {
     checkBookmark();
@@ -307,20 +297,12 @@ function UnitPage() {
   useEffect(() => {
     if (activePreview.url) {
       setIsIframeLoading(true);
-      setIsHovered(false); // Reset hover state when preview url changes
     }
   }, [activePreview.url]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const isCurrentlyFullscreen = document.fullscreenElement === workspaceRef.current;
-      setIsFullscreenSecure(isCurrentlyFullscreen);
-      setIsFullscreenEntering(false);
-      setIsFullscreenExiting(false);
-
-      if (isCurrentlyFullscreen) {
-        setIsWindowBlurred(false);
-      }
+      setIsFullscreen(document.fullscreenElement === workspaceRef.current);
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -365,154 +347,22 @@ function UnitPage() {
     };
   }, []);
 
-  const handleMaximize = async () => {
-    try {
-      const workspace = workspaceRef.current;
-      if (!workspace) return;
-
-      setIsFullscreenEntering(true);
-      setIsWindowBlurred(false);
-      setIsHovered(true);
-
-      await runViewTransition(() => workspace.requestFullscreen());
-    } catch (err) {
-      setIsFullscreenEntering(false);
-      setIsFullscreenSecure(false);
-      console.error("Error entering fullscreen secure mode:", err);
+  const handleMaximize = () => {
+    const workspace = workspaceRef.current;
+    if (!workspace) return;
+    workspace.requestFullscreen().catch((err) => {
+      console.error("Error entering fullscreen mode:", err);
       toast.error("Could not enter fullscreen mode");
-    }
+    });
   };
 
-  const handleMinimize = async () => {
-    try {
-      if (!document.fullscreenElement) return;
-
-      setIsFullscreenExiting(true);
-      await runViewTransition(() => document.exitFullscreen());
-    } catch (err) {
-      setIsFullscreenExiting(false);
-      console.error("Error exiting fullscreen secure mode:", err);
+  const handleMinimize = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch((err) => {
+        console.error("Error exiting fullscreen mode:", err);
+      });
     }
   };
-
-  // Security listener to block screenshots and handle blur state
-  useEffect(() => {
-    let focusInterval: NodeJS.Timeout | null = null;
-
-    const handleBlur = () => {
-      // Small timeout to allow activeElement to stabilize
-      setTimeout(() => {
-        const isInFullscreen = document.fullscreenElement === workspaceRef.current;
-        if (!document.hasFocus() && !isFullscreenEntering && !isFullscreenExiting && !isInFullscreen) {
-          setIsWindowBlurred(true);
-        }
-      }, 100);
-    };
-
-    const handleFocus = () => {
-      setIsWindowBlurred(false);
-    };
-
-    const handleVisibilityChange = () => {
-      const isInFullscreen = document.fullscreenElement === workspaceRef.current;
-      if (document.visibilityState === "hidden" && !isFullscreenEntering && !isFullscreenExiting && !isInFullscreen) {
-        setIsWindowBlurred(true);
-      }
-    };
-
-    window.addEventListener("blur", handleBlur);
-    window.addEventListener("focus", handleFocus);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    // If a secure material is active, run a fast polling check to catch Alt-Tab,
-    // window minimization, and Snipping Tool activations.
-    if (activePreview.type === "material") {
-      focusInterval = setInterval(() => {
-        const isInFullscreen = document.fullscreenElement === workspaceRef.current;
-        if (!document.hasFocus() && !isFullscreenEntering && !isFullscreenExiting && !isInFullscreen) {
-          setIsWindowBlurred(true);
-        } else {
-          setIsWindowBlurred(false);
-        }
-      }, 250);
-    }
-
-    // Prevent shortcut keys, developer tools & catch screenshot key patterns instantly
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // 1. Detect PrintScreen / Snapshot
-      const isPrintScreen = e.key === "PrintScreen" || e.key === "Snapshot" || e.keyCode === 44;
-
-      // 2. Detect Win + Shift + S (Windows Snipping Tool)
-      const isWinShiftS = e.metaKey && e.shiftKey && (e.key === "S" || e.key === "s");
-
-      // 3. Detect Cmd + Shift + 3 / 4 (Mac Screenshots)
-      const isMacScreenshot = e.metaKey && e.shiftKey && (e.key === "3" || e.key === "4");
-
-      // 4. Detect dev tools or other lock keys
-      const isDevTools = (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "i" || e.key === "j")) ||
-        (e.ctrlKey && (e.key === "u" || e.key === "U")) ||
-        e.key === "F12";
-
-      const isPrintPrompt = e.ctrlKey && (e.key === "p" || e.key === "P");
-      const isSavePrompt = e.ctrlKey && (e.key === "s" || e.key === "S");
-
-      if (isPrintScreen || isWinShiftS || isMacScreenshot) {
-        e.preventDefault();
-        setIsWindowBlurred(true);
-        navigator.clipboard.writeText(""); // Clear clipboard buffer
-        toast.error("🔒 Screenshots are disabled for security!");
-
-        // Lock screen for 2 seconds to ensure any screen capture catches the black overlay
-        setTimeout(() => {
-          setIsWindowBlurred(false);
-        }, 2000);
-        return;
-      }
-
-      if (isDevTools || isPrintPrompt || isSavePrompt) {
-        e.preventDefault();
-        toast.warning("🔒 Security policy: Screen operations and source inspections are disabled.");
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      const isPrintScreen = e.key === "PrintScreen" || e.key === "Snapshot" || e.keyCode === 44;
-      const isWinShiftS = e.metaKey && e.shiftKey && (e.key === "S" || e.key === "s");
-      const isMacScreenshot = e.metaKey && e.shiftKey && (e.key === "3" || e.key === "4");
-
-      if (isPrintScreen || isWinShiftS || isMacScreenshot) {
-        setIsWindowBlurred(true);
-        navigator.clipboard.writeText(""); // Clear clipboard buffer
-        setTimeout(() => {
-          setIsWindowBlurred(false);
-        }, 2000);
-      }
-    };
-
-    const handleContextMenu = (e: MouseEvent) => {
-      // Allow standard clicks but restrict right click options on materials
-      if (activePreview.type === "material") {
-        e.preventDefault();
-        toast.warning("🔒 Right-click options are restricted in Secure Mode.");
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("contextmenu", handleContextMenu);
-
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("focus", handleFocus);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("contextmenu", handleContextMenu);
-      if (focusInterval) {
-        clearInterval(focusInterval);
-      }
-    };
-  }, [activePreview.type, isFullscreenEntering, isFullscreenExiting]);
 
   const checkBookmark = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -838,7 +688,7 @@ function UnitPage() {
                               )}
                               {hasFile && (
                                 <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded flex items-center gap-0.5">
-                                  <Lock className="h-2 w-2" /> Secure File
+                                  Attached File
                                 </span>
                               )}
                             </div>
@@ -889,21 +739,12 @@ function UnitPage() {
                 {activePreview.type && activePreview.url ? (
                   <div
                     ref={workspaceRef}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    onMouseMove={() => { if (!isHovered) setIsHovered(true); }}
-                    onTouchStart={() => setIsHovered(true)}
                     className={cn(
                       "flex flex-col relative overflow-hidden fullscreen-workspace",
                       isMarkdownMaterial ? "bg-white" : "bg-slate-900",
-                      "transition-[box-shadow,filter] duration-500 ease-workspace",
-                      isWorkspaceTransitioning && "workspace-phase-transition",
-                      isFullscreenSecure ? "workspace-phase-active min-h-0 p-0" : "flex-1 min-h-0"
+                      isFullscreen ? "workspace-phase-active min-h-0 p-0" : "flex-1 min-h-0"
                     )}
                   >
-                    {isWorkspaceTransitioning && (
-                      <div className="workspace-transition-veil" aria-hidden />
-                    )}
 
                     {/* Unified header — morphs instead of swapping DOM */}
                     <div
@@ -912,7 +753,7 @@ function UnitPage() {
                         "transition-all duration-500 ease-workspace",
                         isMarkdownMaterial
                           ? "bg-[#f6f8fa] border-[#d0d7de] text-[#24292f] px-4 py-3"
-                          : isFullscreenSecure
+                          : isFullscreen
                             ? "bg-slate-900 border-slate-800 px-3 py-2.5 md:px-6 md:py-4"
                             : "bg-slate-100 border-slate-200 px-4 py-3"
                       )}
@@ -923,7 +764,7 @@ function UnitPage() {
                             "h-3.5 w-3.5 shrink-0 transition-colors duration-500",
                             isMarkdownMaterial
                               ? "text-emerald-600 animate-pulse"
-                              : isFullscreenSecure
+                              : isFullscreen
                                 ? "text-emerald-400 animate-pulse"
                                 : "text-emerald-600 animate-pulse"
                           )}
@@ -933,15 +774,15 @@ function UnitPage() {
                             "text-xs font-semibold uppercase tracking-wider transition-all duration-500 ease-workspace",
                             isMarkdownMaterial
                               ? "hidden sm:inline-flex bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 font-black items-center gap-1.5"
-                              : isFullscreenSecure
+                              : isFullscreen
                                 ? "hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 font-black items-center gap-1.5"
                                 : "hidden sm:inline-flex text-slate-500"
                           )}
                         >
-                          {isFullscreenSecure ? (
-                            <>Secure Reader Arena</>
+                          {isFullscreen ? (
+                            <>Reader Arena</>
                           ) : activePreview.type === "material" ? (
-                            "🔒 Secure View"
+                            "Document Preview"
                           ) : (
                             "Now Playing"
                           )}
@@ -951,7 +792,7 @@ function UnitPage() {
                             "truncate transition-colors duration-500",
                             isMarkdownMaterial
                               ? "text-sm font-bold text-[#24292f]"
-                              : isFullscreenSecure
+                              : isFullscreen
                                 ? "text-xs md:text-sm font-bold text-white max-w-xl"
                                 : "text-sm font-medium text-slate-800"
                           )}
@@ -960,16 +801,52 @@ function UnitPage() {
                         </span>
                       </div>
 
-                      <div
-                        className={cn(
-                          "flex flex-wrap items-center gap-2 shrink-0 transition-all duration-500 ease-workspace",
-                          isFullscreenSecure ? "opacity-100 translate-y-0" : "opacity-100"
+                      <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        {activePreview.type === "material" && (
+                          <div className={cn(
+                            "flex items-center gap-1.5 rounded-lg p-0.5 border shrink-0",
+                            isMarkdownMaterial 
+                              ? "bg-slate-200/60 dark:bg-slate-800/40 border-slate-300/40 text-slate-800 dark:text-slate-200" 
+                              : "bg-slate-800/60 border-slate-700/40 text-slate-200"
+                          )}>
+                            <Button
+                              onClick={handleZoomOut}
+                              disabled={zoomLevel <= 0.5}
+                              variant="ghost"
+                              className={cn(
+                                "h-6 w-6 p-0 rounded-md hover:bg-white dark:hover:bg-slate-700/60",
+                                !isMarkdownMaterial && "text-slate-300 hover:bg-slate-700/80 hover:text-white"
+                              )}
+                              title="Zoom Out"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <span 
+                              onClick={handleZoomReset}
+                              className="text-[10px] font-bold min-w-[36px] text-center select-none cursor-pointer hover:text-emerald-600 transition-colors"
+                              title="Reset Zoom (100%)"
+                            >
+                              {Math.round(zoomLevel * 100)}%
+                            </span>
+                            <Button
+                              onClick={handleZoomIn}
+                              disabled={zoomLevel >= 2.5}
+                              variant="ghost"
+                              className={cn(
+                                "h-6 w-6 p-0 rounded-md hover:bg-white dark:hover:bg-slate-700/60",
+                                !isMarkdownMaterial && "text-slate-300 hover:bg-slate-700/80 hover:text-white"
+                              )}
+                              title="Zoom In"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
                         )}
-                      >
-                        {!isFullscreenSecure && activePreview.type === "material" && (
+
+                        {!isFullscreen && activePreview.type === "material" && (
                           <>
                             <span className="hidden md:inline-flex bg-emerald-500/10 text-emerald-700 border border-emerald-200/50 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider items-center gap-1 shadow-sm transition-transform duration-300 hover:scale-[1.02]">
-                              <Lock className="h-2.5 w-2.5" /> Security Mode
+                              Reader Mode
                             </span>
                             {isNotionMaterial && (
                               <span className="hidden md:inline-flex bg-slate-900/95 text-slate-100 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
@@ -978,21 +855,15 @@ function UnitPage() {
                             )}
                             <Button
                               onClick={handleMaximize}
-                              disabled={isWorkspaceTransitioning}
                               size="sm"
-                              className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2 transition-all duration-300 ease-workspace hover:scale-[1.03] active:scale-95 disabled:opacity-60 shrink-0"
+                              className="h-7 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-sm border-0 flex items-center gap-1 px-2 transition-all duration-300 hover:scale-[1.03] active:scale-95 disabled:opacity-60 shrink-0"
                             >
-                              <Maximize
-                                className={cn(
-                                  "h-3.5 w-3.5 transition-transform duration-500 ease-workspace",
-                                  isFullscreenEntering && "scale-110 rotate-90"
-                                )}
-                              />
+                              <Maximize className="h-3.5 w-3.5" />
                               <span className="hidden sm:inline">Maximize</span>
                             </Button>
                           </>
                         )}
-                        {!isFullscreenSecure && activePreview.type !== "material" && (
+                        {!isFullscreen && activePreview.type !== "material" && (
                           <a
                             href={activePreview.url}
                             target="_blank"
@@ -1003,14 +874,13 @@ function UnitPage() {
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         )}
-                        {isFullscreenSecure && (
+                        {isFullscreen && (
                           <Button
                             onClick={handleMinimize}
-                            disabled={isWorkspaceTransitioning}
-                            className="rounded-xl h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all duration-300 ease-workspace flex items-center gap-1 md:gap-1.5 hover:scale-[1.02] active:scale-95 disabled:opacity-60 animate-workspace-reveal shrink-0"
+                            className="rounded-xl h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md border-0 transition-all duration-300 flex items-center gap-1 md:gap-1.5 hover:scale-[1.02] active:scale-95 disabled:opacity-60 animate-workspace-reveal shrink-0"
                           >
                             <X className="h-3.5 w-3.5 transition-transform duration-300 group-hover:rotate-90" />
-                            <span className="hidden sm:inline">Close Secure View</span>
+                            <span className="hidden sm:inline">Exit Fullscreen</span>
                             <span className="sm:hidden">Close</span>
                           </Button>
                         )}
@@ -1022,8 +892,7 @@ function UnitPage() {
                       className={cn(
                         "flex-1 w-full min-h-0 relative overflow-hidden bg-slate-900 iframe-host workspace-content-shell",
                         isNotionMaterial && "notion-embed-host",
-                        isClickUpMaterial && "clickup-embed-host",
-                        isWorkspaceTransitioning && "workspace-content-transitioning"
+                        isClickUpMaterial && "clickup-embed-host"
                       )}
                     >
                       {isCurrentIframeLoading && (
@@ -1049,8 +918,7 @@ function UnitPage() {
                           onLoad={() => setIsIframeLoading(false)}
                           className={cn(
                             "embed-frame border-0",
-                            !isIframeLoading && "embed-frame-ready",
-                            isWorkspaceTransitioning && "embed-frame-transitioning"
+                            !isIframeLoading && "embed-frame-ready"
                           )}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
@@ -1060,7 +928,8 @@ function UnitPage() {
                       {/* Markdown Preview Overlay (for both study materials and important questions) */}
                       {activePreview.type === "material" && activePreview.url?.includes(".md") && (
                         <div
-                          className="absolute inset-0 z-10 overflow-y-auto px-5 py-6 md:px-8 md:py-10 bg-white text-[#24292f] font-sans selection:bg-[#c8e1ff] selection:text-[#24292f] select-none scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent markdown-body animate-workspace-reveal"
+                          style={{ zoom: zoomLevel }}
+                          className="absolute inset-0 z-10 overflow-y-auto px-5 py-6 md:px-8 md:py-10 bg-white text-[#24292f] font-sans selection:bg-[#c8e1ff] selection:text-[#24292f] scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent markdown-body animate-workspace-reveal"
                         >
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
@@ -1116,13 +985,13 @@ function UnitPage() {
                             title={material.title}
                             src={formatEmbedUrl(material.file_url || "", "material")}
                             onLoad={() => setLoadedIframes(prev => ({ ...prev, [material.file_url || ""]: true }))}
+                            style={{ zoom: zoomLevel }}
                             className={cn(
                               "embed-frame border-0",
                               isActive ? "embed-frame-ready z-10" : "opacity-0 pointer-events-none -z-10",
                               isNotion && "notion-embed-frame",
                               isClickUp && "clickup-embed-frame",
-                              isAppFlowy && "appflowy-embed-frame",
-                              isWorkspaceTransitioning && "embed-frame-transitioning"
+                              isAppFlowy && "appflowy-embed-frame"
                             )}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           />
@@ -1138,66 +1007,13 @@ function UnitPage() {
                           title={activePreview.title}
                           src={formatEmbedUrl(activePreview.url, "material")}
                           onLoad={() => setIsIframeLoading(false)}
-                          className={cn(
-                            "embed-frame border-0 embed-frame-ready z-10",
-                            isWorkspaceTransitioning && "embed-frame-transitioning"
-                          )}
+                          style={{ zoom: zoomLevel }}
+                          className="embed-frame border-0 embed-frame-ready z-10"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         />
                       )}
 
-                      {/* Dynamic Security Watermark Overlay */}
-                      {activePreview.type === "material" && (
-                        <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden select-none opacity-[0.05] flex flex-wrap gap-12 p-8 justify-around items-center content-around">
-                          {Array.from({ length: 16 }).map((_, i) => (
-                            <div
-                              key={`watermark-${i}`}
-                              className="text-[10px] md:text-xs font-black text-slate-400 transform -rotate-12 select-none pointer-events-none whitespace-nowrap tracking-wider"
-                            >
-                              LAKSHAY IQ
-                            </div>
-                          ))}
-                        </div>
-                      )}
 
-                      {/* Hover to Reveal Shield Overlay (Only active when not in fullscreen) */}
-                      {!isHovered && !isCurrentIframeLoading && !isFullscreenSecure && activePreview.type === "material" && (
-                        <div className={cn(
-                          "absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay",
-                          isMarkdownMaterial ? "bg-white/98" : "bg-slate-950/98"
-                        )}>
-                          <div className="h-12 w-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
-                            <Shield className="h-5 w-5 text-emerald-500 animate-pulse" />
-                          </div>
-                          <h4 className={cn("font-bold text-sm uppercase tracking-wider", isMarkdownMaterial ? "text-slate-800" : "text-white")}>
-                            🔒 Secure Content Shield
-                          </h4>
-                          <p className={cn("text-[10px] max-w-xs mt-1.5 leading-relaxed", isMarkdownMaterial ? "text-slate-500" : "text-slate-400")}>
-                            Move cursor or tap inside this workspace area to reveal secure material.
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Screenshot Shield overlay inside the exact same container */}
-                      {isWindowBlurred && activePreview.type === "material" && (
-                        <div className={cn(
-                          "absolute inset-0 z-50 flex flex-col items-center justify-center text-center p-6 workspace-shield-overlay",
-                          isMarkdownMaterial ? "bg-white/98" : "bg-slate-950/98"
-                        )}>
-                          <div className="h-16 w-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
-                            <Shield className="h-7 w-7 text-emerald-500 animate-pulse" />
-                          </div>
-                          <h2 className="text-emerald-500 font-black text-3xl tracking-widest mb-1 uppercase">
-                            LAKSHAY IQ
-                          </h2>
-                          <h3 className={cn("font-bold text-sm uppercase tracking-wider", isMarkdownMaterial ? "text-slate-800" : "text-white")}>
-                            🔒 Security Mode Active
-                          </h3>
-                          <p className={cn("text-[10px] max-w-sm mt-1 leading-relaxed", isMarkdownMaterial ? "text-slate-500" : "text-slate-400")}>
-                            Screen capture and background viewing are restricted to protect intellectual property and academic integrity.
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ) : (
@@ -1232,41 +1048,10 @@ function UnitPage() {
         </div>
       )}
 
-      {/* Absolute Full-Screen Security Shield covering the ENTIRE viewport */}
-      {isWindowBlurred && activePreview.type === "material" && (
-        <div
-          className="fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center text-center p-6 select-none workspace-shield-overlay"
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <div className="h-24 w-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 shadow-2xl shadow-emerald-500/5">
-            <Shield className="h-12 w-12 text-emerald-500 animate-pulse" />
-          </div>
 
-          <h2 className="text-emerald-500 font-black text-5xl md:text-6xl tracking-wider mb-2 uppercase drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-            LAKSHAY IQ
-          </h2>
-
-          <h3 className="text-white font-bold text-lg md:text-xl uppercase tracking-widest mb-4">
-            🔒 SECURE READER SHIELD
-          </h3>
-
-          <p className="text-slate-400 text-xs md:text-sm max-w-md leading-relaxed">
-            This study resource is protected by Lakshay IQ intellectual property policy. Screen capture and copying have been blocked.
-          </p>
-
-          <p className="text-xs text-slate-500 mt-8 font-black uppercase tracking-widest animate-pulse">
-            Click back inside this window to restore view
-          </p>
-        </div>
-      )}
 
       {/* Inject Print and Fullscreen Styles */}
       <style>{`
-        @media print {
-          body {
-            display: none !important;
-          }
-        }
         .markdown-body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
           line-height: 1.6;
@@ -1447,9 +1232,6 @@ function UnitPage() {
         .ease-workspace {
           transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .fullscreen-workspace {
-          view-transition-name: secure-workspace;
-        }
         .embed-frame {
           position: absolute;
           inset: 0;
@@ -1459,18 +1241,12 @@ function UnitPage() {
           opacity: 0.92;
           transform: scale(0.995);
           transition:
-            opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-            top 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-            height 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity 0.15s ease-out,
+            transform 0.15s ease-out;
         }
         .embed-frame-ready {
           opacity: 1;
           transform: scale(1);
-        }
-        .embed-frame-transitioning {
-          opacity: 0.97;
-          transform: scale(1.008);
         }
         .notion-embed-frame {
           top: -50px !important;
@@ -1485,26 +1261,10 @@ function UnitPage() {
           height: calc(100% + 48px + 45px) !important;
         }
         .workspace-content-shell {
-          transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .workspace-content-transitioning {
-          opacity: 0.94;
-        }
-        .workspace-phase-transition {
-          filter: brightness(0.92);
+          transition: opacity 0.15s ease-out;
         }
         .workspace-phase-active {
           box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.12), 0 24px 80px rgba(2, 6, 23, 0.45);
-        }
-        .workspace-transition-veil {
-          position: absolute;
-          inset: 0;
-          z-index: 55;
-          pointer-events: none;
-          background:
-            radial-gradient(ellipse 80% 60% at 50% 40%, rgba(16, 185, 129, 0.14) 0%, transparent 55%),
-            linear-gradient(180deg, rgba(2, 6, 23, 0.35) 0%, rgba(2, 6, 23, 0.75) 100%);
-          animation: workspaceVeil 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .workspace-loading-veil {
           animation: workspaceLoadingIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -1565,37 +1325,13 @@ function UnitPage() {
           top: 0 !important;
           height: 100% !important;
         }
-        ::view-transition-old(secure-workspace),
-        ::view-transition-new(secure-workspace) {
-          animation-duration: 0.55s;
-          animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        ::view-transition-old(secure-workspace) {
-          animation-name: workspaceViewExit;
-        }
-        ::view-transition-new(secure-workspace) {
-          animation-name: workspaceViewEnter;
-        }
-        @keyframes workspaceViewEnter {
-          from { opacity: 0; transform: scale(0.985); filter: brightness(0.85); }
-          to { opacity: 1; transform: scale(1); filter: brightness(1); }
-        }
-        @keyframes workspaceViewExit {
-          from { opacity: 1; transform: scale(1); filter: brightness(1); }
-          to { opacity: 0.92; transform: scale(0.99); filter: brightness(0.9); }
-        }
         @media (prefers-reduced-motion: reduce) {
           .fullscreen-workspace,
           .embed-frame,
           .preview-workspace-header,
-          .workspace-transition-veil,
-          .workspace-shield-overlay,
           .workspace-loading-veil {
             transition: none !important;
             animation: none !important;
-          }
-          .fullscreen-workspace {
-            view-transition-name: none;
           }
         }
       `}</style>
