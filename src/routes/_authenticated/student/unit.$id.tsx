@@ -199,10 +199,39 @@ function UnitPage() {
   const [markdownContent, setMarkdownContent] = useState<string>("");
   const [isMarkdownLoading, setIsMarkdownLoading] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
+  const [isZoomLoading, setIsZoomLoading] = useState(false);
+  const zoomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, 2.5));
-  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, 0.5));
-  const handleZoomReset = () => setZoomLevel(1.0);
+  const triggerZoomLoading = () => {
+    setIsZoomLoading(true);
+    if (zoomTimeoutRef.current) {
+      clearTimeout(zoomTimeoutRef.current);
+    }
+    zoomTimeoutRef.current = setTimeout(() => {
+      setIsZoomLoading(false);
+    }, 350);
+  };
+
+  const handleZoomIn = () => {
+    triggerZoomLoading();
+    setZoomLevel(prev => Math.min(prev + 0.1, 2.5));
+  };
+  const handleZoomOut = () => {
+    triggerZoomLoading();
+    setZoomLevel(prev => Math.max(prev - 0.1, 0.5));
+  };
+  const handleZoomReset = () => {
+    triggerZoomLoading();
+    setZoomLevel(1.0);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (zoomTimeoutRef.current) {
+        clearTimeout(zoomTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const workspaceRef = useRef<HTMLDivElement>(null);
   const isNotionMaterial = activePreview.type === "material" && activePreview.url.includes("notion");
@@ -508,7 +537,10 @@ function UnitPage() {
                     return (
                       <Card
                         key={video.id}
-                        onClick={() => setActivePreview({ type: "video", title: video.title, url: video.video_url || "" })}
+                        onClick={() => {
+                          setIsIframeLoading(true);
+                          setActivePreview({ type: "video", title: video.title, url: video.video_url || "" });
+                        }}
                         className={cn(
                           "p-3 flex items-center gap-3 rounded-xl border transition-all cursor-pointer bg-white hover:shadow-md",
                           isActive ? "border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500/20" : "border-slate-200"
@@ -553,7 +585,14 @@ function UnitPage() {
                     return (
                       <Card
                         key={material.id}
-                        onClick={() => setActivePreview({ type: "material", title: material.title, url: material.file_url || "" })}
+                        onClick={() => {
+                          if (material.file_url?.includes(".md")) {
+                            setIsMarkdownLoading(true);
+                          } else if (!loadedIframes[material.file_url || ""]) {
+                            setIsIframeLoading(true);
+                          }
+                          setActivePreview({ type: "material", title: material.title, url: material.file_url || "" });
+                        }}
                         className={cn(
                           "p-3 flex items-center gap-3 rounded-xl border transition-all cursor-pointer bg-white hover:shadow-md",
                           isActive ? "border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500/20" : "border-slate-200"
@@ -646,6 +685,11 @@ function UnitPage() {
                         onClick={() => {
                           setSelectedQuestion(isSelected ? null : q.id);
                           if (hasFile && q.question_file_url) {
+                            if (q.question_file_url.includes(".md")) {
+                              setIsMarkdownLoading(true);
+                            } else if (!loadedIframes[q.question_file_url || ""]) {
+                              setIsIframeLoading(true);
+                            }
                             setActivePreview({
                               type: "material",
                               title: q.question_text,
@@ -895,7 +939,7 @@ function UnitPage() {
                         isClickUpMaterial && "clickup-embed-host"
                       )}
                     >
-                      {isCurrentIframeLoading && (
+                      {(isCurrentIframeLoading || isZoomLoading) && (
                         <div className={cn(
                           "absolute inset-0 z-40 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6 workspace-loading-veil",
                           isMarkdownMaterial ? "bg-white/80" : "bg-slate-950/80"
@@ -905,7 +949,7 @@ function UnitPage() {
                             "text-xs font-semibold uppercase tracking-wider animate-pulse",
                             isMarkdownMaterial ? "text-slate-600" : "text-slate-300"
                           )}>
-                            Loading Material...
+                            {isZoomLoading ? "Resizing Document..." : "Loading Material..."}
                           </p>
                         </div>
                       )}
@@ -928,9 +972,16 @@ function UnitPage() {
                       {/* Markdown Preview Overlay (for both study materials and important questions) */}
                       {activePreview.type === "material" && activePreview.url?.includes(".md") && (
                         <div
-                          style={{ zoom: zoomLevel }}
                           className="absolute inset-0 z-10 overflow-y-auto px-5 py-6 md:px-8 md:py-10 bg-white text-[#24292f] font-sans selection:bg-[#c8e1ff] selection:text-[#24292f] scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent markdown-body animate-workspace-reveal"
                         >
+                          <div
+                            style={{
+                              transform: `scale(${zoomLevel})`,
+                              transformOrigin: "top left",
+                              width: `${100 / zoomLevel}%`,
+                              willChange: "transform",
+                            }}
+                          >
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
@@ -969,6 +1020,7 @@ function UnitPage() {
                           >
                             {markdownContent}
                           </ReactMarkdown>
+                          </div>
                         </div>
                       )}
 
@@ -979,13 +1031,34 @@ function UnitPage() {
                         const isClickUp = material.file_url?.includes("clickup.com");
                         const isAppFlowy = material.file_url?.includes("appflowy");
 
+                        let frameHeight = `calc(100% / ${zoomLevel})`;
+                        let frameTop = "0px";
+                        if (isNotion) {
+                          frameHeight = `calc((100% + 50px) / ${zoomLevel})`;
+                          frameTop = `calc(-50px / ${zoomLevel})`;
+                        } else if (isClickUp) {
+                          frameHeight = `calc((100% + 56px) / ${zoomLevel})`;
+                          frameTop = `calc(-56px / ${zoomLevel})`;
+                        } else if (isAppFlowy) {
+                          frameHeight = `calc((100% + 48px + 45px) / ${zoomLevel})`;
+                          frameTop = `calc(-48px / ${zoomLevel})`;
+                        }
+
                         return (
                           <iframe
                             key={`material-frame-${material.id}`}
                             title={material.title}
                             src={formatEmbedUrl(material.file_url || "", "material")}
                             onLoad={() => setLoadedIframes(prev => ({ ...prev, [material.file_url || ""]: true }))}
-                            style={{ zoom: zoomLevel }}
+                            style={{
+                              transform: `scale(${zoomLevel})`,
+                              transformOrigin: "top left",
+                              width: `${100 / zoomLevel}%`,
+                              height: frameHeight,
+                              top: frameTop,
+                              transition: "opacity 0.15s ease-out, transform 0s, width 0s, height 0s, top 0s",
+                              willChange: "transform",
+                            }}
                             className={cn(
                               "embed-frame border-0",
                               isActive ? "embed-frame-ready z-10" : "opacity-0 pointer-events-none -z-10",
@@ -1001,17 +1074,49 @@ function UnitPage() {
                       {/* For Important Questions / Files: Dynamic iframe viewer fallback for non-markdown attachments */}
                       {activePreview.type === "material" && 
                        !activePreview.url?.includes(".md") && 
-                       !unit.unit_materials?.some((m: any) => m.file_url === activePreview.url) && (
-                        <iframe
-                          key={`important-question-frame`}
-                          title={activePreview.title}
-                          src={formatEmbedUrl(activePreview.url, "material")}
-                          onLoad={() => setIsIframeLoading(false)}
-                          style={{ zoom: zoomLevel }}
-                          className="embed-frame border-0 embed-frame-ready z-10"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        />
-                      )}
+                       !unit.unit_materials?.some((m: any) => m.file_url === activePreview.url) && (() => {
+                         const isNotion = activePreview.url?.includes("notion");
+                         const isClickUp = activePreview.url?.includes("clickup.com");
+                         const isAppFlowy = activePreview.url?.includes("appflowy");
+
+                         let frameHeight = `calc(100% / ${zoomLevel})`;
+                         let frameTop = "0px";
+                         if (isNotion) {
+                           frameHeight = `calc((100% + 50px) / ${zoomLevel})`;
+                           frameTop = `calc(-50px / ${zoomLevel})`;
+                         } else if (isClickUp) {
+                           frameHeight = `calc((100% + 56px) / ${zoomLevel})`;
+                           frameTop = `calc(-56px / ${zoomLevel})`;
+                         } else if (isAppFlowy) {
+                           frameHeight = `calc((100% + 48px + 45px) / ${zoomLevel})`;
+                           frameTop = `calc(-48px / ${zoomLevel})`;
+                         }
+
+                         return (
+                           <iframe
+                             key={`important-question-frame`}
+                             title={activePreview.title}
+                             src={formatEmbedUrl(activePreview.url, "material")}
+                             onLoad={() => setIsIframeLoading(false)}
+                             style={{
+                               transform: `scale(${zoomLevel})`,
+                               transformOrigin: "top left",
+                               width: `${100 / zoomLevel}%`,
+                               height: frameHeight,
+                               top: frameTop,
+                               transition: "opacity 0.15s ease-out, transform 0s, width 0s, height 0s, top 0s",
+                               willChange: "transform",
+                             }}
+                             className={cn(
+                               "embed-frame border-0 embed-frame-ready z-10",
+                               isNotion && "notion-embed-frame",
+                               isClickUp && "clickup-embed-frame",
+                               isAppFlowy && "appflowy-embed-frame"
+                             )}
+                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                           />
+                         );
+                       })()}
 
 
                     </div>
@@ -1249,16 +1354,13 @@ function UnitPage() {
           transform: scale(1);
         }
         .notion-embed-frame {
-          top: -50px !important;
-          height: calc(100% + 50px) !important;
+          /* dynamically positioned inline */
         }
         .clickup-embed-frame {
-          top: -56px !important;
-          height: calc(100% + 56px) !important;
+          /* dynamically positioned inline */
         }
         .appflowy-embed-frame {
-          top: -48px !important;
-          height: calc(100% + 48px + 45px) !important;
+          /* dynamically positioned inline */
         }
         .workspace-content-shell {
           transition: opacity 0.15s ease-out;
