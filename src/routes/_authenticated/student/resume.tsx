@@ -930,83 +930,90 @@ function ResumeBuilderPage() {
     const totalPublished = resumesList.filter(r => r.isPublished).length;
 
     return (
-      <div className="w-full bg-slate-50/40 min-h-screen text-slate-800 antialiased no-print px-4 py-6 md:px-8 md:py-10">
-        <div className="max-w-7xl mx-auto">
-          {/* Hero Header */}
-          <div className="relative overflow-hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8 mb-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>Professional Portfolio Suite</span>
-                </div>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
-                  Resume Vault
-                </h1>
-                <p className="text-slate-500 text-sm max-w-2xl">
-                  Create, manage, and export polished A4 resumes. Design custom portfolios that impress recruiters.
-                </p>
+      <div className="w-full bg-background min-h-screen text-slate-800 dark:text-zinc-200 antialiased no-print py-2 space-y-6">
+        {/* Premium Header Banner */}
+        <div className="relative rounded-2xl bg-gradient-to-br from-primary/[0.02] via-card to-emerald-500/[0.01] border border-border/80 overflow-hidden shadow-[0_12px_40px_-12px_rgba(0,0,0,0.03)] dark:shadow-none">
+          <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 px-6 py-6 md:px-8 md:py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="space-y-2 flex-1">
+              <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 rounded-full px-2.5 py-0.5">
+                <Sparkles className="h-3 w-3" />
+                <span className="text-[10px] font-bold tracking-wide uppercase">Portfolio Studio</span>
               </div>
-              <Button
-                onClick={handleCreateNewResume}
-                className="h-10 px-5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-sm transition-all active:scale-95 flex items-center gap-2 cursor-pointer self-start md:self-auto"
-              >
-                <Plus className="h-4 w-4" />
-                <span>New Resume</span>
-              </Button>
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-black tracking-tight text-foreground">
+                Resume & Portfolio Vault
+              </h1>
+              <p className="text-muted-foreground text-xs md:text-sm max-w-2xl leading-relaxed">
+                Build, clone, and export recruiter-grade PDF resumes with precise A4 print boundaries.
+              </p>
+            </div>
+            <Button
+              onClick={handleCreateNewResume}
+              className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center gap-2 cursor-pointer self-start md:self-auto"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Create New Template</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Bento Grid */}
+        {resumesList.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-2xl bg-card border border-border/80 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] flex items-center gap-4">
+              <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-blue-500 shrink-0">
+                <Layers className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none">Total Templates</p>
+                <p className="text-lg font-black text-foreground mt-1.5">{resumesList.length} Saved</p>
+              </div>
             </div>
 
-            {/* Stats */}
-            {resumesList.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100">
-                <div className="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
-                  <div className="h-9 w-9 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-500">
-                    <Layers className="h-4.5 w-4.5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Total Templates</div>
-                    <div className="text-lg font-bold text-slate-900">{resumesList.length} Resumes</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
-                  <div className="h-9 w-9 rounded-lg bg-white shadow-sm flex items-center justify-center text-emerald-600">
-                    <Palette className="h-4.5 w-4.5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Active Theme</div>
-                    <div className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full inline-block" style={{ backgroundColor: resumesList[0]?.styleConfig?.themeColor || '#10b981' }} />
-                      <span className="text-xs text-slate-500 font-medium">
-                        {THEME_COLORS.find(c => c.value === resumesList[0]?.styleConfig?.themeColor)?.name || "Custom"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
-                  <div className="h-9 w-9 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-500">
-                    <Globe className="h-4.5 w-4.5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Live Portfolios</div>
-                    <div className="text-lg font-bold text-slate-900">{totalPublished > 0 ? `${totalPublished} Active` : "Offline"}</div>
-                  </div>
+            <div className="rounded-2xl bg-card border border-border/80 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] flex items-center gap-4">
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-emerald-500 shrink-0">
+                <Palette className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none">Primary Theme</p>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="h-3.5 w-3.5 rounded-full border border-white dark:border-zinc-800" style={{ backgroundColor: resumesList[0]?.styleConfig?.themeColor || '#10b981' }} />
+                  <span className="text-xs font-extrabold text-foreground">
+                    {THEME_COLORS.find(c => c.value === resumesList[0]?.styleConfig?.themeColor)?.name || "Custom"}
+                  </span>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Main Content */}
+            <div className="rounded-2xl bg-card border border-border/80 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] flex items-center gap-4">
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/15 flex items-center justify-center text-indigo-500 shrink-0">
+                <Globe className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none">Online Portfolio</p>
+                <p className="text-lg font-black text-foreground mt-1.5">{totalPublished > 0 ? "Published & Live" : "Draft Mode"}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Templates Feed Section */}
+        <div className="space-y-4 pt-2">
+          <h2 className="text-xs font-black uppercase tracking-widest text-muted-foreground">My Templates</h2>
+
           {!hasResumeData || resumesList.length === 0 ? (
-            <div className="max-w-md mx-auto my-12 text-center p-8 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-5">
-              <div className="h-16 w-16 mx-auto rounded-xl bg-emerald-50 flex items-center justify-center">
-                <FileText className="h-8 w-8 text-emerald-600" />
+            <div className="text-center py-20 bg-card border border-border/80 rounded-2xl shadow-sm px-4">
+              <div className="h-14 w-14 bg-secondary border border-border rounded-xl flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-6 w-6 text-muted-foreground" />
               </div>
-              <div className="space-y-2">
-                <h2 className="text-xl font-semibold text-slate-900">No Resumes Yet</h2>
-                <p className="text-sm text-slate-500">Create your first professional resume template to get started.</p>
-              </div>
-              <Button onClick={handleCreateNewResume} className="h-10 px-5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-sm gap-2">
-                <Sparkles className="h-4 w-4" />
+              <h3 className="font-extrabold text-foreground text-sm uppercase tracking-wider">No Resume Profiles Found</h3>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 leading-normal">
+                Build your professional portfolio and download or share your resume instantly.
+              </p>
+              <Button onClick={handleCreateNewResume} className="mt-5 h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md">
+                <Plus className="h-4 w-4 mr-1.5" />
                 <span>Create First Resume</span>
               </Button>
             </div>
@@ -1017,87 +1024,96 @@ function ResumeBuilderPage() {
                 return (
                   <Card 
                     key={resume.id} 
-                    className="group bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-all duration-200"
+                    className="group bg-card border border-border/85 rounded-xl overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-300 flex flex-col justify-between"
                   >
-                    {/* Accent Header */}
-                    <div className="h-1.5 w-full" style={{ backgroundColor: cardAccentColor }} />
-                    
-                    <div className="p-5">
-                      <div className="flex items-start justify-between gap-2 mb-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
-                            <FileUser className="h-4 w-4" />
+                    <div>
+                      {/* Top Accent Bar */}
+                      <div className="h-1 w-full" style={{ backgroundColor: cardAccentColor }} />
+                      
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="h-7 w-7 rounded-md bg-secondary border border-border flex items-center justify-center text-muted-foreground">
+                              <FileUser className="h-3.5 w-3.5" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-foreground text-[11px] line-clamp-1 leading-none">{resume.name || "Untitled Resume"}</h4>
+                              <p className="text-[8px] text-muted-foreground font-bold uppercase tracking-wider mt-1">
+                                Updated {new Date(resume.updatedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-medium text-slate-900 text-sm line-clamp-1">{resume.name || "Untitled Resume"}</h4>
-                            <p className="text-[10px] text-slate-400 font-medium">
-                              Updated {new Date(resume.updatedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
-                            </p>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {resume.isPublished ? (
+                              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/15 text-[8px] font-black uppercase rounded px-1.5 py-0.5 tracking-wider">
+                                Live
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[8px] font-bold uppercase rounded px-1.5 py-0.5 tracking-wider border-border text-muted-foreground">
+                                Draft
+                              </Badge>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          {resume.isPublished ? (
-                            <Badge className="bg-sky-50 text-sky-600 border-sky-100 text-[9px] font-medium rounded-md px-2 py-0">
-                              Live
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-[9px] font-medium rounded-md px-2 py-0">
-                              Draft
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
 
-                      {/* Mini Preview */}
-                      <div className="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium text-sm text-slate-800">{resume.personalInfo?.fullName || "Your Name"}</p>
-                            <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{resume.personalInfo?.title || "Professional Title"}</p>
+                        {/* Mini Preview Box */}
+                        <div className="p-3 bg-secondary/30 rounded-lg border border-border/50 space-y-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-extrabold text-[11px] text-foreground leading-none">{resume.personalInfo?.fullName || "Your Name"}</p>
+                              <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-1">{resume.personalInfo?.title || "Professional Title"}</p>
+                            </div>
+                            <span className="text-[8px] font-black uppercase text-muted-foreground bg-secondary px-1 py-0.5 rounded border border-border/50">
+                              {resume.styleConfig?.layoutMode === 'split' ? '2-Col' : '1-Col'}
+                            </span>
                           </div>
-                          <div className="text-[9px] text-slate-400 font-mono">{resume.styleConfig?.layoutMode === 'split' ? '2-col' : '1-col'}</div>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-1">
-                          <div className="h-1 w-12 bg-slate-200 rounded-full"></div>
-                          <div className="h-1 w-8 bg-slate-200 rounded-full"></div>
-                          <div className="h-1 w-10 bg-slate-200 rounded-full"></div>
+                          
+                          {/* Mini Graphic Indicator lines */}
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            <div className="h-0.5 w-10 bg-border/80 rounded-full"></div>
+                            <div className="h-0.5 w-6 bg-border/80 rounded-full"></div>
+                            <div className="h-0.5 w-8 bg-border/80 rounded-full"></div>
+                          </div>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-2">
-                        <Button
-                          onClick={() => handleEditResume(resume)}
-                          className="flex-1 h-9 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium transition-all"
-                        >
-                          <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
-                          Edit
-                        </Button>
-                        <Button
-                          onClick={() => downloadSpecificPDF(resume)}
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9 rounded-lg border-slate-200 text-slate-600 hover:bg-slate-50"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDuplicateResume(resume)}
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9 rounded-lg border-slate-200 text-slate-600 hover:bg-slate-50"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteResume(resume.id)}
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9 rounded-lg border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-100"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    {/* Bottom Actions Bar */}
+                    <div className="px-4 pb-4 pt-2 border-t border-border/40 flex items-center gap-1.5">
+                      <Button
+                        onClick={() => handleEditResume(resume)}
+                        className="flex-1 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider transition-all"
+                      >
+                        <SlidersHorizontal className="h-3 w-3 mr-1" />
+                        Edit Canvas
+                      </Button>
+                      <Button
+                        onClick={() => downloadSpecificPDF(resume)}
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg border-border hover:bg-secondary text-muted-foreground hover:text-foreground shrink-0"
+                        title="Download PDF"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDuplicateResume(resume)}
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg border-border hover:bg-secondary text-muted-foreground hover:text-foreground shrink-0"
+                        title="Duplicate Template"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteResume(resume.id)}
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg border-border text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/20 shrink-0"
+                        title="Delete"
+                      >
+                        <Trash className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </Card>
                 );
@@ -1111,32 +1127,39 @@ function ResumeBuilderPage() {
 
   // Editor View
   return (
-    <div className="w-full bg-slate-50/30 min-h-screen text-slate-800 antialiased selection:bg-emerald-100 selection:text-emerald-800 print:bg-white print:text-slate-900">
+    <div className="w-full bg-background min-h-screen text-slate-800 dark:text-zinc-100 antialiased selection:bg-emerald-100 selection:text-emerald-800 print:bg-white print:text-slate-900">
       {/* Sticky Header - Ultra-Modern & Premium */}
-      <div className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-100 px-3 sm:px-6 md:px-8 py-3 no-print flex flex-row items-center justify-between gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.01),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="sticky top-0 z-40 w-full bg-card/90 backdrop-blur-md border-b border-border px-3 sm:px-6 md:px-8 py-3.5 no-print flex flex-row items-center justify-between gap-3 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setViewMode("dashboard")}
-            className="h-9 px-4 rounded-xl border border-slate-200/80 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all duration-150 hidden md:flex items-center gap-1.5 text-xs font-semibold bg-white cursor-pointer shadow-sm shrink-0"
+            className="h-9 px-4 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all hidden md:flex items-center gap-1.5 text-xs font-bold bg-card cursor-pointer shadow-sm shrink-0"
           >
             <ArrowLeft className="h-4 w-4 stroke-[2]" />
             <span>Back</span>
           </Button>
           
-          <div className="h-9 w-9 rounded-xl bg-[#10b981] flex items-center justify-center text-white shrink-0 shadow-sm shadow-emerald-500/5">
+          <div className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-emerald-500 shrink-0">
             <FileText className="h-5 w-5 stroke-[2]" />
           </div>
           <div className="flex flex-col justify-center">
-            <h1 className="text-sm font-semibold text-slate-800 tracking-tight leading-none" style={{ fontFamily: "'Sora', sans-serif" }}>
+            <h1 className="text-xs md:text-sm font-bold text-foreground tracking-tight leading-none">
               {resumesList.find(r => r.id === activeResumeId)?.name || "Resume Editor"}
             </h1>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className={`inline-block h-1.5 w-1.5 rounded-full transition-all duration-300 ${savingStatus === "Saving..." ? "bg-amber-400 ring-2 ring-amber-400/20 animate-pulse" : "bg-emerald-500 ring-2 ring-emerald-500/20"}`} />
-              <span className="text-[11px] text-slate-400 font-medium tracking-normal">
-                {savingStatus === "Saving..." ? "Saving..." : "Saved"}
-              </span>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              {savingStatus === "Saving..." ? (
+                <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/15 rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider">
+                  <span className="h-1 w-1 rounded-full bg-amber-500 animate-ping" />
+                  Saving
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider">
+                  <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                  Saved
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -1147,9 +1170,9 @@ function ResumeBuilderPage() {
             size="sm"
             onClick={() => saveVault(true)}
             variant="outline"
-            className="h-9 px-3 sm:px-4 rounded-xl border border-slate-200/80 text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-all duration-150 flex items-center gap-1.5 text-xs font-semibold cursor-pointer bg-white shadow-sm"
+            className="h-9 px-3 sm:px-4 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer bg-card shadow-sm"
           >
-            <Save className="h-4 w-4 text-slate-500 stroke-[2]" />
+            <Save className="h-4 w-4 stroke-[2]" />
             <span className="hidden sm:inline">Save</span>
           </Button>
 
@@ -1158,7 +1181,7 @@ function ResumeBuilderPage() {
             variant="outline"
             size="sm"
             onClick={triggerPrint}
-            className="h-9 w-9 rounded-xl border border-slate-200/80 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all duration-150 cursor-pointer flex items-center justify-center bg-white shadow-sm"
+            className="h-9 w-9 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all cursor-pointer flex items-center justify-center bg-card shadow-sm"
             title="Print"
           >
             <Share2 className="h-4 w-4 stroke-[2]" />
@@ -1168,7 +1191,7 @@ function ResumeBuilderPage() {
           <Button
             size="sm"
             onClick={downloadPDF}
-            className="h-9 px-3 sm:px-4.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all duration-150 flex items-center gap-1.5 text-xs font-semibold cursor-pointer shadow-sm hover:shadow active:scale-95 flex items-center justify-center"
+            className="h-9 px-3 sm:px-4.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shrink-0"
           >
             <Download className="h-4 w-4 stroke-[2.2]" />
             <span className="hidden sm:inline">Export PDF</span>
@@ -1178,16 +1201,16 @@ function ResumeBuilderPage() {
 
       {/* Mobile Tabs */}
       <div className="flex lg:hidden justify-center px-4 mt-4 mb-4 no-print">
-        <div className="flex w-full max-w-xs bg-slate-100 p-0.5 rounded-lg">
+        <div className="flex w-full max-w-xs bg-secondary p-0.5 rounded-xl border border-border">
           <button
             onClick={() => setActiveWorkspaceTab("editor")}
-            className={`flex-1 py-2 text-xs font-medium rounded-md transition-all ${activeWorkspaceTab === "editor" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
+            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${activeWorkspaceTab === "editor" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
           >
             Editor
           </button>
           <button
             onClick={() => setActiveWorkspaceTab("preview")}
-            className={`flex-1 py-2 text-xs font-medium rounded-md transition-all ${activeWorkspaceTab === "preview" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
+            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${activeWorkspaceTab === "preview" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
           >
             Preview
           </button>
@@ -1199,16 +1222,16 @@ function ResumeBuilderPage() {
         {/* Left Panel - Editor */}
         <div className={`lg:col-span-5 space-y-5 mt-5 no-print ${activeWorkspaceTab === "editor" ? "block" : "hidden lg:block"}`}>
           <Tabs defaultValue="branding" className="w-full space-y-5">
-            <TabsList className="grid grid-cols-3 bg-slate-100 p-1 rounded-xl h-10">
-              <TabsTrigger value="branding" className="text-xs font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all text-slate-500">
+            <TabsList className="grid grid-cols-3 bg-secondary p-1 rounded-xl h-10 border border-border">
+              <TabsTrigger value="branding" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
                 <User className="h-3.5 w-3.5 mr-1.5" />
                 Profile
               </TabsTrigger>
-              <TabsTrigger value="content" className="text-xs font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all text-slate-500">
+              <TabsTrigger value="content" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
                 <Layers className="h-3.5 w-3.5 mr-1.5" />
                 Sections
               </TabsTrigger>
-              <TabsTrigger value="aesthetics" className="text-xs font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all text-slate-500">
+              <TabsTrigger value="aesthetics" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
                 <Palette className="h-3.5 w-3.5 mr-1.5" />
                 Style
               </TabsTrigger>
@@ -1216,7 +1239,7 @@ function ResumeBuilderPage() {
 
             {/* Profile Tab */}
             <TabsContent value="branding" className="space-y-4 focus-visible:outline-none">
-              <Card className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm">
+              <Card className="p-5 border border-border/80 rounded-2xl bg-card shadow-[0_8px_30px_rgba(0,0,0,0.01)]">
                 <div className="flex items-center gap-2 mb-5 pb-2 border-b border-slate-100">
                   <div className="h-7 w-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                     <User className="h-4 w-4" />
@@ -1636,14 +1659,14 @@ function ResumeBuilderPage() {
 
         {/* Right Panel - Preview Canvas */}
         <div className={`lg:col-span-7 flex flex-col items-center print:block print:w-full ${activeWorkspaceTab === "preview" ? "block" : "hidden lg:block"}`}>
-          <div className="w-full overflow-auto p-4 bg-slate-100/50 rounded-2xl flex flex-col items-center gap-6 canvas-container print:p-0 print:bg-white print:rounded-none">
+          <div className="w-full overflow-auto rounded-2xl canvas-container print:p-0 print:bg-white print:rounded-none">
             {getPages().map((pageSections, pageIdx) => {
               const spacing = getSpacingClasses();
               return (
                 <div
                   key={pageIdx}
                   data-page-index={pageIdx}
-                  className={`resume-page w-[210mm] h-[297mm] bg-white p-8 shadow-xl rounded-xl relative overflow-hidden shrink-0 ${getFontFamilyClass()}`}
+                  className={`resume-page w-[210mm] h-[297mm] bg-white p-8 relative overflow-hidden shrink-0 ${getFontFamilyClass()}`}
                   style={{
                     fontSize: styleConfig.fontSize === "xs" ? "12px" : styleConfig.fontSize === "sm" ? "13px" : "14px",
                     lineHeight: styleConfig.lineHeight === "tight" ? "1.2" : styleConfig.lineHeight === "relaxed" ? "1.6" : "1.4"
@@ -1841,17 +1864,21 @@ function ResumeBuilderPage() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 24px;
+          gap: 32px;
           overflow-y: auto;
-          padding: 24px 0;
+          padding: 32px 16px;
+          background-color: rgba(0, 0, 0, 0.02);
+          background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+          background-size: 24px 24px;
         }
         .resume-page {
           transform-origin: top center;
           margin: 0 auto;
           width: 794px;
           height: 1122px;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-          border-radius: 12px;
+          box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.08);
+          border: 1px solid rgba(0, 0, 0, 0.03);
+          border-radius: 4px;
           flex-shrink: 0;
           position: relative;
           background-color: white;

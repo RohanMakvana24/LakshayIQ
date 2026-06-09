@@ -475,42 +475,41 @@ function UnitPage() {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-white">
-      <div className="w-full px-4 py-4 md:px-6 lg:px-8">
+    <div className="w-full py-2">
 
         {/* Breadcrumb Navigation */}
         <div className="mb-4">
           <BreadcrumbNav items={breadcrumbItems} />
         </div>
 
-        {/* Header Section - Compact */}
-        <div className="relative rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden mb-6 shadow-lg">
-          <div className="absolute inset-0 bg-black/20" />
-          <div className="absolute top-0 -right-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-2xl" />
-          <div className="absolute bottom-0 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl" />
-          <div className="absolute inset-0 opacity-10 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.1)_75%)] bg-[length:16px_16px]" />
+        {/* Header Section */}
+        <div className="relative rounded-2xl bg-gradient-to-br from-primary/[0.02] via-card to-emerald-500/[0.01] border border-border/80 overflow-hidden mb-6 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.03)] dark:shadow-none">
+          {/* Decorative background grid */}
+          <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 px-5 py-5 md:px-7 md:py-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="relative z-10 px-6 py-6 md:px-8 md:py-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div className="space-y-2 flex-1">
-                <div className="inline-flex items-center gap-2">
-                  <span className="bg-white/10 backdrop-blur-sm rounded-full px-2.5 py-0.5 text-[10px] font-bold text-emerald-300 border border-white/20">
+                <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 rounded-full px-2.5 py-0.5">
+                  <Sparkles className="h-3 w-3" />
+                  <span className="text-[10px] font-bold tracking-wide uppercase">
                     Unit {unit.unit_number}
                   </span>
                 </div>
-                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-black tracking-tight text-foreground">
                   {unit.title}
                 </h1>
-                <p className="text-slate-300 text-xs md:text-sm max-w-2xl">
+                <p className="text-muted-foreground text-xs md:text-sm max-w-2xl leading-relaxed">
                   {unit.description || "Access video lectures, study materials, and important questions for this unit."}
                 </p>
               </div>
               <Button
                 variant={isBookmarked ? "default" : "outline"}
                 onClick={toggleBookmark}
-                className="rounded-xl h-8 md:h-10 px-3 md:px-4 text-[10px] md:text-xs font-bold shadow-sm shrink-0 bg-white/10 border-white/20 text-white hover:bg-white/20 w-fit self-start md:self-auto"
+                className="rounded-xl h-8 md:h-10 px-3 md:px-4 text-[10px] md:text-xs font-bold shadow-sm shrink-0 bg-primary text-primary-foreground border-transparent hover:bg-primary/95 dark:hover:bg-primary/90 w-fit self-start md:self-auto"
               >
-                <Bookmark className={cn("mr-1 md:mr-1.5 h-3 w-3 md:h-3.5 md:w-3.5", isBookmarked && "fill-white")} />
+                <Bookmark className={cn("mr-1 md:mr-1.5 h-3 w-3 md:h-3.5 md:w-3.5", isBookmarked && "fill-current")} />
                 {isBookmarked ? "Saved" : "Save Unit"}
               </Button>
             </div>
@@ -524,9 +523,9 @@ function UnitPage() {
             {/* Video Lectures Section */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Play className="h-4 w-4 text-emerald-600" />
-                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Video Lectures</h2>
-                <Badge variant="secondary" className="text-[10px] bg-slate-100">
+                <Play className="h-4 w-4 text-emerald-500" />
+                <h2 className="text-sm font-black text-foreground uppercase tracking-wide">Video Lectures</h2>
+                <Badge variant="secondary" className="text-[10px] bg-secondary text-muted-foreground border-border">
                   {unit.unit_videos?.length || 0}
                 </Badge>
               </div>
@@ -542,24 +541,24 @@ function UnitPage() {
                           setActivePreview({ type: "video", title: video.title, url: video.video_url || "" });
                         }}
                         className={cn(
-                          "p-3 flex items-center gap-3 rounded-xl border transition-all cursor-pointer bg-white hover:shadow-md",
-                          isActive ? "border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500/20" : "border-slate-200"
+                          "p-3 flex items-center gap-3 rounded-2xl border transition-all cursor-pointer bg-card/70 backdrop-blur-sm hover:shadow-md hover:shadow-emerald-500/5 hover:-translate-y-0.5 duration-300",
+                          isActive ? "border-emerald-500/80 bg-emerald-500/[0.03]" : "border-border/80"
                         )}
                       >
                         <div className={cn(
                           "h-9 w-9 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                          isActive ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600 group-hover:bg-slate-800 group-hover:text-white"
+                          isActive ? "bg-emerald-500 text-white" : "bg-emerald-500/10 text-emerald-500"
                         )}>
                           <Play className="h-3.5 w-3.5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-slate-800 truncate">{video.title}</p>
+                          <p className="font-bold text-sm text-foreground truncate">{video.title}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <Clock className="h-3 w-3 text-slate-400" />
-                            <span className="text-xs text-slate-500">{video.duration || "15 mins"}</span>
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground font-bold">{video.duration || "15 mins"}</span>
                           </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       </Card>
                     );
                   })}
@@ -572,9 +571,9 @@ function UnitPage() {
             {/* Study Materials Section */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-emerald-600" />
-                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Study Materials</h2>
-                <Badge variant="secondary" className="text-[10px] bg-slate-100">
+                <FileText className="h-4 w-4 text-emerald-500" />
+                <h2 className="text-sm font-black text-foreground uppercase tracking-wide">Study Materials</h2>
+                <Badge variant="secondary" className="text-[10px] bg-secondary text-muted-foreground border-border">
                   {unit.unit_materials?.length || 0}
                 </Badge>
               </div>
@@ -594,24 +593,24 @@ function UnitPage() {
                           setActivePreview({ type: "material", title: material.title, url: material.file_url || "" });
                         }}
                         className={cn(
-                          "p-3 flex items-center gap-3 rounded-xl border transition-all cursor-pointer bg-white hover:shadow-md",
-                          isActive ? "border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500/20" : "border-slate-200"
+                          "p-3 flex items-center gap-3 rounded-2xl border transition-all cursor-pointer bg-card/70 backdrop-blur-sm hover:shadow-md hover:shadow-emerald-500/5 hover:-translate-y-0.5 duration-300",
+                          isActive ? "border-emerald-500/80 bg-emerald-500/[0.03]" : "border-border/80"
                         )}
                       >
                         <div className={cn(
                           "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
-                          isActive ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600"
+                          isActive ? "bg-emerald-500 text-white" : "bg-emerald-500/10 text-emerald-500"
                         )}>
                           <FileText className="h-3.5 w-3.5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-slate-800 truncate">{material.title}</p>
-                          <p className="text-xs text-slate-500 mt-0.5">
+                          <p className="font-bold text-sm text-foreground truncate">{material.title}</p>
+                          <p className="text-xs text-muted-foreground font-bold mt-0.5">
                             {material.file_type || "PDF"} • {material.file_size || "N/A"}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
-                          <ChevronRight className="h-4 w-4 text-slate-400" />
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </div>
                       </Card>
                     );
@@ -623,16 +622,16 @@ function UnitPage() {
             </div>
 
             {/* Important Questions Section */}
-            <div className="space-y-4 border-t border-slate-100 pt-6">
+            <div className="space-y-4 border-t border-border/80 pt-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center animate-pulse">
-                    <Sparkles className="h-4 w-4 text-emerald-600" />
+                  <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center animate-pulse">
+                    <Sparkles className="h-4 w-4 text-emerald-500" />
                   </div>
-                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                  <h2 className="text-sm font-black text-foreground uppercase tracking-wide">
                     Important Questions
                   </h2>
-                  <Badge variant="secondary" className="text-[10px] bg-emerald-50 border border-emerald-200/50 text-emerald-700 font-mono">
+                  <Badge variant="secondary" className="text-[10px] bg-emerald-500/10 border border-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-extrabold">
                     {totalQuestions} Files/Qs
                   </Badge>
                 </div>
@@ -641,10 +640,10 @@ function UnitPage() {
               {/* Difficulty Level Tabs */}
               <div className="grid grid-cols-4 gap-1.5 mb-2">
                 {[
-                  { value: 1, label: "1 Mark", emoji: "🌱", color: "emerald", bg: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-                  { value: 2, label: "2 Marks", emoji: "⚡", color: "blue", bg: "bg-blue-50 text-blue-700 border-blue-200" },
-                  { value: 3, label: "3 Marks", emoji: "🎯", color: "purple", bg: "bg-purple-50 text-purple-700 border-purple-200" },
-                  { value: 5, label: "5 Marks", emoji: "🏆", color: "amber", bg: "bg-amber-50 text-amber-700 border-amber-200" }
+                  { value: 1, label: "1 Mark", emoji: "🌱", color: "emerald", bg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
+                  { value: 2, label: "2 Marks", emoji: "⚡", color: "blue", bg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" },
+                  { value: 3, label: "3 Marks", emoji: "🎯", color: "purple", bg: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20" },
+                  { value: 5, label: "5 Marks", emoji: "🏆", color: "amber", bg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" }
                 ].map((opt) => {
                   const isActive = activeMarksTab === opt.value;
                   const count = groupedQuestions[opt.value]?.length || 0;
@@ -656,12 +655,12 @@ function UnitPage() {
                         "py-1.5 px-1 rounded-lg border text-center transition-all flex flex-col items-center justify-center gap-0.5",
                         isActive 
                           ? `${opt.bg} font-bold ring-1 ring-emerald-500/20 scale-[1.02] shadow-sm` 
-                          : "bg-white border-slate-200 hover:bg-slate-50 text-slate-500"
+                          : "bg-card border-border hover:bg-muted/50 text-muted-foreground"
                       )}
                     >
                       <span className="text-xs">{opt.emoji}</span>
                       <span className="text-[9px] font-bold leading-none">{opt.label}</span>
-                      <span className={cn("text-[8px] font-semibold mt-0.5 px-1 rounded-full", isActive ? "bg-white/60" : "bg-slate-100 text-slate-400")}>
+                      <span className={cn("text-[8px] font-semibold mt-0.5 px-1 rounded-full", isActive ? "bg-white/60 text-slate-800" : "bg-muted text-muted-foreground")}>
                         {count}
                       </span>
                     </button>
@@ -698,20 +697,20 @@ function UnitPage() {
                           }
                         }}
                         className={cn(
-                          "p-3 border rounded-xl transition-all cursor-pointer bg-white hover:shadow-md",
+                          "p-3 border rounded-2xl transition-all cursor-pointer bg-card/70 backdrop-blur-sm hover:shadow-md hover:-translate-y-0.5 duration-300",
                           isPreviewActive && hasFile
-                            ? "border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500/20"
+                            ? "border-emerald-500/80 bg-emerald-500/[0.03]"
                             : isSelected
-                              ? "border-slate-300 bg-slate-50/30"
-                              : "border-slate-200"
+                              ? "border-border bg-muted/20"
+                              : "border-border/80"
                         )}
                       >
                         <div className="flex items-start gap-2.5">
                           <div className={cn(
                             "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-extrabold",
                             isPreviewActive && hasFile
-                              ? "bg-emerald-600 text-white"
-                              : "bg-slate-100 text-slate-500"
+                              ? "bg-emerald-500 text-white"
+                              : "bg-secondary text-muted-foreground"
                           )}>
                             {hasFile ? (
                               isMd ? "MD" : isPdf ? "PDF" : "📄"
@@ -722,49 +721,49 @@ function UnitPage() {
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                              <Badge variant="outline" className="text-[8px] font-mono uppercase bg-slate-50 px-1 border-slate-200 text-slate-500 leading-none py-0.5">
+                              <Badge variant="outline" className="text-[8px] font-mono uppercase bg-secondary px-1 border-border text-muted-foreground leading-none py-0.5">
                                 {q.category}
                               </Badge>
                               {q.year && (
-                                <span className="text-[8px] font-mono font-bold text-slate-400 bg-slate-100 px-1 rounded">
+                                <span className="text-[8px] font-mono font-bold text-muted-foreground bg-secondary px-1 rounded">
                                   Year {q.year}
                                 </span>
                               )}
                               {hasFile && (
-                                <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded flex items-center gap-0.5">
+                                <span className="text-[8px] font-bold text-emerald-500 bg-emerald-500/10 px-1 rounded flex items-center gap-0.5">
                                   Attached File
                                 </span>
                               )}
                             </div>
-                            <p className="font-semibold text-xs sm:text-sm text-slate-800 leading-snug">
+                            <p className="font-bold text-xs sm:text-sm text-foreground leading-snug">
                               {q.question_text}
                             </p>
 
                             {/* Detailed Context expanded on click */}
                             {isSelected && (
-                              <div className="mt-2 pt-2 border-t border-slate-100/70 text-[10px] text-slate-500 space-y-1">
+                              <div className="mt-2 pt-2 border-t border-border text-[10px] text-muted-foreground space-y-1">
                                 <p>
-                                  <span className="font-bold text-emerald-600">Category:</span>{" "}
+                                  <span className="font-bold text-emerald-500">Category:</span>{" "}
                                   <span className="capitalize">{q.category}</span>
                                 </p>
                                 {q.year && (
                                   <p>
-                                    <span className="font-bold text-slate-700">Exam year:</span> {q.year}
+                                    <span className="font-bold text-foreground">Exam year:</span> {q.year}
                                   </p>
                                 )}
                                 {hasFile ? (
-                                  <p className="text-emerald-600 font-bold flex items-center gap-0.5">
+                                  <p className="text-emerald-500 font-extrabold flex items-center gap-0.5">
                                     <Sparkles className="h-2.5 w-2.5 animate-pulse" /> Click to open secure preview in right panel
                                   </p>
                                 ) : (
-                                  <p className="text-slate-400">
+                                  <p className="text-muted-foreground">
                                     No attachment file for this question entry.
                                   </p>
                                 )}
                               </div>
                             )}
                           </div>
-                          <ChevronRight className={cn("h-4 w-4 text-slate-400 shrink-0 self-center transition-transform", isSelected && "rotate-90")} />
+                          <ChevronRight className={cn("h-4 w-4 text-muted-foreground shrink-0 self-center transition-transform", isSelected && "rotate-90")} />
                         </div>
                       </Card>
                     );
@@ -779,13 +778,13 @@ function UnitPage() {
           {/* Right Column - Preview Panel */}
           <div className="lg:col-span-7">
             <div className="sticky top-6">
-              <Card className="overflow-hidden border border-slate-200 bg-white shadow-lg rounded-2xl flex flex-col h-[400px] md:h-[500px] lg:h-[550px] relative">
+              <Card className="overflow-hidden border border-border bg-card shadow-lg rounded-2xl flex flex-col h-[400px] md:h-[500px] lg:h-[550px] relative">
                 {activePreview.type && activePreview.url ? (
                   <div
                     ref={workspaceRef}
                     className={cn(
                       "flex flex-col relative overflow-hidden fullscreen-workspace",
-                      isMarkdownMaterial ? "bg-white" : "bg-slate-900",
+                      isMarkdownMaterial ? "bg-background" : "bg-slate-900",
                       isFullscreen ? "workspace-phase-active min-h-0 p-0" : "flex-1 min-h-0"
                     )}
                   >
@@ -796,10 +795,10 @@ function UnitPage() {
                         "preview-workspace-header shrink-0 z-30 flex items-center justify-between gap-3 border-b",
                         "transition-all duration-500 ease-workspace",
                         isMarkdownMaterial
-                          ? "bg-[#f6f8fa] border-[#d0d7de] text-[#24292f] px-4 py-3"
+                          ? "bg-card border-border text-foreground px-4 py-3"
                           : isFullscreen
                             ? "bg-slate-900 border-slate-800 px-3 py-2.5 md:px-6 md:py-4"
-                            : "bg-slate-100 border-slate-200 px-4 py-3"
+                            : "bg-card border-border px-4 py-3"
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0 truncate">
@@ -807,20 +806,20 @@ function UnitPage() {
                           className={cn(
                             "h-3.5 w-3.5 shrink-0 transition-colors duration-500",
                             isMarkdownMaterial
-                              ? "text-emerald-600 animate-pulse"
+                              ? "text-emerald-500 animate-pulse"
                               : isFullscreen
                                 ? "text-emerald-400 animate-pulse"
-                                : "text-emerald-600 animate-pulse"
+                                : "text-emerald-500 animate-pulse"
                           )}
                         />
                         <span
                           className={cn(
                             "text-xs font-semibold uppercase tracking-wider transition-all duration-500 ease-workspace",
                             isMarkdownMaterial
-                              ? "hidden sm:inline-flex bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 font-black items-center gap-1.5"
+                              ? "hidden sm:inline-flex bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 rounded-full px-3 py-1 font-black items-center gap-1.5"
                               : isFullscreen
                                 ? "hidden sm:inline-flex bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-3 py-1 font-black items-center gap-1.5"
-                                : "hidden sm:inline-flex text-slate-500"
+                                : "hidden sm:inline-flex text-muted-foreground"
                           )}
                         >
                           {isFullscreen ? (
@@ -835,10 +834,10 @@ function UnitPage() {
                           className={cn(
                             "truncate transition-colors duration-500",
                             isMarkdownMaterial
-                              ? "text-sm font-bold text-[#24292f]"
+                              ? "text-sm font-bold text-foreground"
                               : isFullscreen
                                 ? "text-xs md:text-sm font-bold text-white max-w-xl"
-                                : "text-sm font-medium text-slate-800"
+                                : "text-sm font-bold text-foreground"
                           )}
                         >
                           {activePreview.title}
@@ -1116,19 +1115,16 @@ function UnitPage() {
                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                            />
                          );
-                       })()}
-
-
-                    </div>
+                       })()}                    </div>
                   </div>
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3 bg-gradient-to-br from-slate-50 to-slate-100">
-                    <div className="h-14 w-14 rounded-full bg-slate-200 flex items-center justify-center">
-                      <MonitorPlay className="h-6 w-6 text-slate-500" />
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3 bg-gradient-to-br from-muted/20 to-muted/40">
+                    <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center">
+                      <MonitorPlay className="h-6 w-6 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-700">Preview Panel</p>
-                      <p className="text-xs text-slate-500 max-w-xs mt-1">
+                      <p className="text-sm font-extrabold text-foreground">Preview Panel</p>
+                      <p className="text-xs text-muted-foreground max-w-xs mt-1 leading-relaxed">
                         Click on any video or study material from the left to preview it here.
                       </p>
                     </div>
@@ -1138,7 +1134,6 @@ function UnitPage() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Hidden preloader container to cache files natively in the background */}
       {shouldPreload && (
@@ -1445,9 +1440,9 @@ function UnitPage() {
 // Helper Component for Empty States
 function EmptyStateRow({ icon: Icon, message }: { icon: any; message: string }) {
   return (
-    <div className="py-6 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-      <Icon className="h-5 w-5 text-slate-400 mx-auto mb-1" />
-      <p className="text-xs text-slate-500">{message}</p>
+    <div className="py-6 text-center border border-dashed border-border rounded-2xl bg-muted/20">
+      <Icon className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+      <p className="text-xs text-muted-foreground">{message}</p>
     </div>
   );
 }

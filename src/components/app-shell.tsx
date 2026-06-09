@@ -1,5 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
+import { motion } from "framer-motion";
 import { LogOut, Search, Bell, ChevronRight, Menu, PanelLeftClose, PanelLeft, Sparkles, UserCircle, ChevronDown, Plus, ArrowLeft, Home, MessageSquare, X, Sun, Moon } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
@@ -147,10 +148,18 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
       </aside>
 
       {/* --- MAIN CONTENT BAR --- */}
-      <div className={cn("transition-[padding-left] duration-300 ease-in-out will-change-[padding-left] print:pl-0 print:p-0 print:m-0 print:block", isCollapsed ? "md:pl-20" : "md:pl-66")}>
+      <div className={cn("relative min-h-screen transition-[padding-left] duration-300 ease-in-out will-change-[padding-left] print:pl-0 print:p-0 print:m-0 print:block bg-background", isCollapsed ? "md:pl-20" : "md:pl-66")}>
+        {/* --- Global Premium Student Mesh Gradient Background --- */}
+        {variant === "student" && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+            <motion.div animate={{ x: [0, 40, -30, 0], y: [0, -50, 30, 0] }} transition={{ duration: 24, repeat: Infinity, ease: "linear" }} className="absolute -top-1/4 -right-1/4 w-[65%] h-[65%] rounded-full bg-primary/[0.05] blur-[120px]" />
+            <motion.div animate={{ x: [0, -40, 30, 0], y: [0, 40, -30, 0] }} transition={{ duration: 28, repeat: Infinity, ease: "linear" }} className="absolute -bottom-1/4 -left-1/4 w-[55%] h-[55%] rounded-full bg-emerald-500/[0.04] blur-[120px]" />
+            <motion.div animate={{ x: [0, 25, -35, 0], y: [0, -25, 35, 0] }} transition={{ duration: 32, repeat: Infinity, ease: "linear" }} className="absolute top-1/3 left-1/3 w-[35%] h-[35%] rounded-full bg-violet-500/[0.03] blur-[100px]" />
+          </div>
+        )}
 
         {/* Header Bar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-zinc-100/60 bg-white/80 px-4 md:px-8 backdrop-blur-md print:hidden">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-zinc-100/60 dark:border-zinc-800/40 bg-white/60 dark:bg-zinc-950/60 px-4 md:px-8 backdrop-blur-md print:hidden relative z-10">
 
           {/* Mobile Menu Toggle */}
           <Button
@@ -228,7 +237,12 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
         </header>
 
         {/* --- MAIN ROUTE VIEW --- */}
-        <main className="p-4 md:p-6 max-w-[1600px] bg-background mx-auto animate-in fade-in duration-500 print:p-0 print:m-0 print:block">
+        <main className={cn(
+          "relative z-10 animate-in fade-in duration-500 print:p-0 print:m-0 print:block",
+          variant === "student"
+            ? "w-full max-w-none py-4 md:py-6 px-4 md:px-8"
+            : "max-w-[1600px] mx-auto p-4 md:p-6"
+        )}>
           {children}
         </main>
       </div>

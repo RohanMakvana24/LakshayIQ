@@ -1,7 +1,6 @@
-
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
-import { Camera, Check, Loader2, Save, User, Mail, Calendar, Shield, AlertCircle, Eye, EyeOff, Lock } from "lucide-react";
+import { Camera, Check, Loader2, User, Mail, Calendar, Shield, AlertCircle, Eye, EyeOff, Lock, Sparkles, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -160,12 +159,12 @@ function StudentProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-300">
+    <div className="w-full py-2 space-y-6 animate-in fade-in duration-300">
 
-      {/* Toast Notifications */}
-      <div className="fixed top-5 right-5 z-50 space-y-2 max-w-sm w-full">
+      {/* Floating Status Toast Notifications */}
+      <div className="fixed top-6 right-6 z-50 space-y-2 max-w-sm w-full">
         {successMessage && (
-          <div className="bg-slate-900 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-xl border border-slate-800 flex items-center gap-2.5 animate-in slide-in-from-top-4">
+          <div className="bg-slate-900 border border-slate-800 text-white text-xs font-bold px-4 py-3.5 rounded-xl shadow-xl flex items-center gap-2.5 animate-in slide-in-from-top-4">
             <div className="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
               <Check className="h-3 w-3 stroke-[3]" />
             </div>
@@ -173,55 +172,51 @@ function StudentProfilePage() {
           </div>
         )}
         {error && (
-          <div className="bg-rose-50 text-rose-700 text-sm font-semibold px-4 py-3 rounded-xl shadow-xl border border-rose-100 flex items-center gap-2.5 animate-in slide-in-from-top-4">
+          <div className="bg-rose-50 text-rose-700 text-xs font-bold px-4 py-3.5 rounded-xl shadow-xl border border-rose-100 flex items-center gap-2.5 animate-in slide-in-from-top-4">
             <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
             <span>{error}</span>
           </div>
         )}
       </div>
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Account Settings</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Manage your digital student profile and credentials.</p>
-      </div>
+      {/* Premium Profile Cover Header */}
+      <div className="relative rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm">
+        {/* Cover Banner */}
+        <div className="relative h-32 md:h-44 w-full bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950">
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl" />
+          <div className="absolute bottom-0 left-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl" />
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-
-        {/* Left Card: Photo Management */}
-        <div className="bg-white border border-slate-200/70 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center">
-          <div className="relative">
-            {/* Avatar Container */}
-            <div className="h-24 w-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-inner flex items-center justify-center">
-              {profile?.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt={displayName}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="h-full w-full bg-gradient-to-br from-slate-900 to-slate-800 text-emerald-400 text-3xl font-bold flex items-center justify-center">
-                  {initials}
-                </div>
-              )}
-            </div>
-
-            {/* Spinner Overlay during Direct Upload */}
+        {/* Profile Details Bar */}
+        <div className="px-6 pb-6 pt-16 relative flex flex-col md:flex-row md:items-end justify-between gap-4">
+          
+          {/* Avatar Placement (Overlaps Banner) */}
+          <div className="absolute -top-12 left-6 h-24 w-24 rounded-2xl overflow-hidden bg-card border-4 border-card shadow-md flex items-center justify-center group">
+            {profile?.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={displayName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-slate-900 to-slate-800 text-emerald-400 text-3xl font-extrabold flex items-center justify-center">
+                {initials}
+              </div>
+            )}
+            
             {uploadingAvatar && (
-              <div className="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center backdrop-blur-[1px]">
-                <Loader2 className="h-5 w-5 text-emerald-600 animate-spin" />
+              <div className="absolute inset-0 bg-card/85 flex items-center justify-center backdrop-blur-[1px]">
+                <Loader2 className="h-5 w-5 text-emerald-500 animate-spin" />
               </div>
             )}
 
-            {/* Micro Floating Camera Action Button */}
+            {/* Hover Trigger for Avatar Update */}
             <button
-              type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingAvatar}
-              className="absolute -bottom-1.5 -right-1.5 h-7 w-7 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 shadow-sm transition-all cursor-pointer disabled:opacity-50"
-              title="Upload new image"
+              className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200 text-white cursor-pointer"
             >
-              <Camera className="h-3.5 w-3.5" />
+              <Camera className="h-5 w-5" />
             </button>
           </div>
 
@@ -233,114 +228,133 @@ function StudentProfilePage() {
             className="hidden"
           />
 
-          <div className="mt-4">
-            <h3 className="text-base font-bold text-slate-800 truncate max-w-[200px]">{displayName || "Student"}</h3>
-            <p className="text-xs text-slate-400 truncate max-w-[200px] mt-0.5">{user?.email}</p>
+          {/* User Meta */}
+          <div className="space-y-1">
+            <h2 className="text-xl font-black text-foreground flex items-center gap-2">
+              {displayName || "Student"}
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/15 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
+                Active
+              </span>
+            </h2>
+            <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+              <Mail className="h-3.5 w-3.5" />
+              {user?.email}
+            </p>
           </div>
 
+          {/* Upload Button Shortcut */}
           <Button
             type="button"
             variant="outline"
             size="sm"
             disabled={uploadingAvatar}
             onClick={() => fileInputRef.current?.click()}
-            className="mt-4 w-full h-9 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-slate-50/50 hover:bg-slate-50"
+            className="h-9 rounded-xl text-xs font-bold text-foreground border-border bg-secondary hover:bg-secondary/80 self-start md:self-auto"
           >
-            {uploadingAvatar ? "Uploading..." : "Upload Photo"}
+            <Camera className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            Change Avatar
           </Button>
-          <p className="text-[10px] text-slate-400 mt-2">JPEG or PNG under 5MB. Uploads instantly.</p>
+
+        </div>
+      </div>
+
+      {/* Main Grid Options */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        
+        {/* Left column: Academic Details Card */}
+        <div className="space-y-6">
+          <div className="bg-card border border-border/80 rounded-2xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <GraduationCap className="h-3.5 w-3.5 text-emerald-500" />
+              Academic Status
+            </h3>
+
+            <div className="space-y-3">
+              <div className="bg-secondary/40 border border-border/40 p-3.5 rounded-xl flex items-center gap-3">
+                <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <span className="block text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Joined On</span>
+                  <span className="text-xs font-extrabold text-foreground mt-1 block">
+                    {profile?.created_at
+                      ? new Date(profile.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                      : "—"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-secondary/40 border border-border/40 p-3.5 rounded-xl flex items-center gap-3">
+                <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <span className="block text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Account Role</span>
+                  <span className="text-xs font-extrabold text-foreground mt-1 block capitalize">
+                    {profile?.role ?? "Student"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-muted-foreground text-center pt-2 leading-relaxed">
+              Account status is verified. To change your registered email, contact campus administration.
+            </p>
+          </div>
         </div>
 
-        {/* Right Card: Main Profile Forms */}
-        <div className="md:col-span-2 space-y-6">
+        {/* Right column: Form Editors */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Personal Name Form Card */}
+          <div className="bg-card border border-border/80 rounded-2xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5 text-emerald-500" />
+              Personal Profile
+            </h3>
 
-          {/* Personal Info Form */}
-          <div className="bg-white border border-slate-200/70 rounded-2xl p-6 shadow-sm">
             <form onSubmit={handleSaveName} className="space-y-4">
               <div className="space-y-1.5">
-                <label htmlFor="full-name" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <label htmlFor="full-name" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Full Name
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <div className="relative flex-1">
-                    <User className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <User className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="full-name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Enter your full name"
-                      className="pl-10 h-11 rounded-xl border-slate-200 focus-visible:ring-slate-900/5 focus-visible:border-slate-900 text-sm font-medium bg-slate-50/30"
+                      className="pl-10 h-10 rounded-xl border-border focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 text-sm font-bold bg-secondary/35"
                     />
                   </div>
                   <Button
                     type="submit"
                     disabled={savingName || fullName === profile?.full_name}
-                    className="h-11 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-all shrink-0 shadow-sm"
+                    className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shrink-0 shadow-md"
                   >
-                    {savingName ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                    {savingName ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
                   </Button>
                 </div>
               </div>
             </form>
-
-            {/* Read-only System Fields */}
-            <div className="mt-6 pt-6 border-t border-slate-100 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    value={user?.email ?? ""}
-                    readOnly
-                    disabled
-                    className="pl-10 h-11 rounded-xl border-slate-200 bg-slate-50/60 text-slate-400 font-medium cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              {/* Account Badges */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="bg-slate-50/60 border border-slate-100 p-3 rounded-xl flex items-center gap-2.5">
-                  <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
-                  <div>
-                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Joined</span>
-                    <span className="text-xs font-bold text-slate-700 mt-1 block">
-                      {profile?.created_at
-                        ? new Date(profile.created_at).toLocaleDateString("en-IN", { month: "short", year: "numeric" })
-                        : "—"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50/60 border border-slate-100 p-3 rounded-xl flex items-center gap-2.5">
-                  <Shield className="h-4 w-4 text-slate-400 shrink-0" />
-                  <div>
-                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Role</span>
-                    <span className="text-xs font-bold text-slate-700 mt-1 block capitalize">Student</span>
-                  </div>
-                </div>
-              </div>
-
-            </div>
           </div>
 
-          {/* Change Password Card - Rendered only for email logins */}
+          {/* Password Change Form Card */}
           {isEmailUser && (
-            <div className="bg-white border border-slate-200/70 rounded-2xl p-6 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="border-b border-slate-100 pb-4 mb-4">
-                <h3 className="text-base font-bold text-slate-800">Change Password</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Update your password to keep your account secure.</p>
+            <div className="bg-card border border-border/80 rounded-2xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] space-y-4">
+              <div className="border-b border-border/50 pb-3">
+                <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-emerald-500" />
+                  Credentials Security
+                </h3>
+                <p className="text-[10px] text-muted-foreground mt-0.5 font-bold uppercase tracking-wider">Update security password keys</p>
               </div>
 
               <form onSubmit={handlePasswordChange} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="new-password" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <label htmlFor="new-password" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     New Password
                   </label>
                   <div className="relative">
-                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="new-password"
                       type={showNewPassword ? "text" : "password"}
@@ -348,12 +362,12 @@ function StudentProfilePage() {
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="pl-10 pr-10 h-11 rounded-xl border-slate-200 focus-visible:ring-slate-900/5 focus-visible:border-slate-900 text-sm font-medium bg-slate-50/30"
+                      className="pl-10 pr-10 h-10 rounded-xl border-border focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 text-sm font-bold bg-secondary/35"
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -361,11 +375,11 @@ function StudentProfilePage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="confirm-password" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Confirm New Password
+                  <label htmlFor="confirm-password" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Confirm Password
                   </label>
                   <div className="relative">
-                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
@@ -373,12 +387,12 @@ function StudentProfilePage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="pl-10 pr-10 h-11 rounded-xl border-slate-200 focus-visible:ring-slate-900/5 focus-visible:border-slate-900 text-sm font-medium bg-slate-50/30"
+                      className="pl-10 pr-10 h-10 rounded-xl border-border focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 text-sm font-bold bg-secondary/35"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -389,7 +403,7 @@ function StudentProfilePage() {
                   <Button
                     type="submit"
                     disabled={updatingPassword || !newPassword || !confirmPassword}
-                    className="h-11 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-all shadow-sm flex items-center gap-2"
+                    className="h-10 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2"
                   >
                     {updatingPassword ? (
                       <>
@@ -397,7 +411,10 @@ function StudentProfilePage() {
                         <span>Updating...</span>
                       </>
                     ) : (
-                      <span>Update Password</span>
+                      <>
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>Update Password</span>
+                      </>
                     )}
                   </Button>
                 </div>
