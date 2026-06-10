@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles, Building2, BookOpen, Search, ArrowUpDown, Compass, School,
   FileText, CalendarCheck, MessageSquare, Bookmark, FolderGit2, ArrowRight,
-  ArrowLeft, GraduationCap, TrendingUp, Clock, Calendar, Zap, Award,
+  ArrowLeft, GraduationCap, TrendingUp, Clock, Calendar, Zap, Award, Heart
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/student/")({
@@ -88,6 +88,17 @@ const tools = [
   },
 ] as const;
 
+export const cardGradients = [
+  "from-amber-400 to-amber-500",    // JS yellow style
+  "from-cyan-400 to-sky-500",        // React cyan style
+  "from-purple-500 to-indigo-600",   // Bootstrap purple style
+  "from-emerald-500 to-green-600",   // Node green style
+  "from-teal-400 to-emerald-500",     // Vue teal style
+  "from-blue-600 to-indigo-700",     // CSS3 blue style
+  "from-red-500 to-rose-600",        // Angular red style
+  "from-pink-500 to-fuchsia-600",     // GraphQL pink style
+];
+
 /* ════════════════════════════════════════════════════════════════════════ */
 function StudentDashboard() {
   const [activeView, setActiveView] = useState<"dashboard" | "university">("dashboard");
@@ -97,6 +108,25 @@ function StudentDashboard() {
   const [sortBy, setSortBy] = useState<"name" | "courses_desc" | "courses_asc">("name");
   const [greeting, setGreeting] = useState("Welcome");
   const [hoveredTool, setHoveredTool] = useState<number | null>(null);
+  const [bookmarkedUnis, setBookmarkedUnis] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<"all" | "popular" | "specialized" | "bookmarked">("all");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("bookmarked_universities");
+    if (saved) {
+      try { setBookmarkedUnis(JSON.parse(saved)); } catch (e) {}
+    }
+  }, []);
+
+  const toggleBookmark = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = bookmarkedUnis.includes(id)
+      ? bookmarkedUnis.filter(x => x !== id)
+      : [...bookmarkedUnis, id];
+    setBookmarkedUnis(next);
+    localStorage.setItem("bookmarked_universities", JSON.stringify(next));
+  };
 
   useEffect(() => { const h = new Date().getHours(); setGreeting(h < 12 ? "Good Morning" : h < 18 ? "Good Afternoon" : "Good Evening"); }, []);
 
@@ -125,12 +155,25 @@ function StudentDashboard() {
 
   const filtered = useMemo(() => {
     let r = [...universities];
-    if (searchQuery.trim()) { const q = searchQuery.toLowerCase(); r = r.filter(u => u.name.toLowerCase().includes(q) || u.slug.toLowerCase().includes(q) || u.description?.toLowerCase().includes(q)); }
+    if (searchQuery.trim()) { 
+      const q = searchQuery.toLowerCase(); 
+      r = r.filter(u => u.name.toLowerCase().includes(q) || u.slug.toLowerCase().includes(q) || u.description?.toLowerCase().includes(q)); 
+    }
+    
+    // Tab filters
+    if (activeTab === "popular") {
+      r = r.filter(u => (u.courses?.length || 0) > 1);
+    } else if (activeTab === "specialized") {
+      r = r.filter(u => (u.courses?.length || 0) === 1);
+    } else if (activeTab === "bookmarked") {
+      r = r.filter(u => bookmarkedUnis.includes(u.id));
+    }
+
     if (sortBy === "courses_desc") r.sort((a, b) => (b.courses?.length || 0) - (a.courses?.length || 0));
     else if (sortBy === "courses_asc") r.sort((a, b) => (a.courses?.length || 0) - (b.courses?.length || 0));
     else r.sort((a, b) => a.name.localeCompare(b.name));
     return r;
-  }, [universities, searchQuery, sortBy]);
+  }, [universities, searchQuery, sortBy, activeTab, bookmarkedUnis]);
 
   const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
   const pop = { hidden: { opacity: 0, y: 24, scale: 0.95 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring" as const, stiffness: 120, damping: 16 } } };
@@ -404,46 +447,120 @@ function StudentDashboard() {
                 </div>
               </div>
 
+              {/* Shaded Tab Bar (like reference image) */}
+              <div className="flex border-b border-border/80 w-full mb-2 overflow-x-auto scrollbar-none bg-muted/30 dark:bg-card/30 p-1 gap-1">
+                {(["all", "popular", "specialized", "bookmarked"] as const).map((tab) => {
+                  const label = tab === "all" ? "All" : tab === "popular" ? "Popular" : tab === "specialized" ? "Specialized" : "Bookmarked";
+                  const isActive = activeTab === tab;
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`py-2 px-4 text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-sm rounded-none"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted rounded-none"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+
               <AnimatePresence mode="popLayout">
                 {loading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(6)].map((_, i) => <div key={i} className="bg-card h-72 rounded-xl border border-border animate-pulse" />)}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {[...Array(8)].map((_, i) => <div key={i} className="bg-card h-72 rounded-none border border-border animate-pulse" />)}
                   </div>
                 ) : filtered.length === 0 ? (
-                  <div className="text-center py-16 bg-card rounded-xl border border-border">
+                  <div className="text-center py-16 bg-card rounded-none border border-border">
                     <Compass className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
                     <p className="text-sm font-bold text-foreground">No campuses found</p>
                     <p className="text-xs text-muted-foreground mt-1">Try a different search</p>
                   </div>
                 ) : (
-                  <motion.div variants={stagger} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filtered.map((u) => {
+                  <motion.div variants={stagger} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {filtered.map((u, index) => {
                       const c = u.courses?.length || 0;
+                      const gradient = cardGradients[index % cardGradients.length];
+                      const badgeText = c === 0 ? "Upcoming" : c === 1 ? "Specialized" : "Popular";
+                      const badgeStyle = 
+                        c === 0 ? "bg-muted text-muted-foreground border-none" :
+                        c === 1 ? "bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400 border-none" :
+                        "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-none";
+                      
                       return (
                         <motion.div variants={pop} key={u.id} className="group">
                            <Link to="/student/university/$id" params={{ id: u.id }} className="block h-full">
-                            <div className="h-full bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300 hover:-translate-y-1 flex flex-col relative">
-                              <div className="relative h-32 w-full overflow-hidden bg-surface shrink-0">
-                                {u.banner_url ? <img src={u.banner_url} alt={u.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                  : <div className="w-full h-full bg-gradient-to-br from-primary/20 to-emerald-500/10" />}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                              </div>
-                              <div className="absolute top-[104px] left-5 z-20 h-14 w-14 rounded-xl bg-card border-2 border-background shadow-lg p-1.5 flex items-center justify-center overflow-hidden">
-                                {u.logo_url ? <img src={u.logo_url} alt={u.name} className="h-full w-full object-contain rounded-lg" />
-                                  : <School className="h-6 w-6 text-primary" />}
-                              </div>
-                              <div className="p-5 pt-10 flex-1 flex flex-col justify-between gap-3">
-                                <div>
-                                  <h3 className="font-extrabold text-foreground group-hover:text-primary transition-colors text-sm line-clamp-1">{u.name}</h3>
-                                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">{u.description || "Comprehensive syllabus, term papers & past question sheets."}</p>
+                            <div className="h-full bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300 hover:-translate-y-1.5 flex flex-col relative">
+                              {/* Header colored band like the second image */}
+                              <div className={`relative h-36 w-full bg-gradient-to-br ${gradient} flex flex-col items-center justify-center p-4 text-white shrink-0 overflow-hidden`}>
+                                {u.banner_url && (
+                                  <img src={u.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-overlay pointer-events-none" />
+                                )}
+                                {/* Unique Design Details in Banner */}
+                                <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1.5px,transparent_1.5px)] [background-size:12px_12px] pointer-events-none" />
+                                <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-white/15 blur-lg pointer-events-none" />
+                                <div className="absolute -left-6 -bottom-6 w-16 h-16 rounded-full bg-white/10 blur-md pointer-events-none" />
+
+                                <div className="h-16 w-16 rounded-lg bg-white/95 backdrop-blur-sm shadow-md border-2 border-white flex items-center justify-center p-2 mb-2 transition-transform duration-300 group-hover:scale-110 z-10">
+                                  {u.logo_url ? (
+                                    <img src={u.logo_url} alt={u.name} className="h-full w-full object-contain rounded-md" />
+                                  ) : (
+                                    <School className="h-8 w-8 text-primary" />
+                                  )}
                                 </div>
-                                <div className="flex items-center justify-between pt-3 border-t border-border">
-                                  <div className="inline-flex items-center gap-1 bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/15 text-[10px] text-primary font-bold uppercase tracking-wider">
-                                    <BookOpen className="h-3 w-3" />{c} Program{c !== 1 ? "s" : ""}
+                                <span className="text-xs font-black tracking-wider uppercase text-white drop-shadow-sm truncate max-w-full px-2 z-10">
+                                  {u.slug || "CAMPUS"}
+                                </span>
+                              </div>
+
+                              {/* Card Body */}
+                              <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+                                <div>
+                                  {/* Badge & Heart Wishlist Row */}
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider ${badgeStyle}`}>
+                                      {badgeText}
+                                    </span>
+                                    <button 
+                                      onClick={(e) => toggleBookmark(u.id, e)}
+                                      className="p-1 hover:bg-secondary rounded-full transition-colors"
+                                    >
+                                      <Heart className={`h-4.5 w-4.5 transition-all ${bookmarkedUnis.includes(u.id) ? "fill-red-500 text-red-500 scale-110" : "text-muted-foreground hover:text-red-500"}`} />
+                                    </button>
                                   </div>
-                                  <span className="text-xs font-bold text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-0.5">
-                                    Explore <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                                  </span>
+
+                                  {/* Title & Description */}
+                                  <h3 className="font-extrabold text-foreground group-hover:text-primary transition-colors text-base line-clamp-1 leading-snug mb-1">
+                                    {u.name}
+                                  </h3>
+                                  <p className="text-[11px] text-muted-foreground mb-2">
+                                    By: {u.slug || "Lakshay IQ"}
+                                  </p>
+
+                                  {/* Stars & Rating */}
+                                  <div className="flex items-center gap-1">
+                                    <div className="flex items-center text-amber-400">
+                                      {[...Array(5)].map((_, i) => (
+                                        <svg key={i} className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                      ))}
+                                    </div>
+                                    <span className="text-[11px] font-bold text-amber-500">5.0</span>
+                                    <span className="text-[11px] text-muted-foreground">({c} Program{c !== 1 ? "s" : ""})</span>
+                                  </div>
+                                </div>
+
+                                {/* Footer */}
+                                <div className="flex items-center justify-between pt-3 border-t border-border/60">
+                                  <span className="text-xs font-black text-foreground">Free Access</span>
+                                  <div className="flex items-center gap-1 text-xs font-bold text-primary group-hover:text-primary-glow transition-colors">
+                                    <span>View</span>
+                                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                                  </div>
                                 </div>
                               </div>
                             </div>

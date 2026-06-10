@@ -18,8 +18,158 @@ export interface NavItem {
   children?: { to: string; label: string }[];
 }
 
+function renderAdminNavGroup(
+  items: NavItem[],
+  pathname: string,
+  openGroups: Record<string, boolean>,
+  setOpenGroups: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
+) {
+  return items.map((item) => {
+    if (item.children) {
+      const isOpen = openGroups[item.label];
+      const anyActive = item.children.some((c) => pathname.startsWith(c.to));
+      
+      return (
+        <div key={item.label} className="space-y-0.5">
+          <button
+            onClick={() => setOpenGroups((s: any) => ({ ...s, [item.label]: !s[item.label] }))}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs font-bold transition-all duration-150 group relative cursor-pointer",
+              anyActive 
+                ? "bg-violet-600 text-white font-extrabold shadow-sm" 
+                : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-white"
+            )}
+          >
+            <item.icon className={cn("h-4 w-4 transition-colors", anyActive ? "text-white" : "text-slate-400 dark:text-zinc-500 group-hover:text-slate-600")} />
+            <span className="flex-1 text-left">{item.label}</span>
+            <ChevronRight className={cn("h-3 w-3 transition-transform duration-200 text-slate-400", isOpen && "rotate-90 text-slate-600", anyActive && "text-white")} />
+          </button>
+
+          {isOpen && (
+            <div className="ml-5 mt-0.5 space-y-0.5 border-l border-slate-105 dark:border-zinc-800 pl-3 animate-in fade-in slide-in-from-top-1 duration-200">
+              {item.children.map((c) => {
+                const active = pathname === c.to || pathname.startsWith(c.to + "/");
+                return (
+                  <Link
+                    key={c.to}
+                    to={c.to as any}
+                    className={cn(
+                      "block rounded-md px-3 py-1.5 text-[11px] font-bold transition-all",
+                      active
+                        ? "text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 font-black"
+                        : "text-slate-400 hover:text-slate-800 hover:bg-slate-50/50 dark:text-zinc-500 dark:hover:text-zinc-350"
+                    )}
+                  >
+                    {c.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const to = item.to!;
+    const active = pathname === to || (to !== "/admin" && pathname.startsWith(to));
+
+    return (
+      <Link
+        key={to}
+        to={to as any}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-bold transition-all duration-150 relative group cursor-pointer",
+          active
+            ? "bg-violet-600 text-white font-extrabold shadow-sm"
+            : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-white"
+        )}
+      >
+        <item.icon className={cn("h-4 w-4 transition-colors", active ? "text-white" : "text-slate-400 dark:text-zinc-500 group-hover:text-slate-600")} />
+        <span className="flex-1 text-left">{item.label}</span>
+      </Link>
+    );
+  });
+}
+
+// Mobile variant of admin nav group — auto-closes drawer on link click
+function renderAdminNavGroupMobile(
+  items: NavItem[],
+  pathname: string,
+  openGroups: Record<string, boolean>,
+  setOpenGroups: React.Dispatch<React.SetStateAction<Record<string, boolean>>>,
+  onClose: () => void
+) {
+  return items.map((item) => {
+    if (item.children) {
+      const isOpen = openGroups[item.label];
+      const anyActive = item.children.some((c) => pathname.startsWith(c.to));
+      
+      return (
+        <div key={item.label} className="space-y-0.5">
+          <button
+            onClick={() => setOpenGroups((s: any) => ({ ...s, [item.label]: !s[item.label] }))}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold transition-all duration-150 group relative cursor-pointer",
+              anyActive 
+                ? "bg-violet-600 text-white font-extrabold shadow-sm" 
+                : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-white"
+            )}
+          >
+            <item.icon className={cn("h-4 w-4 transition-colors shrink-0", anyActive ? "text-white" : "text-slate-400 dark:text-zinc-500 group-hover:text-slate-600")} />
+            <span className="flex-1 text-left">{item.label}</span>
+            <ChevronRight className={cn("h-3 w-3 transition-transform duration-200 text-slate-400 shrink-0", isOpen && "rotate-90 text-slate-600", anyActive && "text-white")} />
+          </button>
+
+          {isOpen && (
+            <div className="ml-5 mt-0.5 space-y-0.5 border-l border-slate-200 dark:border-zinc-800 pl-3 animate-in fade-in slide-in-from-top-1 duration-200">
+              {item.children.map((c) => {
+                const active = pathname === c.to || pathname.startsWith(c.to + "/");
+                return (
+                  <Link
+                    key={c.to}
+                    to={c.to as any}
+                    onClick={onClose}
+                    className={cn(
+                      "block rounded-md px-3 py-2 text-[11px] font-bold transition-all",
+                      active
+                        ? "text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 font-black"
+                        : "text-slate-400 hover:text-slate-800 hover:bg-slate-50/50 dark:text-zinc-500 dark:hover:text-zinc-300"
+                    )}
+                  >
+                    {c.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const to = item.to!;
+    const active = pathname === to || (to !== "/admin" && pathname.startsWith(to));
+
+    return (
+      <Link
+        key={to}
+        to={to as any}
+        onClick={onClose}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold transition-all duration-150 relative group cursor-pointer",
+          active
+            ? "bg-violet-600 text-white font-extrabold shadow-sm"
+            : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-white"
+        )}
+      >
+        <item.icon className={cn("h-4 w-4 transition-colors shrink-0", active ? "text-white" : "text-slate-400 dark:text-zinc-500 group-hover:text-slate-600")} />
+        <span className="flex-1 text-left">{item.label}</span>
+      </Link>
+    );
+  });
+}
+
 export function AppShell({ items, variant, children }: { items: NavItem[]; variant: "student" | "admin"; children: ReactNode }) {
-  const { user, signOut, profile } = useAuth();
+  const { user, signOut, profile, role } = useAuth();
   const nav = useNavigate();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
@@ -68,6 +218,243 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
     });
     setOpenGroups(next);
   }, [pathname, items]);
+
+  if (variant === "admin") {
+    const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? "Admin Profile";
+    const initials = (displayName?.trim() || user?.email || "A").charAt(0).toUpperCase();
+
+    return (
+      <div className="min-h-screen bg-[#f8fafc] dark:bg-zinc-950 text-foreground font-sans antialiased transition-colors duration-300">
+        
+        {/* --- MOBILE SIDEBAR DRAWER (ADMIN) --- */}
+        <div className={cn(
+          "fixed inset-0 z-50 bg-zinc-950/40 backdrop-blur-sm md:hidden transition-opacity duration-300 print:hidden",
+          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )} onClick={() => setMobileMenuOpen(false)}>
+          <aside
+            className={cn(
+              "fixed inset-y-0 left-0 w-[280px] bg-white dark:bg-zinc-900 p-4 flex flex-col border-r border-zinc-100/80 dark:border-zinc-800 transition-transform duration-300 ease-in-out shadow-2xl",
+              mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Mobile Drawer Header */}
+            <div className="pb-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+              <Link to="/admin" className="flex items-center gap-2 font-black tracking-tight text-slate-900 dark:text-white" onClick={() => setMobileMenuOpen(false)}>
+                <div className="relative flex h-8 w-8 items-center justify-center shrink-0">
+                  <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-violet-500/50" />
+                  <div className="absolute inset-1 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-md flex items-center justify-center">
+                    <BiSolidBookHeart className="h-3.5 w-3.5 text-white" />
+                  </div>
+                </div>
+                <div>
+                  <span className="text-sm font-black text-slate-900 dark:text-white">Lakshay IQ</span>
+                  <span className="ml-1.5 bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-400 text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                    Admin
+                  </span>
+                </div>
+              </Link>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Mobile Nav Groups with close-on-click */}
+            <nav className="flex-1 space-y-1 overflow-y-auto py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-2 px-2">Core panels</div>
+              {renderAdminNavGroupMobile(items.slice(0, 6), pathname, openGroups, setOpenGroups, () => setMobileMenuOpen(false))}
+              <div className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mt-5 mb-2 px-2">Resources</div>
+              {renderAdminNavGroupMobile(items.slice(6, 11), pathname, openGroups, setOpenGroups, () => setMobileMenuOpen(false))}
+              <div className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mt-5 mb-2 px-2">System</div>
+              {renderAdminNavGroupMobile(items.slice(11), pathname, openGroups, setOpenGroups, () => setMobileMenuOpen(false))}
+            </nav>
+
+            <div className="border-t border-slate-100 dark:border-zinc-800 pt-3 flex flex-col gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-zinc-400 hover:text-rose-600 hover:bg-rose-50/60 rounded-xl transition-all font-medium text-xs justify-start px-2.5"
+                onClick={async () => { setMobileMenuOpen(false); await signOut(); nav({ to: "/login" }); }}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                <span>Sign out</span>
+              </Button>
+            </div>
+          </aside>
+        </div>
+
+        {/* --- DESKTOP DOUBLE SIDEBAR --- */}
+        {/* Far-left narrow bar — hidden on mobile */}
+        <aside className="fixed inset-y-0 left-0 w-16 bg-white dark:bg-zinc-900 border-r border-slate-200/80 dark:border-zinc-800 hidden md:flex flex-col items-center justify-between py-4 z-40 shadow-[1px_0_5px_rgba(0,0,0,0.01)] print:hidden">
+          <div className="relative flex h-10 w-10 items-center justify-center shrink-0">
+            <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-violet-500/50" />
+            <div className="absolute inset-1 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 shadow-md flex items-center justify-center">
+              <BiSolidBookHeart className="h-4.5 w-4.5 text-white" />
+            </div>
+          </div>
+
+          <div className="flex-1 w-full flex flex-col items-center gap-4 py-8">
+            {items.filter(it => !it.children).slice(0, 5).map((it, idx) => {
+              const Icon = it.icon;
+              const active = pathname === it.to || (it.to !== "/admin" && pathname.startsWith(it.to!));
+              return (
+                <Link
+                  key={idx}
+                  to={it.to as any}
+                  className={cn(
+                    "h-10 w-10 flex items-center justify-center rounded-xl transition-all relative group/item cursor-pointer",
+                    active 
+                      ? "bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 font-bold" 
+                      : "text-slate-400 dark:text-zinc-500 hover:bg-slate-50 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-zinc-300"
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  {active && (
+                    <div className="absolute left-0 top-1/4 bottom-1/4 w-0.75 bg-violet-600 rounded-r-md" />
+                  )}
+                  <div className="absolute left-14 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded-md opacity-0 pointer-events-none group-hover/item:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-md font-bold">
+                    {it.label}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="rounded-xl h-9 w-9 text-slate-400 dark:text-zinc-500 hover:bg-slate-50 dark:hover:bg-zinc-800"
+            >
+              {isDarkMode ? <Sun className="h-4.5 w-4.5 text-yellow-500" /> : <Moon className="h-4.5 w-4.5" />}
+            </Button>
+          </div>
+        </aside>
+
+        {/* Second Sidebar panel — hidden on mobile */}
+        <aside className={cn(
+          "fixed inset-y-0 left-16 bg-white dark:bg-zinc-900 border-r border-slate-200/80 dark:border-zinc-800 hidden md:flex flex-col justify-between p-4 z-30 shadow-[1px_0_5px_rgba(0,0,0,0.01)] print:hidden transition-all duration-300",
+          isCollapsed ? "w-0 opacity-0 -translate-x-[240px] pointer-events-none" : "w-[240px] opacity-100"
+        )}>
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="pb-4 border-b border-slate-100 dark:border-zinc-800">
+              <Link to="/admin" className="flex items-center gap-2 font-black tracking-tight text-slate-900 dark:text-white" style={{ fontFamily: "'Sora', sans-serif" }}>
+                <span>Lakshay IQ</span>
+                <span className="bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-400 text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                  Admin
+                </span>
+              </Link>
+            </div>
+
+            <nav className="flex-1 space-y-1 overflow-y-auto py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-2 px-2">Core panels</div>
+              {renderAdminNavGroup(items.slice(0, 6), pathname, openGroups, setOpenGroups)}
+
+              <div className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mt-6 mb-2 px-2">Resources</div>
+              {renderAdminNavGroup(items.slice(6, 11), pathname, openGroups, setOpenGroups)}
+
+              <div className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mt-6 mb-2 px-2">System</div>
+              {renderAdminNavGroup(items.slice(11), pathname, openGroups, setOpenGroups)}
+            </nav>
+          </div>
+
+          {/* Bottom plan/credit card like DreamsAI */}
+          <div className="bg-slate-50 dark:bg-zinc-950 border border-slate-150 dark:border-zinc-850 p-3 rounded-xl flex flex-col gap-2 mt-auto">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-violet-600 animate-pulse" />
+                <span className="text-[10px] font-black text-slate-700 dark:text-zinc-300 uppercase tracking-wider">Database Status</span>
+              </div>
+              <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400">95% Sync</span>
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-zinc-400 leading-tight">Lakshay IQ system data is fully synchronized and healthy.</p>
+            <div className="w-full bg-slate-200 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
+              <div className="bg-violet-600 h-full rounded-full transition-all duration-500" style={{ width: "95%" }} />
+            </div>
+            <button onClick={() => nav({ to: "/admin/users" })} className="w-full text-center py-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800/80 text-[10px] font-extrabold text-slate-900 dark:text-slate-100 rounded-lg shadow-sm transition-colors cursor-pointer uppercase tracking-wider">
+              Manage Users
+            </button>
+          </div>
+        </aside>
+
+        {/* Sidebar Collapse Toggle Button — desktop only */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          style={{ left: isCollapsed ? "52px" : "292px" }}
+          className="fixed top-20 z-50 hidden md:flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-500 hover:text-slate-900 dark:hover:text-zinc-200 shadow-md transition-all duration-300 cursor-pointer"
+        >
+          {isCollapsed ? <PanelLeft className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
+        </button>
+
+        {/* CONTENT VIEWPORT — no left padding on mobile, sidebar-offset only on md+ */}
+        <div className={cn(
+          "relative min-h-screen transition-all duration-300 print:pl-0",
+          isCollapsed ? "md:pl-16" : "md:pl-[304px]"
+        )}>
+          
+          <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-150 dark:border-zinc-805 bg-white/80 dark:bg-zinc-950/80 px-4 md:px-8 backdrop-blur-md">
+            
+            {/* Mobile hamburger — only visible below md */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden flex items-center justify-center h-9 w-9 rounded-xl text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors flex-shrink-0"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+
+            {/* Search — hidden on small mobile, shown from sm+ */}
+            <div className="relative hidden sm:block w-56 md:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Search admin tools..." 
+                className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 pl-9 pr-12 py-1.5 rounded-lg text-xs focus:outline-none focus:border-violet-500/50" 
+              />
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-400 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 px-1.5 py-0.5 rounded shadow-sm">
+                ⌘K
+              </span>
+            </div>
+
+            {/* Mobile brand title — center on mobile */}
+            <div className="flex md:hidden flex-1 justify-center">
+              <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight">Lakshay <span className="text-violet-600">IQ</span></span>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-6">
+              <button className="text-xs font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 border-b-2 border-violet-600 dark:border-violet-400 py-4">Admin Studio</button>
+              <button className="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 py-4">Admin Tools</button>
+            </div>
+
+            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+              <button onClick={() => nav({ to: "/" })} className="hidden sm:block px-3 md:px-4 py-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-[10px] font-black uppercase tracking-wider text-white shadow-md rounded-lg transition-all cursor-pointer">
+                View Site
+              </button>
+              
+              <NotificationBell variant="admin" />
+              
+              <div className="flex items-center gap-2 border-l border-slate-200 dark:border-zinc-800 pl-2 md:pl-4">
+                <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs border border-violet-200 flex-shrink-0">
+                  {initials}
+                </div>
+                <div className="hidden xl:flex flex-col text-left leading-none">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{displayName}</span>
+                  <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">{role || "System Admin"}</span>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main className="max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in duration-500">
+            {children}
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-emerald-500/10 selection:text-emerald-500 transition-colors duration-300">
@@ -194,7 +581,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
                   Lakshay<span className="text-emerald-500 font-extrabold">.IQ</span>
                 </h1>
                 <span className="text-[7px] text-zinc-400 font-bold uppercase tracking-wider">
-                  {variant === "admin" ? "Admin" : "Smart Platform"}
+                  Smart Platform
                 </span>
               </div>
 
@@ -329,7 +716,7 @@ export function BrandHeader({ variant, isCollapsed }: { variant: string; isColla
               Lakshay<span className="ml-0.5 text-emerald-500 font-extrabold text-[10px]">IQ</span>
             </h1>
             <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest leading-none">
-              {variant === "admin" ? "Admin Master" : "Smart Platform"}
+              Smart Platform
             </span>
           </div>
         )}

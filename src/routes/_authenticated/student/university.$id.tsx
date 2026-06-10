@@ -17,10 +17,11 @@ import {
   School,
   Library,
   GraduationCap,
-  SwatchBook
+  SwatchBook,
+  Heart
 } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated/student/university/$id")({
   loader: async ({ params }) => {
@@ -53,10 +54,40 @@ export const Route = createFileRoute("/_authenticated/student/university/$id")({
   component: UniversityPage,
 });
 
+const cardGradients = [
+  "from-amber-400 to-amber-500",    // JS yellow style
+  "from-cyan-400 to-sky-500",        // React cyan style
+  "from-purple-500 to-indigo-600",   // Bootstrap purple style
+  "from-emerald-500 to-green-600",   // Node green style
+  "from-teal-400 to-emerald-500",     // Vue teal style
+  "from-blue-600 to-indigo-700",     // CSS3 blue style
+  "from-red-500 to-rose-600",        // Angular red style
+  "from-pink-500 to-fuchsia-600",     // GraphQL pink style
+];
+
 function UniversityPage() {
   const { university, courses } = Route.useLoaderData();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name-asc" | "sem-desc" | "sem-asc">("name-asc");
+  const [wishlisted, setWishlisted] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<"all" | "ug" | "pg" | "wishlisted">("all");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("wishlist_courses");
+    if (saved) {
+      try { setWishlisted(JSON.parse(saved)); } catch (e) {}
+    }
+  }, []);
+
+  const toggleWishlist = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = wishlisted.includes(id)
+      ? wishlisted.filter(x => x !== id)
+      : [...wishlisted, id];
+    setWishlisted(next);
+    localStorage.setItem("wishlist_courses", JSON.stringify(next));
+  };
 
   const filteredAndSortedCourses = useMemo(() => {
     let result = [...courses];
@@ -70,6 +101,21 @@ function UniversityPage() {
       );
     }
 
+    // Tab filtering
+    if (activeTab === "ug") {
+      result = result.filter(c => {
+        const duration = c.duration?.toLowerCase() || "";
+        return duration.includes("3") || duration.includes("4") || duration.includes("bachelor") || duration.includes("ug");
+      });
+    } else if (activeTab === "pg") {
+      result = result.filter(c => {
+        const duration = c.duration?.toLowerCase() || "";
+        return duration.includes("2") || duration.includes("1") || duration.includes("master") || duration.includes("pg");
+      });
+    } else if (activeTab === "wishlisted") {
+      result = result.filter(c => wishlisted.includes(c.id));
+    }
+
     if (sortBy === "name-asc") {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortBy === "sem-desc") {
@@ -79,7 +125,7 @@ function UniversityPage() {
     }
 
     return result;
-  }, [courses, searchQuery, sortBy]);
+  }, [courses, searchQuery, sortBy, activeTab, wishlisted]);
 
   const totalSemesters = useMemo(() => {
     return courses.reduce((acc: number, c: any) => acc + (c.total_semesters || 0), 0);
@@ -172,6 +218,27 @@ function UniversityPage() {
           </div>
         </div>
 
+        {/* Shaded Tab Bar (like reference image) */}
+        <div className="flex border-b border-border/80 w-full mb-4 overflow-x-auto scrollbar-none bg-muted/30 dark:bg-card/30 p-1 gap-1">
+          {(["all", "ug", "pg", "wishlisted"] as const).map((tab) => {
+            const label = tab === "all" ? "All Programs" : tab === "ug" ? "Undergraduate" : tab === "pg" ? "Postgraduate" : "Wishlisted";
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`py-2 px-4 text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                  isActive
+                    ? "bg-emerald-600 text-white shadow-sm rounded-none"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted rounded-none"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Results Info */}
         <div className="flex justify-between items-center mb-4">
           <p className="text-xs font-medium text-muted-foreground">
@@ -197,75 +264,87 @@ function UniversityPage() {
             <p className="text-xs text-muted-foreground">Try adjusting your search terms or filters.</p>
           </div>
         ) : (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredAndSortedCourses.map((course) => (
-              <Link
-                key={course.id}
-                to="/student/course/$id"
-                params={{ id: course.id }}
-                className="group block h-full"
-              >
-                <Card className="relative h-full flex flex-col justify-between border border-border/80 rounded-2xl overflow-hidden bg-card/75 backdrop-blur-sm shadow-[0_8px_30px_rgba(0,0,0,0.01)] transition-all duration-300 hover:shadow-md hover:shadow-emerald-500/5 hover:-translate-y-1.5 hover:border-emerald-500/30 p-5">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {filteredAndSortedCourses.map((course, index) => {
+              const gradient = cardGradients[index % cardGradients.length];
+              return (
+                <Link
+                  key={course.id}
+                  to="/student/course/$id"
+                  params={{ id: course.id }}
+                  className="group block h-full"
+                >
+                  <Card className="h-full bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1.5 flex flex-col relative p-0">
+                    {/* Header colored band like the second image */}
+                    <div className={`relative h-28 w-full bg-gradient-to-br ${gradient} flex flex-col items-center justify-center p-3 text-white shrink-0 overflow-hidden`}>
+                      {/* Unique Design Details in Banner */}
+                      <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1.2px,transparent_1.2px)] [background-size:10px_10px] pointer-events-none" />
+                      <div className="absolute -right-5 -top-5 w-16 h-16 rounded-full bg-white/15 blur-md pointer-events-none" />
+                      <div className="absolute -left-5 -bottom-5 w-12 h-12 rounded-full bg-white/10 blur-sm pointer-events-none" />
 
-                  {/* Accent Highlight Bar on Top Border */}
-                  <div className="absolute top-0 left-0 right-0 h-[3.5px] bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-
-                  {/* Header Row: Managed properly with a clean flex layout instead of absolute stacking */}
-                  <div className="flex items-center justify-between gap-3 mb-4 w-full">
-                    <div className="h-11 w-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 shadow-sm group-hover:bg-emerald-600 transition-all duration-300">
-                      {course.thumbnail_url ? (
-                        <img
-                          src={course.thumbnail_url}
-                          alt={course.name}
-                          className="h-full w-full object-cover rounded-xl"
-                        />
-                      ) : (
-                        <SwatchBook className="h-5 w-5 text-emerald-600 group-hover:text-white transition-colors duration-300" />
-                      )}
+                      <div className="h-12 w-12 rounded-lg bg-white/95 backdrop-blur-sm shadow-md border border-white flex items-center justify-center p-1.5 mb-1 transition-transform duration-300 group-hover:scale-110 z-10">
+                        {course.thumbnail_url ? (
+                          <img src={course.thumbnail_url} alt={course.name} className="h-full w-full object-cover rounded-md" />
+                        ) : (
+                          <SwatchBook className="h-5 w-5 text-emerald-600" />
+                        )}
+                      </div>
+                      <span className="text-[10px] font-black tracking-wider uppercase text-white drop-shadow-sm truncate max-w-full px-2 z-10">
+                        {course.slug || "Degree"}
+                      </span>
                     </div>
 
-                    {/* Responsive badge that safely cuts off or scales inside its own frame */}
-                    <Badge className="text-[10px] font-bold tracking-wider bg-secondary hover:bg-secondary text-muted-foreground border-none uppercase px-2 py-0.5 max-w-[140px] truncate block text-center rounded-md">
-                      {course.slug || "DEGREE"}
-                    </Badge>
-                  </div>
-
-                  {/* Body Text Context Area */}
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div className="mb-4">
-                      {/* Course Title - Handled safely across lines without hard cuts */}
-                      <h3 className="font-extrabold text-foreground group-hover:text-emerald-500 transition-colors text-base tracking-tight leading-snug mb-1.5 break-words">
-                        {course.name}
-                      </h3>
-                      {/* Responsive body summary text */}
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                        {course.description || "Access textbook materials, structured questions, and analytical review papers tailored for this branch."}
-                      </p>
-                    </div>
-
-                    {/* Bottom Status Grid Bar */}
-                    <div className="flex items-center justify-between pt-3.5 border-t border-border/60 w-full">
-                      <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-muted-foreground">
-                        <div className="flex items-center gap-1 bg-secondary/50 px-2 py-1 rounded-md border border-border/40">
-                          <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
-                          <span>{course.duration || "3 Years"}</span>
+                    {/* Card Body content */}
+                    <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+                      <div>
+                        {/* Badge & Heart Wishlist Row */}
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                            {course.duration || "3 Years"}
+                          </span>
+                          <button 
+                            onClick={(e) => toggleWishlist(course.id, e)}
+                            className="p-1 hover:bg-secondary rounded-full transition-colors"
+                          >
+                            <Heart className={`h-4.5 w-4.5 transition-all ${wishlisted.includes(course.id) ? "fill-red-500 text-red-500 scale-110" : "text-muted-foreground hover:text-red-500"}`} />
+                          </button>
                         </div>
-                        <div className="flex items-center gap-1 bg-secondary/50 px-2 py-1 rounded-md border border-border/40">
-                          <Library className="h-3 w-3 text-muted-foreground shrink-0" />
-                          <span>{course.total_semesters || 6} Sem</span>
+
+                        {/* Title & Description */}
+                        <h3 className="font-extrabold text-foreground group-hover:text-emerald-500 transition-colors text-[15px] line-clamp-1 leading-snug mb-1">
+                          {course.name}
+                        </h3>
+                        <p className="text-[11px] text-muted-foreground mb-2">
+                          By: {university.name}
+                        </p>
+
+                        {/* Stars & Rating */}
+                        <div className="flex items-center gap-1">
+                          <div className="flex items-center text-amber-400">
+                            {[...Array(5)].map((_, i) => (
+                              <svg key={i} className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                          <span className="text-[11px] font-bold text-amber-500">5.0</span>
+                          <span className="text-[11px] text-muted-foreground">({course.total_semesters || 6} Semesters)</span>
                         </div>
                       </div>
 
-                      {/* Micro Interaction Arrow Anchor */}
-                      <div className="h-7 w-7 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground group-hover:bg-emerald-500 group-hover:border-emerald-500 group-hover:text-white group-hover:translate-x-0.5 transition-all duration-300 shrink-0 shadow-sm">
-                        <ArrowRight className="h-3.5 w-3.5" />
+                      {/* Footer */}
+                      <div className="flex items-center justify-between pt-2.5 border-t border-border/60 mt-1">
+                        <span className="text-xs font-black text-foreground">Free Access</span>
+                        <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-500 transition-colors">
+                          <span>View</span>
+                          <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                </Card>
-              </Link>
-            ))}
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         )}
     </div>

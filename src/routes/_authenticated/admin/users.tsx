@@ -211,29 +211,29 @@ function UsersPage() {
       </div>
 
       {/* Primary Data Card Grid Frame */}
-      <Card className="p-4 border-neutral-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] rounded-2xl bg-white space-y-4">
+      <Card className="p-4 border-slate-200 dark:border-zinc-800 shadow-sm rounded-lg bg-white dark:bg-zinc-900 space-y-4">
         
         {/* Dynamic Filter Search Box Input */}
         <div className="relative max-w-md w-full">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-400 stroke-[2.2]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-zinc-550 stroke-[2.2]" />
           <Input 
             value={q} 
             onChange={(e) => setQ(e.target.value)} 
             placeholder="Search credentials by identity name or email address..." 
-            className="pl-9 h-9 border-neutral-200 rounded-xl text-xs focus-visible:ring-0 focus-visible:border-neutral-400 bg-white"
+            className="pl-9 h-9 border-slate-200 dark:border-zinc-800 rounded-lg text-xs focus-visible:ring-0 bg-white dark:bg-zinc-900 dark:text-white"
           />
         </div>
 
         {/* High Precision Desktop Identity Ledger Frame */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-neutral-100/80 -mx-1">
+          <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-zinc-800 -mx-1">
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
-                <tr className="bg-neutral-50/70 border-b border-neutral-100 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                <tr className="bg-slate-50/70 dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-400">
                   <th className="py-3 px-4 font-bold">User Identity Profile</th>
                   <th className="py-3 px-4 font-bold">Electronic Mail Box</th>
                   <th className="py-3 px-4 font-bold">Platform Status</th>
@@ -242,18 +242,18 @@ function UsersPage() {
                   <th className="py-3 px-4 text-right font-bold">Operations Matrix</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-50 text-xs">
+              <tbody className="divide-y divide-slate-100 dark:divide-zinc-850/85 text-xs">
                 {filtered.map((r) => {
                   const isUserOnline = activeUserIds.includes(r.id);
 
                   return (
-                    <tr key={r.id} className="hover:bg-neutral-50/40 transition-colors group">
+                    <tr key={r.id} className="hover:bg-slate-50/45 dark:hover:bg-zinc-850/30 transition-colors group">
                       
                       {/* User Avatar & Identity Details Block */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <div className="grid h-8 w-8 place-items-center rounded-xl bg-neutral-900 text-[11px] font-bold font-mono text-white shadow-sm">
+                            <div className="grid h-8 w-8 place-items-center rounded-lg bg-slate-900 dark:bg-zinc-850 text-[11px] font-extrabold font-mono text-white shadow-sm">
                               {(r.full_name || r.email || "U").charAt(0).toUpperCase()}
                             </div>
                             {/* Realtime Live Broadcast Green Signal Indicator Ring Overlay */}
@@ -264,40 +264,40 @@ function UsersPage() {
                               </span>
                             )}
                           </div>
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-neutral-900 tracking-tight">{r.full_name ?? "—"}</span>
-                            <span className="text-[10px] text-neutral-400 font-mono mt-0.5">ID: {r.id.substring(0, 8)}</span>
+                          <div className="flex flex-col text-left">
+                            <span className="font-extrabold text-slate-900 dark:text-white tracking-tight">{r.full_name ?? "—"}</span>
+                            <span className="text-[10px] text-slate-400 font-mono mt-0.5">ID: {r.id.substring(0, 8)}</span>
                           </div>
                         </div>
                       </td>
 
                       {/* Mailing Credentials String */}
-                      <td className="py-3 px-4 text-neutral-500 whitespace-nowrap font-medium">
+                      <td className="py-3.5 px-4 text-slate-500 dark:text-zinc-400 whitespace-nowrap font-semibold text-left">
                         {r.email}
                       </td>
 
                       {/* Live Streaming Presence Track Session Status */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap text-left">
                         {isUserOnline ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold font-mono text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-md px-1.5 py-0.5">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-lg px-2 py-0.5">
                             <Activity className="h-2.5 w-2.5" /> Online Now
                           </span>
                         ) : (
-                          <span className="text-[10px] text-neutral-400 font-medium tracking-tight">
+                          <span className="text-[10px] text-slate-450 dark:text-zinc-500 font-bold uppercase tracking-wider">
                             Offline
                           </span>
                         )}
                       </td>
 
                       {/* Authorization Role Clearance Matrix */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap text-left">
                         <Badge 
                           variant="outline"
                           className={cn(
-                            "text-[10px] font-mono font-bold uppercase tracking-wider rounded-md px-2 py-0.5 border shadow-none",
+                            "text-[9px] font-mono font-black uppercase tracking-widest rounded-lg px-2.5 py-0.5 border shadow-none",
                             r.role === "admin" 
-                              ? "text-neutral-900 bg-neutral-900 text-white border-neutral-950" 
-                              : "text-neutral-500 bg-neutral-50 border-neutral-200"
+                              ? "text-violet-750 bg-violet-100 dark:bg-violet-950/40 dark:text-violet-400 border-violet-200/20" 
+                              : "text-slate-500 bg-slate-50 dark:bg-zinc-950 dark:text-zinc-400 border-slate-200 dark:border-zinc-800"
                           )}
                         >
                           {r.role}
@@ -305,20 +305,20 @@ function UsersPage() {
                       </td>
 
                       {/* Core Registration Metric Date */}
-                      <td className="py-3 px-4 text-neutral-400 whitespace-nowrap font-mono text-[11px]">
+                      <td className="py-3.5 px-4 text-slate-450 dark:text-zinc-450 whitespace-nowrap font-mono text-[11px] text-left">
                         {new Date(r.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                       </td>
 
                       {/* Management Trigger Action Call Matrix Controls */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
                           
                           <Button 
                             size="sm" 
                             variant="ghost" 
                             className={cn(
-                              "h-7 text-[11px] font-bold rounded-lg gap-1 transition-all",
-                              r.role === "admin" ? "text-amber-600 hover:bg-amber-50" : "text-neutral-900 hover:bg-neutral-100"
+                              "h-7 text-[10px] font-black uppercase tracking-wider rounded-lg gap-1 transition-all border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950",
+                              r.role === "admin" ? "text-amber-600 hover:bg-amber-100/50" : "text-slate-700 dark:text-zinc-300 hover:bg-slate-105"
                             )}
                             onClick={() => handleToggleRole(r)}
                           >
@@ -332,7 +332,7 @@ function UsersPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 text-[11px] font-bold rounded-lg gap-1 transition-all text-emerald-600 hover:bg-emerald-50"
+                            className="h-7 text-[10px] font-black uppercase tracking-wider rounded-lg gap-1 transition-all text-emerald-600 border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950 hover:bg-emerald-100/50"
                             onClick={() => nav({ to: "/admin/chat", search: { userId: r.id } })}
                             title="Chat with this user"
                           >
@@ -342,7 +342,7 @@ function UsersPage() {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-7 w-7 text-neutral-400 hover:text-neutral-900 rounded-lg transition-colors"
+                            className="h-7 w-7 text-slate-400 hover:text-slate-900 rounded-lg transition-colors border border-slate-200 dark:border-zinc-800"
                             onClick={() => handleInitializeEdit(r)}
                           >
                             <Edit3 className="h-3.5 w-3.5" />
@@ -351,7 +351,7 @@ function UsersPage() {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-7 w-7 text-neutral-400 hover:text-rose-600 rounded-lg transition-colors"
+                            className="h-7 w-7 text-slate-400 hover:text-rose-600 rounded-lg transition-colors border border-slate-200 dark:border-zinc-800"
                             onClick={() => handlePurgeUserRecord(r)}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -365,10 +365,10 @@ function UsersPage() {
 
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center p-6 bg-white rounded-2xl">
+                    <td colSpan={6} className="py-16 text-center p-6 bg-white dark:bg-zinc-900 rounded-lg">
                       <div className="flex flex-col items-center justify-center">
-                        <ShieldAlert className="h-5 w-5 text-neutral-300 mb-2" />
-                        <h4 className="text-xs font-semibold text-neutral-400">No identity matches filtered lookup fields.</h4>
+                        <ShieldAlert className="h-5 w-5 text-slate-300 dark:text-zinc-650 mb-2" />
+                        <h4 className="text-xs font-semibold text-slate-400 dark:text-zinc-500">No identity matches filtered lookup fields.</h4>
                       </div>
                     </td>
                   </tr>

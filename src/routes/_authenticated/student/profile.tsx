@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/student/profile")({
 });
 
 function StudentProfilePage() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, role } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
@@ -287,7 +287,7 @@ function StudentProfilePage() {
                 <div>
                   <span className="block text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Account Role</span>
                   <span className="text-xs font-extrabold text-foreground mt-1 block capitalize">
-                    {profile?.role ?? "Student"}
+                    {role ?? "Student"}
                   </span>
                 </div>
               </div>

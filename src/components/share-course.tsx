@@ -88,7 +88,7 @@ export function ShareButton({ title, type, path }: ShareButtonProps) {
       <DialogTrigger asChild>
         <button
           type="button"
-          className="bg-white/10 hover:bg-white/20 border border-white/20 text-white backdrop-blur-sm shadow-md transition-all duration-300 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-250 dark:border-slate-700 text-slate-900 dark:text-slate-100 shadow-sm transition-all duration-300 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
         >
           <Share2 className="h-3.5 w-3.5" />
           <span>Share</span>

@@ -239,69 +239,67 @@ function ManageUniversities() {
         <span className="text-[11px] font-bold text-slate-400 shrink-0 px-2">
           Found {processedData.length} instances inside index
         </span>
-      </div>
-
-      {/* Main Analytical Core Table Shell */}
+      </div>      {/* Main Analytical Core Table Shell */}
       {loading ? (
-        <div className="w-full h-48 flex items-center justify-center border border-dashed border-slate-200 rounded-2xl bg-white">
-          <p className="text-xs font-semibold text-slate-400 animate-pulse">Fetching records from Supabase clustering framework...</p>
+        <div className="w-full h-48 flex items-center justify-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900">
+          <p className="text-xs font-semibold text-slate-400 dark:text-zinc-500 animate-pulse">Fetching records from Supabase clustering framework...</p>
         </div>
       ) : (
-        <Card className="overflow-hidden border-slate-200 shadow-sm rounded-2xl bg-white">
+        <Card className="overflow-hidden border-slate-200 dark:border-zinc-850 shadow-sm rounded-lg bg-white dark:bg-zinc-900">
           <div className="w-full overflow-x-auto">
             <Table className="min-w-[600px]">
-              <TableHeader className="bg-slate-50/70 border-b border-slate-100">
-                <TableRow>
-                  <TableHead onClick={() => handleSort("name")} className="cursor-pointer select-none text-xs font-bold text-slate-700 h-11 hover:bg-slate-100/50 transition-colors">
+              <TableHeader className="bg-slate-50/70 dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800">
+                <TableRow className="border-b border-slate-200 dark:border-zinc-800">
+                  <TableHead onClick={() => handleSort("name")} className="cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-550 dark:text-zinc-400 h-11 hover:bg-slate-100/50 dark:hover:bg-zinc-850/50 transition-colors">
                     <div className="flex items-center">University Name <SortIcon columnKey="name" /></div>
                   </TableHead>
-                  <TableHead onClick={() => handleSort("slug")} className="cursor-pointer select-none text-xs font-bold text-slate-700 h-11 hover:bg-slate-100/50 transition-colors">
+                  <TableHead onClick={() => handleSort("slug")} className="cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-550 dark:text-zinc-400 h-11 hover:bg-slate-100/50 dark:hover:bg-zinc-850/50 transition-colors">
                     <div className="flex items-center">Slug Reference <SortIcon columnKey="slug" /></div>
                   </TableHead>
-                  <TableHead onClick={() => handleSort("is_active")} className="cursor-pointer select-none text-xs font-bold text-slate-700 h-11 hover:bg-slate-100/50 transition-colors">
+                  <TableHead onClick={() => handleSort("is_active")} className="cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-550 dark:text-zinc-400 h-11 hover:bg-slate-100/50 dark:hover:bg-zinc-850/50 transition-colors">
                     <div className="flex items-center">Status <SortIcon columnKey="is_active" /></div>
                   </TableHead>
-                  <TableHead onClick={() => handleSort("created_at")} className="cursor-pointer select-none text-xs font-bold text-slate-700 h-11 hover:bg-slate-100/50 transition-colors">
+                  <TableHead onClick={() => handleSort("created_at")} className="cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-550 dark:text-zinc-400 h-11 hover:bg-slate-100/50 dark:hover:bg-zinc-850/50 transition-colors">
                     <div className="flex items-center">Created At <SortIcon columnKey="created_at" /></div>
                   </TableHead>
-                  <TableHead className="text-right text-xs font-bold text-slate-700 h-11 pr-6">Action Hub</TableHead>
+                  <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-slate-550 dark:text-zinc-400 h-11 pr-6">Action Hub</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody className="divide-y divide-slate-100 dark:divide-zinc-800/80">
                 {paginatedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-32 text-xs font-medium text-slate-400">
+                    <TableCell colSpan={5} className="text-center h-32 text-xs font-semibold text-slate-400 dark:text-zinc-500">
                       No matching records structural blocks detected in matrix.
                     </TableCell>
                   </TableRow>
                 ) : (
                   paginatedData.map((row) => (
-                    <TableRow key={row.id} className="hover:bg-slate-50/40 border-b border-slate-100 transition-colors group">
-                      <TableCell className="py-3 px-4">
+                    <TableRow key={row.id} className="hover:bg-slate-50/45 dark:hover:bg-zinc-850/30 border-b border-slate-100 dark:border-zinc-850 transition-colors group">
+                      <TableCell className="py-3.5 px-4.5">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-lg border border-slate-100 bg-slate-50 flex items-center justify-center p-1 overflow-hidden shrink-0">
+                          <div className="h-8 w-8 rounded-lg border border-slate-150 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 flex items-center justify-center p-1 overflow-hidden shrink-0">
                             {row.logo_url ? (
                               <img src={row.logo_url} alt="Emblem" className="w-full h-full object-contain" />
-                            ) : <GraduationCap className="h-4 w-4 text-slate-400" />}
+                            ) : <GraduationCap className="h-4 w-4 text-slate-400 dark:text-zinc-550" />}
                           </div>
-                          <span className="font-extrabold text-xs text-slate-800 line-clamp-1">{row.name}</span>
+                          <span className="font-extrabold text-xs text-slate-800 dark:text-white line-clamp-1">{row.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3"><Badge variant="outline" className="font-mono text-[10px] tracking-tight bg-slate-50 text-slate-600 border-slate-200 rounded-lg">{row.slug}</Badge></TableCell>
-                      <TableCell className="py-3">
+                      <TableCell className="py-3.5"><Badge variant="outline" className="font-mono text-[10px] tracking-tight bg-slate-50 dark:bg-zinc-950 text-slate-650 dark:text-zinc-400 border-slate-200 dark:border-zinc-800 rounded-lg">{row.slug}</Badge></TableCell>
+                      <TableCell className="py-3.5">
                         {row.is_active ? (
-                          <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-none rounded-full text-[10px] px-2.5 py-0.5">Active</Badge>
+                          <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/10 shadow-none rounded-full text-[10px] px-2.5 py-0.5">Active</Badge>
                         ) : (
-                          <Badge className="bg-slate-100 text-slate-400 border border-slate-200 shadow-none rounded-full text-[10px] px-2.5 py-0.5">Inactive</Badge>
+                          <Badge className="bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border border-slate-200 dark:border-zinc-750 shadow-none rounded-full text-[10px] px-2.5 py-0.5">Inactive</Badge>
                         )}
                       </TableCell>
-                      <TableCell className="py-3 text-xs font-medium text-slate-500">{new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</TableCell>
-                      <TableCell className="py-3 pr-6 text-right">
+                      <TableCell className="py-3.5 text-xs font-semibold text-slate-500 dark:text-zinc-400">{new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</TableCell>
+                      <TableCell className="py-3.5 pr-6 text-right">
                         <div className="flex justify-end gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button size="icon" variant="outline" onClick={() => triggerEditModal(row)} className="h-8 w-8 rounded-lg border-slate-200 text-slate-600 hover:text-slate-900 bg-white shadow-sm">
+                          <Button size="icon" variant="outline" onClick={() => triggerEditModal(row)} className="h-8 w-8 rounded-lg border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-405 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-zinc-900 shadow-sm">
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          <Button size="icon" variant="outline" onClick={() => setDeleteId(row.id)} className="h-8 w-8 rounded-lg border-slate-200 text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 bg-white shadow-sm">
+                          <Button size="icon" variant="outline" onClick={() => setDeleteId(row.id)} className="h-8 w-8 rounded-lg border-slate-200 dark:border-zinc-800 text-rose-550 dark:text-rose-400 hover:text-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 bg-white dark:bg-zinc-900 shadow-sm">
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
@@ -315,8 +313,8 @@ function ManageUniversities() {
 
           {/* Fully Managed Pagination Controller */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50/30">
-              <span className="text-[11px] font-bold text-slate-400">
+            <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-zinc-800 bg-slate-50/30 dark:bg-zinc-950/20">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                 Page {currentPage} of {totalPages}
               </span>
               <div className="flex items-center gap-1.5">
@@ -324,7 +322,7 @@ function ManageUniversities() {
                   variant="outline" size="icon" 
                   disabled={currentPage === 1} 
                   onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                  className="h-8 w-8 rounded-lg border-slate-200 bg-white"
+                  className="h-8 w-8 rounded-lg border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -332,7 +330,7 @@ function ManageUniversities() {
                   variant="outline" size="icon" 
                   disabled={currentPage === totalPages} 
                   onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                  className="h-8 w-8 rounded-lg border-slate-200 bg-white"
+                  className="h-8 w-8 rounded-lg border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
