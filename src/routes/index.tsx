@@ -482,71 +482,132 @@ function Landing() {
 
           {/* LEFT COLUMN: HERO MARKETING COPY */}
           <div className="lg:col-span-6 text-left space-y-6 flex flex-col items-start">
-            <div className={`inline-flex items-center gap-2 rounded-full border backdrop-blur-md px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-emerald-500 shadow-inner ${isDarkMode ? "bg-white/5 border-white/10" : "bg-emerald-50 border-emerald-100"
-              }`}>
-              <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
-              NEON LEVEL SEMESTER ENGINE
+            <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-extrabold shadow-sm transition-all duration-300 ${
+              isDarkMode 
+                ? "bg-slate-900/60 border-white/5 text-slate-200" 
+                : "bg-white border-slate-200 text-slate-800"
+            }`}>
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white animate-pulse">
+                <Sparkles className="h-3 w-3 fill-current" />
+              </div>
+              <span>Welcome to Online Education</span>
             </div>
 
-            <h1 className={`text-4xl sm:text-6xl font-black leading-[1.08] tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-900"
-              }`} style={{ fontFamily: "'Sora', sans-serif", letterSpacing: "-0.04em" }}>
-              Simplify Semesters.<br />
-              <span className="bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-500 bg-clip-text text-transparent">
-                Elevate Your IQ.
-              </span>
+            <h1 className={`text-4xl sm:text-5xl lg:text-[54px] font-black leading-[1.15] tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-[#1e293b]"
+              }`} style={{ fontFamily: "'Sora', sans-serif", letterSpacing: "-0.03em" }}>
+              Start learning from <br />
+              the world's <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent">best institutions</span>
             </h1>
 
             <p className={`max-w-xl text-sm sm:text-base leading-relaxed transition-colors ${isDarkMode ? "text-slate-400" : "text-slate-500"
               }`}>
-              A premium structured academic highway providing campus notes, curated question papers, dynamic ATS resumes, final year project guidance, and instant chat assistance.
+              Simplify Semesters, Elevate Your IQ. A premium structured academic highway providing campus notes, curated question papers, dynamic ATS resumes, final year project guidance, and instant chat assistance.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto pt-2">
-              <Button asChild size="lg" className="rounded-full w-full sm:w-auto bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 px-8 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition-all active:scale-95">
-                <Link to="/signup" className="flex items-center justify-center">Create Free Account <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <div className="flex flex-wrap items-center gap-5 w-full sm:w-auto pt-2">
+              <Button asChild size="lg" className="rounded-full w-full sm:w-auto bg-[#00a896] hover:bg-[#009282] px-8 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition-all active:scale-95 border-none">
+                <Link to="/signup" className="flex items-center justify-center">Get Started</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className={`rounded-full w-full sm:w-auto text-xs font-bold border transition-colors ${isDarkMode
-                ? "border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10"
-                : "border-slate-200 bg-white text-slate-600 hover:text-slate-950 hover:bg-slate-50"
-                }`}>
-                <a href="#features" className="flex items-center justify-center">Inspect Services</a>
-              </Button>
+              <div className="flex items-center gap-2.5 cursor-pointer group w-full sm:w-auto justify-center sm:justify-start">
+                <button className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 border border-emerald-100 dark:border-emerald-900/30 shadow-sm transition-transform duration-300 group-hover:scale-110">
+                  <svg className="h-4 w-4 fill-current ml-0.5" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </button>
+                <span className={`text-xs font-bold transition-colors ${isDarkMode ? "text-slate-350 group-hover:text-emerald-400" : "text-slate-600 group-hover:text-emerald-600"}`}>
+                  Watch the video
+                </span>
+              </div>
             </div>
 
-            {/* Live active stats */}
-            <div className="flex items-center gap-6 pt-6 border-t border-slate-300/10 w-full">
-              <div className="flex -space-x-2.5">
+            {/* Avatars & Enrollment */}
+            <div className="flex items-center gap-4 pt-4 w-full">
+              <div className="flex -space-x-3">
                 {[
-                  { name: "R", grad: "from-[#8B5CF6] to-[#6D28D9]" },
-                  { name: "M", grad: "from-[#EC4899] to-[#BE185D]" },
-                  { name: "L", grad: "from-[#10B981] to-[#059669]" },
-                  { name: "Y", grad: "from-[#F59E0B] to-[#D97706]" }
-                ].map((item, i) => (
-                  <div
+                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
+                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
+                ].map((src, i) => (
+                  <img
                     key={i}
-                    className={`w-8 h-8 rounded-full border ${isDarkMode ? "border-slate-950" : "border-white"} bg-gradient-to-br ${item.grad} flex items-center justify-center text-[10px] font-black text-white ring-2 ring-emerald-500/20 shadow-sm hover:scale-115 hover:z-20 transition-all duration-200`}
-                    title="Active Student"
-                  >
-                    {item.name}
-                  </div>
+                    src={src}
+                    alt="Active Student"
+                    className={`w-9 h-9 rounded-full object-cover border-2 ${isDarkMode ? "border-slate-950" : "border-white"} shadow-sm`}
+                  />
                 ))}
               </div>
               <div className="text-left leading-tight">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-extrabold text-emerald-500">{stats.students.toLocaleString()}+</span>
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/80" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Active university minds connected</p>
+                <span className={`text-xs font-extrabold ${isDarkMode ? "text-emerald-400" : "text-emerald-600"}`}>10k Enrollment</span>
               </div>
+            </div>
+
+            {/* Courses line */}
+            <div className="pt-2 text-left">
+              <p className={`text-xs sm:text-sm font-bold tracking-tight ${isDarkMode ? "text-slate-350" : "text-slate-700"}`}>
+                Explore <span className={`font-extrabold ${isDarkMode ? "text-emerald-400" : "text-emerald-600"}`}>{stats.courses}+ Courses</span> within Subject
+              </p>
+            </div>
+
+            {/* Zig-Zag Logo decoration */}
+            <div className="pt-4 flex items-center">
+              <svg className="w-10 h-12" viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 6L22 18L10 30L22 42" stroke="#10B981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M18 6L30 18L18 30L30 42" stroke={isDarkMode ? "#334155" : "#1e293b"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: INTERACTIVE PLATFORM SIMULATOR */}
-          <div className="lg:col-span-6 w-full flex justify-center lg:justify-end">
-            <InteractiveSandbox isDarkMode={isDarkMode} />
+          {/* RIGHT COLUMN: PREMIUM STUDENT IMAGE WITH OVERLAYS */}
+          <div className="lg:col-span-6 w-full flex justify-center lg:justify-end relative pr-4 lg:pr-8 py-8">
+            
+            {/* Concentric curved decoration paths (Background SVGs) */}
+            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
+              <svg 
+                className="w-[120%] h-[120%] opacity-30 dark:opacity-20 translate-x-[10%] translate-y-[5%]" 
+                viewBox="0 0 500 500" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="150" cy="350" r="160" stroke="#10B981" strokeWidth="1" strokeDasharray="4 4" />
+                <circle cx="150" cy="350" r="220" stroke="#10B981" strokeWidth="1.5" />
+                <circle cx="150" cy="350" r="280" stroke="#10B981" strokeWidth="0.8" />
+              </svg>
+            </div>
+
+            {/* Image Wrapper with relative indexing */}
+            <div className="relative z-10 w-[85%] sm:w-[75%] lg:w-[85%] max-w-[380px]">
+              
+              {/* Dot Matrix Grid decoration - top right */}
+              <div className="absolute -top-6 -right-6 w-24 h-24 z-0 text-emerald-500 opacity-60">
+                <svg width="90" height="90" viewBox="0 0 90 90" fill="currentColor">
+                  <pattern id="dot-grid" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+                    <circle cx="3" cy="3" r="2" />
+                  </pattern>
+                  <rect width="90" height="90" fill="url(#dot-grid)" />
+                </svg>
+              </div>
+
+              {/* Main Student Image */}
+              <div className="relative overflow-hidden rounded-[36px] shadow-2xl border-4 border-white dark:border-slate-800/80 aspect-[4/5]">
+                <img 
+                  src="/hero_student.png" 
+                  alt="Student learning" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Floating Badge (bottom-left) */}
+              <div className="absolute bottom-10 -left-10 z-20 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col items-start min-w-[150px] transition-transform duration-300 hover:scale-105">
+                <span className="text-2xl sm:text-3xl font-black text-emerald-500 leading-none">
+                  256+
+                </span>
+                <span className="text-[9px] font-extrabold tracking-wider text-slate-500 dark:text-slate-400 mt-1 uppercase">
+                  Crashed Courses
+                </span>
+              </div>
+              
+            </div>
           </div>
 
         </div>
