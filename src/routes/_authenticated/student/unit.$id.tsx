@@ -281,20 +281,51 @@ function UnitPage() {
   useEffect(() => {
     if (activePreview.type === "material" && activePreview.url.includes(".md")) {
       setIsMarkdownLoading(true);
-      fetch(activePreview.url)
-        .then((res) => {
-          if (!res.ok) throw new Error("Could not fetch markdown");
-          return res.text();
-        })
-        .then((text) => {
+      
+      const fetchMarkdownSecurely = async () => {
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://ghiltnhfjkcudnfjepof.supabase.co";
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          const response = await fetch(
+            `${supabaseUrl}/functions/v1/secure-markdown?url=${encodeURIComponent(activePreview.url)}`,
+            {
+              headers: {
+                Authorization: `Bearer ${session?.access_token || ""}`,
+              },
+            }
+          );
+          
+          if (!response.ok) {
+            throw new Error(`Edge function returned status: ${response.status}`);
+          }
+          
+          const base64Data = await response.text();
+          // Safe base64 decode supporting UTF-8 content
+          const binaryString = atob(base64Data);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const text = new TextDecoder().decode(bytes);
           setMarkdownContent(preprocessMarkdown(text));
+        } catch (err) {
+          console.warn("Secure Edge Function fetch failed, falling back to direct fetch:", err);
+          // Fallback to direct fetch in case Edge Function is not deployed yet
+          const res = await fetch(activePreview.url);
+          if (!res.ok) throw new Error("Could not fetch markdown directly");
+          const text = await res.text();
+          setMarkdownContent(preprocessMarkdown(text));
+        } finally {
           setIsMarkdownLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setMarkdownContent("### ⚠️ Error\nFailed to load the study material from GitHub. Please check if the file is public and try again.");
-          setIsMarkdownLoading(false);
-        });
+        }
+      };
+
+      fetchMarkdownSecurely().catch((err) => {
+        console.error(err);
+        setMarkdownContent("### ⚠️ Error\nFailed to load the study material. Please check if the file is public and try again.");
+        setIsMarkdownLoading(false);
+      });
     } else {
       setMarkdownContent("");
     }

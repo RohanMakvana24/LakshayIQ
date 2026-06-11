@@ -299,6 +299,23 @@ function InteractiveSandbox({ isDarkMode }: { isDarkMode: boolean }) {
 function Landing() {
   const { user, role, loading } = useAuth();
   const nav = useNavigate();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      setTimeout(() => {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }, 150);
+    }
+  }, []);
+
+  const handleScrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("theme");
@@ -308,6 +325,7 @@ function Landing() {
     return true;
   });
   const [activeStation, setActiveStation] = useState<number>(1);
+  const [activeObjective, setActiveObjective] = useState<"exams" | "career" | "projects">("exams");
   const [searchQuery, setSearchQuery] = useState("");
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -425,9 +443,9 @@ function Landing() {
           <nav className={`hidden items-center gap-8 text-xs font-bold uppercase tracking-wider md:flex ${isDarkMode ? "text-slate-400" : "text-slate-600"
             }`}>
             <Link to="/" className="text-emerald-500 transition-colors">Home</Link>
-            <a href="#features" className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Products</a>
-            <a href="#tools" className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Tools</a>
-            <a href="#flow" className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Infrastructure</a>
+            <a href="#features" onClick={(e) => handleScrollToSection(e, "features")} className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Products</a>
+            <a href="#tools" onClick={(e) => handleScrollToSection(e, "tools")} className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Tools</a>
+            <a href="#flow" onClick={(e) => handleScrollToSection(e, "flow")} className={`transition-colors ${isDarkMode ? "hover:text-white" : "hover:text-slate-900"}`}>Infrastructure</a>
             <span className="h-3 w-px bg-slate-300/20" />
             <form onSubmit={handleSearchSubmit} className="relative flex items-center">
               <Search className="absolute left-3 h-3.5 w-3.5 text-slate-500" />
@@ -472,7 +490,7 @@ function Landing() {
       </header>
 
       {/* HERO SECTION */}
-      <section className="relative w-full py-16 md:py-24 px-6 max-w-7xl mx-auto">
+      <section className="relative w-full pt-4 pb-16 md:pt-8 md:pb-24 px-6 max-w-7xl mx-auto">
         <div className={`absolute top-[5%] left-[5%] w-80 h-80 rounded-full blur-[100px] pointer-events-none transition-all duration-1000 ${isDarkMode ? "bg-emerald-500/10" : "bg-emerald-500/20"
           }`} />
         <div className={`absolute bottom-[5%] right-[5%] w-96 h-96 rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${isDarkMode ? "bg-indigo-500/5" : "bg-indigo-500/15"
@@ -559,7 +577,7 @@ function Landing() {
           </div>
 
           {/* RIGHT COLUMN: PREMIUM STUDENT IMAGE WITH OVERLAYS */}
-          <div className="lg:col-span-6 w-full flex justify-center lg:justify-end relative pr-4 lg:pr-8 py-8">
+          <div className="lg:col-span-6 w-full flex justify-center lg:justify-end relative pr-4 lg:pr-8 py-0">
             
             {/* Concentric curved decoration paths (Background SVGs) */}
             <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
@@ -591,7 +609,7 @@ function Landing() {
               {/* Main Student Image */}
               <div className="relative overflow-hidden rounded-[36px] shadow-2xl border-4 border-white dark:border-slate-800/80 aspect-[4/5]">
                 <img 
-                  src="/hero_student.png" 
+                  src="/hero_students_both.png" 
                   alt="Student learning" 
                   className="w-full h-full object-cover"
                 />
@@ -890,98 +908,198 @@ function Landing() {
         </div>
       </section>
 
-      {/* DYNAMIC PIPELINE FLOW */}
+      {/* DYNAMIC CO-PILOT ROADMAP INTERACTIVE SECTION */}
       <section id="flow" className="mx-auto max-w-7xl px-6 py-20 border-t border-white/5 relative">
         <div className="text-center max-w-xl mx-auto mb-16">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-            <Network className="w-3.5 h-3.5 text-emerald-400" /> INTERACTIVE PIPELINE
+            <Sparkles className="w-3.5 h-3.5 text-emerald-450 animate-pulse" /> INTERACTIVE ACADEMIC SIMULATOR
           </span>
           <h2 className={`text-3xl font-black tracking-tight mt-4 sm:text-4xl transition-colors ${isDarkMode ? "text-white" : "text-slate-900"
             }`} style={{ fontFamily: "'Sora', sans-serif" }}>
-            Lakshay IQ Infrastructure Map
+            Personalized Success Simulator
           </h2>
           <p className="text-sm text-slate-500 mt-2">
-            Hover or touch the nodes below to inspect how syllabus segments seamlessly route inside our intelligent network.
+            Select your academic priority below to instantly test and construct your roadmap, calculating the direct impact on your semesters.
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          {/* THE SUBWAY INTERCONNECTED LINE */}
-          <div className={`relative flex flex-col md:flex-row items-center justify-between gap-12 md:gap-0 border p-8 rounded-3xl backdrop-blur-md transition-all duration-300 ${isDarkMode ? "bg-white/[0.01] border-white/5" : "bg-white border-slate-200 shadow-sm"
-            }`}>
-
-            {/* Highlighting Pipeline Line */}
-            <div className="absolute top-1/2 left-10 right-10 h-[2px] bg-emerald-500/10 -translate-y-1/2 hidden md:block z-0">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-500 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${(activeStation / (systemStations.length - 1)) * 100}%` }}
-              />
-              <div className="absolute top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-full bg-white shadow-md border-2 border-emerald-500 energy-pulse" />
-            </div>
-
-            {systemStations.map((station, index) => {
-              const isPast = index <= activeStation;
-              const isCurrent = index === activeStation;
-
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-6xl mx-auto">
+          {/* LEFT: SIMULATOR TABS */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            {[
+              {
+                id: "exams",
+                title: "Ace Semester Exams",
+                desc: "Targeting high CGPA with notes and question papers.",
+                badge: "9.5+ CGPA",
+                icon: GraduationCap,
+                color: "from-emerald-500 to-teal-500",
+                shadow: "shadow-emerald-500/10",
+                border: "border-emerald-500/30"
+              },
+              {
+                id: "career",
+                title: "Job-Ready Placement",
+                desc: "ATS resume builder & developer portfolio prep.",
+                badge: "Placement Ready",
+                icon: Briefcase,
+                color: "from-indigo-500 to-violet-500",
+                shadow: "shadow-indigo-500/10",
+                border: "border-indigo-500/30"
+              },
+              {
+                id: "projects",
+                title: "Capstone Project Guide",
+                desc: "Tested source code, documentations, & viva mocks.",
+                badge: "A+ Project Grade",
+                icon: Rocket,
+                color: "from-amber-500 to-orange-500",
+                shadow: "shadow-amber-500/10",
+                border: "border-amber-500/30"
+              }
+            ].map(obj => {
+              const isActive = activeObjective === obj.id;
+              const Icon = obj.icon;
               return (
                 <button
-                  key={station.title}
-                  onMouseEnter={() => setActiveStation(index)}
-                  onClick={() => setActiveStation(index)}
-                  className="relative z-10 flex flex-col items-center group focus:outline-none w-full md:w-auto"
-                >
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-xs shadow-md transition-all duration-300 ${isCurrent
-                    ? 'bg-slate-905 border-2 border-emerald-500 text-emerald-500 scale-110 ring-4 ring-emerald-500/10 bg-white font-extrabold'
-                    : isPast
-                      ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white border border-white/10'
+                  key={obj.id}
+                  onClick={() => setActiveObjective(obj.id as any)}
+                  className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 relative group flex gap-4 ${
+                    isActive
+                      ? isDarkMode
+                        ? `bg-slate-900/60 ${obj.border} shadow-lg ${obj.shadow}`
+                        : `bg-white ${obj.border} shadow-xl ${obj.shadow}`
                       : isDarkMode
-                        ? 'bg-slate-950 text-slate-500 border border-white/5 hover:border-white/20 hover:text-white'
-                        : 'bg-slate-100 text-slate-400 border border-slate-200 hover:border-slate-400 hover:text-slate-700'
-                    }`}>
-                    {index + 1}
+                        ? "bg-white/[0.01] border-white/5 hover:bg-white/[0.03] hover:border-white/10"
+                        : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-md"
+                  }`}
+                >
+                  <div className={`h-10 w-10 shrink-0 rounded-xl flex items-center justify-center text-white bg-gradient-to-br ${obj.color}`}>
+                    <Icon className="h-5 w-5" />
                   </div>
-
-                  <span className={`mt-3 text-[10px] font-black tracking-wider uppercase transition-colors duration-200 ${isCurrent ? 'text-emerald-500' : 'text-slate-500 group-hover:text-emerald-400'
-                    }`}>
-                    {station.title}
-                  </span>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[13px] font-black ${isDarkMode ? "text-slate-105" : "text-slate-900"}`}>
+                        {obj.title}
+                      </span>
+                      {isActive && (
+                        <span className={`text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20`}>
+                          {obj.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-medium leading-normal">{obj.desc}</p>
+                  </div>
                 </button>
               );
             })}
           </div>
 
-          {/* DYNAMIC TELEMETRY DISPLAY BOX */}
-          <div className={`mt-8 relative min-h-[150px] rounded-3xl border p-6 sm:p-8 shadow-xl overflow-hidden backdrop-blur-md transition-all duration-300 ${isDarkMode ? "border-white/5 bg-slate-950/40" : "border-slate-200 bg-white shadow-md"
+          {/* RIGHT: DYNAMIC ROADMAP & GRAPHIC SIMULATION */}
+          <div className="lg:col-span-8 flex flex-col gap-6">
+            <div className={`border rounded-3xl p-6 sm:p-8 backdrop-blur-xl relative overflow-hidden transition-all duration-300 min-h-[360px] flex flex-col justify-between ${
+              isDarkMode ? "bg-slate-950/40 border-white/5" : "bg-white border-slate-200 shadow-lg"
             }`}>
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-10 blur-3xl rounded-bl-full transition-all duration-500 ${systemStations[activeStation].color}`} />
+              
+              {/* Decorative radial gradients */}
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 blur-2xl rounded-full pointer-events-none" />
 
-            <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-10 animate-telemetry-fade">
-              <div className="flex-1 text-left">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded bg-gradient-to-r text-white shadow-sm ${systemStations[activeStation].color}`}>
-                    {systemStations[activeStation].subtitle}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500">Node Layer 0{activeStation + 1}</span>
+              {/* Dynamic Content Head */}
+              <div className="flex items-center justify-between border-b border-slate-300/10 pb-4 mb-4">
+                <div className="text-left">
+                  <span className="text-[9px] uppercase font-bold tracking-widest text-slate-500">ROADMAP SIMULATION</span>
+                  <h3 className={`text-lg font-black tracking-tight ${isDarkMode ? "text-white" : "text-slate-900"}`} style={{ fontFamily: "'Sora', sans-serif" }}>
+                    {activeObjective === "exams" && "Curriculum Mastery Roadmap"}
+                    {activeObjective === "career" && "Recruiter-Ready Development Pipeline"}
+                    {activeObjective === "projects" && "Capstone Deployment Lifecycle"}
+                  </h3>
                 </div>
-
-                <h3 className={`mt-2 text-xl font-black tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-900"}`} style={{ fontFamily: "'Sora', sans-serif" }}>
-                  {systemStations[activeStation].title} Segment Architecture
-                </h3>
-
-                <p className="mt-2 text-xs leading-relaxed text-slate-500 max-w-xl">
-                  {systemStations[activeStation].desc}
-                </p>
+                <div className="flex items-center gap-1 bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                  <Activity className="w-3.5 h-3.5 animate-pulse" /> Live Preview
+                </div>
               </div>
 
-              <div className={`flex flex-col items-start sm:items-end justify-center border-t sm:border-t-0 sm:border-l pt-4 sm:pt-0 sm:pl-8 min-w-[130px] ${isDarkMode ? "border-white/5" : "border-slate-100"
+              {/* Steps Timeline */}
+              <div className="space-y-5 text-left flex-1 py-2">
+                {activeObjective === "exams" && [
+                  { step: "01", title: "Target Mapped Syllabus", desc: "Select university & stream. Get 100% syllabus structure synced directly from VTU, GTU, AKTU, SPPU, or local university circulars." },
+                  { step: "02", title: "Study Concept notes", desc: "Access high-yield chapters summarizing core topics in simple terms, skipping fluff to optimize prep time." },
+                  { step: "03", title: "Solve Pyqs (Past 5 Years)", desc: "Solve verified papers containing frequent questions to guarantee solid grade outputs." }
+                ].map((s, idx) => (
+                  <div key={idx} className="flex gap-4 group animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center font-bold text-xs shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                        {s.step}
+                      </div>
+                      {idx < 2 && <div className="w-[2px] bg-slate-350/10 dark:bg-slate-800/50 flex-1 my-1" />}
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className={`text-[12px] font-black ${isDarkMode ? "text-slate-205" : "text-slate-800"}`}>{s.title}</h4>
+                      <p className="text-[11px] text-slate-500 leading-normal">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {activeObjective === "career" && [
+                  { step: "01", title: "ATS Scan & Score Analysis", desc: "Upload resume to scan for Indian IT developer profiles. Highlight missing keywords, layout flaws, and parse errors." },
+                  { step: "02", title: "Verify Project Links", desc: "Import vetted resume projects from Lakshay IQ repository, linking verified GitHub code to boost credibility." },
+                  { step: "03", title: "Single-Column PDF Export", desc: "Download the clean, recruiter-compatible single-column layout optimized for applicant tracking systems." }
+                ].map((s, idx) => (
+                  <div key={idx} className="flex gap-4 group animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-xs shrink-0 group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                        {s.step}
+                      </div>
+                      {idx < 2 && <div className="w-[2px] bg-slate-350/10 dark:bg-slate-800/50 flex-1 my-1" />}
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className={`text-[12px] font-black ${isDarkMode ? "text-slate-205" : "text-slate-800"}`}>{s.title}</h4>
+                      <p className="text-[11px] text-slate-500 leading-normal">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {activeObjective === "projects" && [
+                  { step: "01", title: "Browse vetted Capstones", desc: "Filter through verified final year projects spanning ML, Web App Dev, Python scripts, and IOT." },
+                  { step: "02", title: "Download synopses & diagrams", desc: "Fetch complete documentations, architectural blueprints, DFD flows, and configuration manuals." },
+                  { step: "03", title: "Mock Viva & Slides Prep", desc: "Get slide templates, core mock questions list, and explanation manuals to present with maximum confidence." }
+                ].map((s, idx) => (
+                  <div key={idx} className="flex gap-4 group animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center font-bold text-xs shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-all">
+                        {s.step}
+                      </div>
+                      {idx < 2 && <div className="w-[2px] bg-slate-350/10 dark:bg-slate-800/50 flex-1 my-1" />}
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className={`text-[12px] font-black ${isDarkMode ? "text-slate-205" : "text-slate-800"}`}>{s.title}</h4>
+                      <p className="text-[11px] text-slate-500 leading-normal">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Time/Metric Saver Telemetry Footer */}
+              <div className={`mt-6 pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-4 ${
+                isDarkMode ? "border-white/5" : "border-slate-100"
+              }`}>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    {activeObjective === "exams" && "Estimated Prep Efficiency: +300%"}
+                    {activeObjective === "career" && "Average Interview Call Rate: +35%"}
+                    {activeObjective === "projects" && "Research Time Saved: ~12 Days"}
+                  </span>
+                </div>
+                <Button asChild size="sm" className={`rounded-full px-5 text-[10px] font-extrabold border-none ${
+                  activeObjective === "exams" ? "bg-emerald-600 hover:bg-emerald-700 text-white" :
+                  activeObjective === "career" ? "bg-indigo-600 hover:bg-indigo-700 text-white" :
+                  "bg-amber-600 hover:bg-amber-700 text-white"
                 }`}>
-                <span className={`text-xl font-black tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-900"}`} style={{ fontFamily: "'Sora', sans-serif" }}>
-                  {systemStations[activeStation].count}
-                </span>
-                <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500 mt-0.5 flex items-center gap-1">
-                  <Layers className="w-3 h-3" /> Synced Tiers
-                </span>
+                  <Link to="/signup">Try Interactive Tool</Link>
+                </Button>
               </div>
+
             </div>
           </div>
         </div>
@@ -1032,8 +1150,8 @@ function Landing() {
             <div className="md:col-span-2 space-y-4 text-left">
               <h4 className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? "text-white" : "text-slate-900"}`}>Resources</h4>
               <ul className="space-y-2 text-xs font-semibold">
-                <li><a href="#flow" className="hover:text-emerald-500 transition-colors">Campus Hubs</a></li>
-                <li><a href="#features" className="hover:text-emerald-500 transition-colors">Syllabus Vault</a></li>
+                <li><a href="#flow" onClick={(e) => handleScrollToSection(e, "flow")} className="hover:text-emerald-500 transition-colors">Campus Hubs</a></li>
+                <li><a href="#features" onClick={(e) => handleScrollToSection(e, "features")} className="hover:text-emerald-500 transition-colors">Syllabus Vault</a></li>
                 <li><Link to="/signup" className="hover:text-emerald-500 transition-colors">Student Arena</Link></li>
                 <li><Link to="/login" className="hover:text-emerald-500 transition-colors">Admin Console</Link></li>
               </ul>

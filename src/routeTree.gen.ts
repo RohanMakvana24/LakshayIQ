@@ -29,6 +29,7 @@ import { Route as AuthenticatedStudentFullscreenTestRouteImport } from './routes
 import { Route as AuthenticatedStudentChatRouteImport } from './routes/_authenticated/student/chat'
 import { Route as AuthenticatedStudentBookmarksRouteImport } from './routes/_authenticated/student/bookmarks'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
+import { Route as AuthenticatedAdminProfileRouteImport } from './routes/_authenticated/admin/profile'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin/content'
 import { Route as AuthenticatedAdminChatRouteImport } from './routes/_authenticated/admin/chat'
 import { Route as AuthenticatedAdminVideosIndexRouteImport } from './routes/_authenticated/admin/videos.index'
@@ -45,6 +46,7 @@ import { Route as AuthenticatedStudentUniversityIdRouteImport } from './routes/_
 import { Route as AuthenticatedStudentUnitIdRouteImport } from './routes/_authenticated/student/unit.$id'
 import { Route as AuthenticatedStudentSubjectIdRouteImport } from './routes/_authenticated/student/subject.$id'
 import { Route as AuthenticatedStudentSemesterIdRouteImport } from './routes/_authenticated/student/semester.$id'
+import { Route as AuthenticatedStudentPaperIdRouteImport } from './routes/_authenticated/student/paper.$id'
 import { Route as AuthenticatedStudentCourseIdRouteImport } from './routes/_authenticated/student/course.$id'
 import { Route as AuthenticatedAdminVideosAddRouteImport } from './routes/_authenticated/admin/videos.add'
 import { Route as AuthenticatedAdminUniversitiesAddRouteImport } from './routes/_authenticated/admin/universities.add'
@@ -167,6 +169,12 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminProfileRoute =
+  AuthenticatedAdminProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminContentRoute =
   AuthenticatedAdminContentRouteImport.update({
     id: '/content',
@@ -262,6 +270,12 @@ const AuthenticatedStudentSemesterIdRoute =
     path: '/semester/$id',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
+const AuthenticatedStudentPaperIdRoute =
+  AuthenticatedStudentPaperIdRouteImport.update({
+    id: '/paper/$id',
+    path: '/paper/$id',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
 const AuthenticatedStudentCourseIdRoute =
   AuthenticatedStudentCourseIdRouteImport.update({
     id: '/course/$id',
@@ -338,6 +352,7 @@ export interface FileRoutesByFullPath {
   '/student': typeof AuthenticatedStudentRouteWithChildren
   '/admin/chat': typeof AuthenticatedAdminChatRoute
   '/admin/content': typeof AuthenticatedAdminContentRoute
+  '/admin/profile': typeof AuthenticatedAdminProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
   '/student/chat': typeof AuthenticatedStudentChatRoute
@@ -362,6 +377,7 @@ export interface FileRoutesByFullPath {
   '/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
   '/admin/videos/add': typeof AuthenticatedAdminVideosAddRoute
   '/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
+  '/student/paper/$id': typeof AuthenticatedStudentPaperIdRoute
   '/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
   '/student/unit/$id': typeof AuthenticatedStudentUnitIdRoute
@@ -384,6 +400,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin/chat': typeof AuthenticatedAdminChatRoute
   '/admin/content': typeof AuthenticatedAdminContentRoute
+  '/admin/profile': typeof AuthenticatedAdminProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
   '/student/chat': typeof AuthenticatedStudentChatRoute
@@ -408,6 +425,7 @@ export interface FileRoutesByTo {
   '/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
   '/admin/videos/add': typeof AuthenticatedAdminVideosAddRoute
   '/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
+  '/student/paper/$id': typeof AuthenticatedStudentPaperIdRoute
   '/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
   '/student/unit/$id': typeof AuthenticatedStudentUnitIdRoute
@@ -434,6 +452,7 @@ export interface FileRoutesById {
   '/_authenticated/student': typeof AuthenticatedStudentRouteWithChildren
   '/_authenticated/admin/chat': typeof AuthenticatedAdminChatRoute
   '/_authenticated/admin/content': typeof AuthenticatedAdminContentRoute
+  '/_authenticated/admin/profile': typeof AuthenticatedAdminProfileRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/student/bookmarks': typeof AuthenticatedStudentBookmarksRoute
   '/_authenticated/student/chat': typeof AuthenticatedStudentChatRoute
@@ -458,6 +477,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/universities/add': typeof AuthenticatedAdminUniversitiesAddRoute
   '/_authenticated/admin/videos/add': typeof AuthenticatedAdminVideosAddRoute
   '/_authenticated/student/course/$id': typeof AuthenticatedStudentCourseIdRoute
+  '/_authenticated/student/paper/$id': typeof AuthenticatedStudentPaperIdRoute
   '/_authenticated/student/semester/$id': typeof AuthenticatedStudentSemesterIdRoute
   '/_authenticated/student/subject/$id': typeof AuthenticatedStudentSubjectIdRoute
   '/_authenticated/student/unit/$id': typeof AuthenticatedStudentUnitIdRoute
@@ -484,6 +504,7 @@ export interface FileRouteTypes {
     | '/student'
     | '/admin/chat'
     | '/admin/content'
+    | '/admin/profile'
     | '/admin/users'
     | '/student/bookmarks'
     | '/student/chat'
@@ -508,6 +529,7 @@ export interface FileRouteTypes {
     | '/admin/universities/add'
     | '/admin/videos/add'
     | '/student/course/$id'
+    | '/student/paper/$id'
     | '/student/semester/$id'
     | '/student/subject/$id'
     | '/student/unit/$id'
@@ -530,6 +552,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/chat'
     | '/admin/content'
+    | '/admin/profile'
     | '/admin/users'
     | '/student/bookmarks'
     | '/student/chat'
@@ -554,6 +577,7 @@ export interface FileRouteTypes {
     | '/admin/universities/add'
     | '/admin/videos/add'
     | '/student/course/$id'
+    | '/student/paper/$id'
     | '/student/semester/$id'
     | '/student/subject/$id'
     | '/student/unit/$id'
@@ -579,6 +603,7 @@ export interface FileRouteTypes {
     | '/_authenticated/student'
     | '/_authenticated/admin/chat'
     | '/_authenticated/admin/content'
+    | '/_authenticated/admin/profile'
     | '/_authenticated/admin/users'
     | '/_authenticated/student/bookmarks'
     | '/_authenticated/student/chat'
@@ -603,6 +628,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/universities/add'
     | '/_authenticated/admin/videos/add'
     | '/_authenticated/student/course/$id'
+    | '/_authenticated/student/paper/$id'
     | '/_authenticated/student/semester/$id'
     | '/_authenticated/student/subject/$id'
     | '/_authenticated/student/unit/$id'
@@ -769,6 +795,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/profile': {
+      id: '/_authenticated/admin/profile'
+      path: '/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AuthenticatedAdminProfileRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/content': {
       id: '/_authenticated/admin/content'
       path: '/content'
@@ -881,6 +914,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentSemesterIdRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
+    '/_authenticated/student/paper/$id': {
+      id: '/_authenticated/student/paper/$id'
+      path: '/paper/$id'
+      fullPath: '/student/paper/$id'
+      preLoaderRoute: typeof AuthenticatedStudentPaperIdRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
     '/_authenticated/student/course/$id': {
       id: '/_authenticated/student/course/$id'
       path: '/course/$id'
@@ -964,6 +1004,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminChatRoute: typeof AuthenticatedAdminChatRoute
   AuthenticatedAdminContentRoute: typeof AuthenticatedAdminContentRoute
+  AuthenticatedAdminProfileRoute: typeof AuthenticatedAdminProfileRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminCoursesAddRoute: typeof AuthenticatedAdminCoursesAddRoute
@@ -991,6 +1032,7 @@ interface AuthenticatedAdminRouteChildren {
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminChatRoute: AuthenticatedAdminChatRoute,
   AuthenticatedAdminContentRoute: AuthenticatedAdminContentRoute,
+  AuthenticatedAdminProfileRoute: AuthenticatedAdminProfileRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminCoursesAddRoute: AuthenticatedAdminCoursesAddRoute,
@@ -1034,6 +1076,7 @@ interface AuthenticatedStudentRouteChildren {
   AuthenticatedStudentSearchRoute: typeof AuthenticatedStudentSearchRoute
   AuthenticatedStudentIndexRoute: typeof AuthenticatedStudentIndexRoute
   AuthenticatedStudentCourseIdRoute: typeof AuthenticatedStudentCourseIdRoute
+  AuthenticatedStudentPaperIdRoute: typeof AuthenticatedStudentPaperIdRoute
   AuthenticatedStudentSemesterIdRoute: typeof AuthenticatedStudentSemesterIdRoute
   AuthenticatedStudentSubjectIdRoute: typeof AuthenticatedStudentSubjectIdRoute
   AuthenticatedStudentUnitIdRoute: typeof AuthenticatedStudentUnitIdRoute
@@ -1056,6 +1099,7 @@ const AuthenticatedStudentRouteChildren: AuthenticatedStudentRouteChildren = {
   AuthenticatedStudentSearchRoute: AuthenticatedStudentSearchRoute,
   AuthenticatedStudentIndexRoute: AuthenticatedStudentIndexRoute,
   AuthenticatedStudentCourseIdRoute: AuthenticatedStudentCourseIdRoute,
+  AuthenticatedStudentPaperIdRoute: AuthenticatedStudentPaperIdRoute,
   AuthenticatedStudentSemesterIdRoute: AuthenticatedStudentSemesterIdRoute,
   AuthenticatedStudentSubjectIdRoute: AuthenticatedStudentSubjectIdRoute,
   AuthenticatedStudentUnitIdRoute: AuthenticatedStudentUnitIdRoute,

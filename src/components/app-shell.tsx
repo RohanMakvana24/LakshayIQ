@@ -176,6 +176,18 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchVal, setSearchVal] = useState("");
+  const [adminProfileOpen, setAdminProfileOpen] = useState(false);
+  const adminProfileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (adminProfileRef.current && !adminProfileRef.current.contains(e.target as Node)) {
+        setAdminProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== "undefined") {
@@ -436,14 +448,63 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
               
               <NotificationBell variant="admin" />
               
-              <div className="flex items-center gap-2 border-l border-slate-200 dark:border-zinc-800 pl-2 md:pl-4">
-                <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs border border-violet-200 flex-shrink-0">
-                  {initials}
-                </div>
-                <div className="hidden xl:flex flex-col text-left leading-none">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{displayName}</span>
-                  <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">{role || "System Admin"}</span>
-                </div>
+              <div className="relative" ref={adminProfileRef}>
+                <button 
+                  onClick={() => setAdminProfileOpen(!adminProfileOpen)}
+                  className="flex items-center gap-2 border-l border-slate-200 dark:border-zinc-800 pl-2 md:pl-4 focus:outline-none group hover:opacity-85 transition-opacity cursor-pointer text-left"
+                >
+                  {profile?.avatar_url ? (
+                    <img 
+                      src={profile.avatar_url} 
+                      alt={displayName} 
+                      className="h-8 w-8 rounded-full object-cover border border-violet-200 dark:border-violet-900/60 flex-shrink-0 transition-transform duration-200 group-hover:scale-105" 
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-400 flex items-center justify-center font-bold text-xs border border-violet-200 dark:border-violet-900/60 flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
+                      {initials}
+                    </div>
+                  )}
+                  <div className="hidden xl:flex flex-col text-left leading-none">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{displayName}</span>
+                      <ChevronDown className={cn("h-3 w-3 text-slate-400 transition-transform duration-200", adminProfileOpen && "rotate-180")} />
+                    </div>
+                    <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">{role || "System Admin"}</span>
+                  </div>
+                </button>
+
+                {/* Dropdown Menu */}
+                {adminProfileOpen && (
+                  <div className="absolute right-0 top-10 w-56 bg-white dark:bg-zinc-900 border border-slate-150 dark:border-zinc-800 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="p-3 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950/20">
+                      <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{displayName}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-semibold truncate mt-0.5">{user?.email}</p>
+                    </div>
+                    <div className="p-1.5 space-y-1">
+                      <button 
+                        onClick={() => {
+                          setAdminProfileOpen(false);
+                          nav({ to: "/admin/profile" });
+                        }}
+                        className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-850 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left"
+                      >
+                        <UserCircle className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
+                        <span>Manage Profile</span>
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          setAdminProfileOpen(false);
+                          await signOut();
+                          nav({ to: "/login" });
+                        }}
+                        className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer text-left"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span>Sign out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </header>

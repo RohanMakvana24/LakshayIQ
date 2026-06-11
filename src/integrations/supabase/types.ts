@@ -276,6 +276,7 @@ export type Database = {
         Row: {
           created_at: string
           file_url: string
+          has_solution: boolean
           id: string
           semester: number | null
           subject_id: string
@@ -285,6 +286,7 @@ export type Database = {
         Insert: {
           created_at?: string
           file_url: string
+          has_solution?: boolean
           id?: string
           semester?: number | null
           subject_id: string
@@ -294,6 +296,7 @@ export type Database = {
         Update: {
           created_at?: string
           file_url?: string
+          has_solution?: boolean
           id?: string
           semester?: number | null
           subject_id?: string

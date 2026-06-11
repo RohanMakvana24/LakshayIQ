@@ -19,10 +19,12 @@ import {
   Search,
   SlidersHorizontal,
   BookOpen,
+  Eye,
 } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { useState, useMemo } from "react";
 import { ShareButton } from "@/components/share-course";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/student/subject/$id")({
   loader: async ({ params }) => {
@@ -75,7 +77,7 @@ export const Route = createFileRoute("/_authenticated/student/subject/$id")({
 
     const { data: papers } = await supabase
       .from("previous_year_papers")
-      .select("id, year, title, file_url")
+      .select("id, year, title, file_url, has_solution")
       .eq("subject_id", params.id)
       .order("year", { ascending: false });
 
@@ -130,6 +132,49 @@ function SubjectPage() {
 
     return result;
   }, [units, searchQuery, sortBy]);
+
+  const handleDownloadPaper = async (fileUrl: string, title: string, year: number) => {
+    try {
+      toast.loading("Starting download...", { id: "sec-download" });
+      
+      let downloadUrl = fileUrl;
+      
+      if (fileUrl.includes("/storage/v1/object/public/university-assets/")) {
+        const path = fileUrl.split("/storage/v1/object/public/university-assets/")[1];
+        if (path) {
+          const { data, error: storageError } = await supabase.storage
+            .from("university-assets")
+            .download(path);
+          
+          if (storageError) throw storageError;
+          const pdfBlob = new Blob([data], { type: "application/pdf" });
+          downloadUrl = URL.createObjectURL(pdfBlob);
+        }
+      } else {
+        const response = await fetch(fileUrl);
+        if (!response.ok) throw new Error("Direct download failed");
+        const blob = await response.blob();
+        const pdfBlob = new Blob([blob], { type: "application/pdf" });
+        downloadUrl = URL.createObjectURL(pdfBlob);
+      }
+      
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `${title.replace(/[^a-zA-Z0-9]/g, "_")}_${year}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      if (downloadUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(downloadUrl);
+      }
+      
+      toast.success("Download completed successfully", { id: "sec-download" });
+    } catch (err) {
+      console.error("Secure download failed:", err);
+      toast.error("Download failed", { id: "sec-download" });
+    }
+  };
 
   return (
     <div className="w-full py-2">
@@ -213,16 +258,36 @@ function SubjectPage() {
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-foreground truncate">{paper.title}</p>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <p className="text-xs font-bold text-foreground truncate">{paper.title}</p>
+                            {paper.has_solution && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 rounded-md flex-shrink-0">
+                                Solution
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[10px] text-muted-foreground">{paper.year}</p>
                         </div>
                       </div>
                       {paper.file_url && (
-                        <a href={paper.file_url} target="_blank" rel="noreferrer" className="shrink-0">
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-lg">
-                            <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Link 
+                            to="/student/paper/$id" 
+                            params={{ id: paper.id }}
+                          >
+                            <Button size="sm" variant="ghost" className="h-7.5 w-7.5 p-0 rounded-md hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400">
+                              <Eye className="h-3.5 w-3.5 text-muted-foreground hover:text-emerald-500 transition-colors" />
+                            </Button>
+                          </Link>
+                          <Button 
+                            onClick={() => handleDownloadPaper(paper.file_url, paper.title, paper.year)}
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-7.5 w-7.5 p-0 rounded-md hover:bg-neutral-100 dark:hover:bg-zinc-800"
+                          >
+                            <Download className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
                           </Button>
-                        </a>
+                        </div>
                       )}
                     </div>
                   ))}

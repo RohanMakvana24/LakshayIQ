@@ -11,6 +11,7 @@ import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
 import { Plus, Trash2, Edit3, Loader2, BookOpen, Calendar, Layers, FileText, ExternalLink, ShieldAlert, FileUp, X, CheckCircle, School, GraduationCap, BookMarked } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type Row = { 
   id: string; 
@@ -19,6 +20,7 @@ type Row = {
   semester: number | null; 
   title: string; 
   file_url: string; 
+  has_solution?: boolean;
   created_at: string 
 };
 type Subject = { id: string; semester_id: string; name: string; subject_code: string | null };
@@ -32,7 +34,58 @@ export const Route = createFileRoute("/_authenticated/admin/papers/")({
 });
 
 function ManagePapers() {
-  const { data, loading, remove, update } = useSupabaseTable<Row>("previous_year_papers");
+  const { data, loading, remove, update, refresh } = useSupabaseTable<Row>("previous_year_papers");
+  
+  const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
+  const [deletingBulk, setDeletingBulk] = useState(false);
+
+  const handleBulkDelete = async () => {
+    if (selectedRowIds.length === 0) return;
+    if (!confirm(`Are you sure you want to permanently delete the ${selectedRowIds.length} selected papers? This action is irreversible.`)) return;
+
+    try {
+      setDeletingBulk(true);
+      
+      const papersToDelete = data?.filter(r => selectedRowIds.includes(r.id)) || [];
+      const relativeStoragePaths: string[] = [];
+      
+      for (const paper of papersToDelete) {
+        if (paper.file_url && paper.file_url.includes("/storage/v1/object/public/university-assets/")) {
+          const relativeStoragePath = paper.file_url.split("/storage/v1/object/public/university-assets/")[1];
+          if (relativeStoragePath) {
+            relativeStoragePaths.push(relativeStoragePath);
+          }
+        }
+      }
+
+      if (relativeStoragePaths.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from("university-assets")
+          .remove(relativeStoragePaths);
+        if (storageError) {
+          console.warn("Storage deletion warning:", storageError);
+        }
+      }
+
+      const { error } = await supabase
+        .from("previous_year_papers")
+        .delete()
+        .in("id", selectedRowIds);
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success(`Successfully deleted ${selectedRowIds.length} papers`);
+        setSelectedRowIds([]);
+        refresh();
+      }
+    } catch (err) {
+      console.error("Bulk delete error:", err);
+      toast.error("Failed to delete selected papers.");
+    } finally {
+      setDeletingBulk(false);
+    }
+  };
   
   // 🆕 રિલેશનલ ચેઇન માટે તમામ માસ્ટર ડેટા ટેબલ્સ પાઇપલાઇન
   const { data: subjects, loading: loadingSubjects } = useSupabaseTable<Subject>("subjects", { orderBy: "name", ascending: true });
@@ -40,11 +93,52 @@ function ManagePapers() {
   const { data: courses } = useSupabaseTable<Course>("courses");
   const { data: universities } = useSupabaseTable<University>("universities");
 
+  // Filter states
+  const [selectedUniversityId, setSelectedUniversityId] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [selectedSemesterId, setSelectedSemesterId] = useState("");
+  const [selectedSubjectId, setSelectedSubjectId] = useState("");
+
+  const filteredCourses = selectedUniversityId ? courses?.filter(c => c.university_id === selectedUniversityId) : courses;
+  const filteredSemesters = selectedCourseId ? semesters?.filter(s => s.course_id === selectedCourseId) : semesters;
+  const filteredSubjects = selectedSemesterId ? subjects?.filter(sub => sub.semester_id === selectedSemesterId) : subjects;
+
+  const sortedCourses = [...(filteredCourses ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedSemesters = [...(filteredSemesters ?? [])].sort((a, b) => a.semester_number - b.semester_number);
+  const sortedSubjects = [...(filteredSubjects ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+
+  const hasActiveFilters = !!(selectedUniversityId || selectedCourseId || selectedSemesterId || selectedSubjectId);
+
+  const filteredData = data?.filter((row) => {
+    if (selectedUniversityId) {
+      const subjectObj = subjects?.find((s) => s.id === row.subject_id);
+      const semObj = semesters?.find((sem) => sem.id === subjectObj?.semester_id);
+      const courseObj = courses?.find((c) => c.id === semObj?.course_id);
+      if (courseObj?.university_id !== selectedUniversityId) return false;
+    }
+
+    if (selectedCourseId) {
+      const subjectObj = subjects?.find((s) => s.id === row.subject_id);
+      const semObj = semesters?.find((sem) => sem.id === subjectObj?.semester_id);
+      if (semObj?.course_id !== selectedCourseId) return false;
+    }
+
+    if (selectedSemesterId) {
+      const subjectObj = subjects?.find((s) => s.id === row.subject_id);
+      if (subjectObj?.semester_id !== selectedSemesterId) return false;
+    }
+
+    if (selectedSubjectId && row.subject_id !== selectedSubjectId) {
+      return false;
+    }
+
+    return true;
+  }) ?? [];
+
   // Modal and Sync State Machine
   const [selectedPaper, setSelectedPaper] = useState<Row | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   // Form Field Buffers
   const [subjectId, setSubjectId] = useState("");
@@ -52,6 +146,7 @@ function ManagePapers() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [semester, setSemester] = useState<number | "">("");
   const [fileUrl, setFileUrl] = useState("");
+  const [hasSolution, setHasSolution] = useState(false);
 
   // 🏛️ 🛠️ CHAIN MAPPER: subject_id ના આધારે છેક યુનિવર્સિટી સુધીનો ડેટા સિંગલ શૉટમાં ફિલ્ટર કરવા માટે
   const resolvePaperChain = (subId: string) => {
@@ -103,38 +198,6 @@ function ManagePapers() {
     }
   };
 
-  // Inline File Upload Handler for Edit Drawer
-  const handleEditUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (!subjectId) {
-        alert("Please assign a parent course subject before updating asset streams.");
-        return;
-      }
-      
-      try {
-        setUploading(true);
-        const fileExt = file.name.split(".").pop();
-        const activeSub = subjects?.find(s => s.id === subjectId);
-        const folderSlug = slugify(activeSub?.name || "paper");
-        const path = `papers/${folderSlug}-${Date.now()}.${fileExt}`;
-
-        const { data: storageData, error } = await supabase.storage
-          .from("university-assets")
-          .upload(path, file, { cacheControl: "3600", upsert: true });
-
-        if (error) throw error;
-
-        const { data: linkData } = supabase.storage.from("university-assets").getPublicUrl(storageData.path);
-        setFileUrl(linkData.publicUrl);
-      } catch (err) {
-        console.error("Cloud binary update interception failed:", err);
-      } finally {
-        setUploading(false);
-      }
-    }
-  };
-
   // Initialize form properties inside current drawer context
   const handleEditInitialize = (paper: Row) => {
     setSelectedPaper(paper);
@@ -143,6 +206,7 @@ function ManagePapers() {
     setYear(paper.year);
     setSemester(paper.semester ?? "");
     setFileUrl(paper.file_url);
+    setHasSolution(paper.has_solution || false);
     setIsModalOpen(true);
   };
 
@@ -159,6 +223,7 @@ function ManagePapers() {
         year: Number(year),
         semester: semester === "" ? null : Number(semester),
         file_url: fileUrl,
+        has_solution: hasSolution,
       });
       if (ok) setIsModalOpen(false);
     } catch (err) {
@@ -171,15 +236,57 @@ function ManagePapers() {
   // 📊 કૉલમ્સ ગ્રીડ કોન્ફિગરેશન (તમામ રિલેશન્સ અલગ-અલગ કૉલમમાં સેટ કર્યા છે)
   const columns: DataTableColumn<Row>[] = [
     {
+      key: "select",
+      header: (
+        <input
+          type="checkbox"
+          className="rounded border-neutral-300 dark:border-zinc-700 text-neutral-900 focus:ring-neutral-500 h-3.5 w-3.5 cursor-pointer accent-neutral-900"
+          checked={filteredData.length > 0 && filteredData.every(r => selectedRowIds.includes(r.id))}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedRowIds((prev) => {
+                const uniqueIds = new Set([...prev, ...filteredData.map((r) => r.id)]);
+                return Array.from(uniqueIds);
+              });
+            } else {
+              const filteredIds = filteredData.map((r) => r.id);
+              setSelectedRowIds((prev) => prev.filter((id) => !filteredIds.includes(id)));
+            }
+          }}
+        />
+      ),
+      accessor: (r) => (
+        <input
+          type="checkbox"
+          className="rounded border-neutral-300 dark:border-zinc-700 text-neutral-900 focus:ring-neutral-500 h-3.5 w-3.5 cursor-pointer accent-neutral-900"
+          checked={selectedRowIds.includes(r.id)}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedRowIds((prev) => [...prev, r.id]);
+            } else {
+              setSelectedRowIds((prev) => prev.filter((id) => id !== r.id));
+            }
+          }}
+        />
+      ),
+    },
+    {
       key: "title",
       header: "Paper / Resource Title",
       sortable: true,
       sortValue: (r) => r.title,
       accessor: (r) => (
         <div className="flex flex-col truncate max-w-[200px] sm:max-w-xs">
-          <span className="font-semibold text-neutral-900 text-[13px] tracking-tight leading-normal truncate">
-            {r.title}
-          </span>
+          <div className="flex items-center gap-1.5 truncate">
+            <span className="font-semibold text-neutral-900 text-[13px] tracking-tight leading-normal truncate">
+              {r.title}
+            </span>
+            {r.has_solution ? (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-md flex-shrink-0">Solution</span>
+            ) : (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 rounded-md flex-shrink-0">QP Only</span>
+            )}
+          </div>
           <span className="text-[10px] text-neutral-400 font-mono mt-0.5 truncate">
             ID: {r.id.substring(0, 8)}...
           </span>
@@ -313,18 +420,171 @@ function ManagePapers() {
         </Button>
       </div>
 
+      {/* 🔍 FILTER SYSTEMS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 border border-neutral-100 dark:border-zinc-800 rounded-2xl bg-neutral-50/30 dark:bg-zinc-900/10">
+        <div className="space-y-1.5 text-left">
+          <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-zinc-500">University</label>
+          <Select
+            value={selectedUniversityId || "ALL_UNIVERSITIES"}
+            onValueChange={(val) => {
+              const parsed = val === "ALL_UNIVERSITIES" ? "" : val;
+              setSelectedUniversityId(parsed);
+              setSelectedCourseId("");
+              setSelectedSemesterId("");
+              setSelectedSubjectId("");
+            }}
+          >
+            <SelectTrigger className="h-9 border-neutral-200 dark:border-zinc-800 rounded-lg text-xs focus:ring-0 focus:border-neutral-400 bg-white dark:bg-zinc-900 text-neutral-800 dark:text-zinc-200 transition-all">
+              <SelectValue placeholder="All Universities" />
+            </SelectTrigger>
+            <SelectContent className="rounded-lg border-neutral-200 dark:border-zinc-850 bg-white dark:bg-zinc-900 shadow-lg max-h-[220px]">
+              <SelectItem value="ALL_UNIVERSITIES" className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 dark:focus:bg-zinc-800 cursor-pointer">
+                All Universities
+              </SelectItem>
+              {universities?.map((u) => (
+                <SelectItem key={u.id} value={u.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 dark:focus:bg-zinc-800 cursor-pointer">
+                  {u.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5 text-left">
+          <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-zinc-500">Course</label>
+          <Select
+            value={selectedCourseId || "ALL_COURSES"}
+            onValueChange={(val) => {
+              const parsed = val === "ALL_COURSES" ? "" : val;
+              setSelectedCourseId(parsed);
+              setSelectedSemesterId("");
+              setSelectedSubjectId("");
+            }}
+            disabled={!selectedUniversityId && !!universities?.length}
+          >
+            <SelectTrigger className="h-9 border-neutral-200 dark:border-zinc-800 rounded-lg text-xs focus:ring-0 focus:border-neutral-400 bg-white dark:bg-zinc-900 text-neutral-800 dark:text-zinc-200 transition-all disabled:opacity-50">
+              <SelectValue placeholder={selectedUniversityId ? "All Courses" : "Select University First"} />
+            </SelectTrigger>
+            <SelectContent className="rounded-lg border-neutral-200 dark:border-zinc-850 bg-white dark:bg-zinc-900 shadow-lg max-h-[220px]">
+              <SelectItem value="ALL_COURSES" className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 dark:focus:bg-zinc-800 cursor-pointer">
+                All Courses
+              </SelectItem>
+              {sortedCourses?.map((c) => (
+                <SelectItem key={c.id} value={c.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 dark:focus:bg-zinc-800 cursor-pointer">
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5 text-left">
+          <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-zinc-500">Semester</label>
+          <Select
+            value={selectedSemesterId || "ALL_SEMESTERS"}
+            onValueChange={(val) => {
+              const parsed = val === "ALL_SEMESTERS" ? "" : val;
+              setSelectedSemesterId(parsed);
+              setSelectedSubjectId("");
+            }}
+            disabled={!selectedCourseId}
+          >
+            <SelectTrigger className="h-9 border-neutral-200 dark:border-zinc-800 rounded-lg text-xs focus:ring-0 focus:border-neutral-400 bg-white dark:bg-zinc-900 text-neutral-800 dark:text-zinc-200 transition-all disabled:opacity-50">
+              <SelectValue placeholder={selectedCourseId ? "All Semesters" : "Select Course First"} />
+            </SelectTrigger>
+            <SelectContent className="rounded-lg border-neutral-200 dark:border-zinc-850 bg-white dark:bg-zinc-900 shadow-lg max-h-[220px]">
+              <SelectItem value="ALL_SEMESTERS" className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 dark:focus:bg-zinc-800 cursor-pointer">
+                All Semesters
+              </SelectItem>
+              {sortedSemesters?.map((s) => (
+                <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 dark:focus:bg-zinc-800 cursor-pointer">
+                  Semester {s.semester_number}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5 text-left">
+          <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-zinc-500">Subject</label>
+          <Select
+            value={selectedSubjectId || "ALL_SUBJECTS"}
+            onValueChange={(val) => {
+              const parsed = val === "ALL_SUBJECTS" ? "" : val;
+              setSelectedSubjectId(parsed);
+            }}
+            disabled={!selectedSemesterId}
+          >
+            <SelectTrigger className="h-9 border-neutral-200 dark:border-zinc-800 rounded-lg text-xs focus:ring-0 focus:border-neutral-400 bg-white dark:bg-zinc-900 text-neutral-800 dark:text-zinc-200 transition-all disabled:opacity-50">
+              <SelectValue placeholder={selectedSemesterId ? "All Subjects" : "Select Semester First"} />
+            </SelectTrigger>
+            <SelectContent className="rounded-lg border-neutral-200 dark:border-zinc-850 bg-white dark:bg-zinc-900 shadow-lg max-h-[220px]">
+              <SelectItem value="ALL_SUBJECTS" className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 dark:focus:bg-zinc-800 cursor-pointer">
+                All Subjects
+              </SelectItem>
+              {sortedSubjects?.map((sub) => (
+                <SelectItem key={sub.id} value={sub.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 dark:focus:bg-zinc-800 cursor-pointer">
+                  {sub.subject_code ? `[${sub.subject_code.toUpperCase()}] ` : ""}{sub.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-end">
+          {hasActiveFilters ? (
+            <Button
+              onClick={() => {
+                setSelectedUniversityId("");
+                setSelectedCourseId("");
+                setSelectedSemesterId("");
+                setSelectedSubjectId("");
+              }}
+              variant="outline"
+              size="sm"
+              className="w-full h-9 rounded-lg text-xs font-bold border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:border-rose-900/30 dark:hover:bg-rose-950/20 text-rose-500 transition-all flex items-center justify-center gap-1.5 cursor-pointer animate-in fade-in zoom-in-95 duration-150"
+            >
+              <X className="h-3.5 w-3.5" />
+              <span>Clear Filters</span>
+            </Button>
+          ) : (
+            <div className="w-full h-9 border border-dashed border-neutral-200 dark:border-zinc-800 rounded-lg flex items-center justify-center text-[10px] font-bold text-neutral-400 dark:text-zinc-500 uppercase tracking-wider select-none">
+              No Filters Active
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Main Container Layer Mapping */}
       {loading ? (
         <div className="flex items-center justify-center py-24 border border-neutral-100 rounded-2xl bg-neutral-50/20">
           <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
         </div>
-      ) : data && data.length > 0 ? (
+      ) : filteredData && filteredData.length > 0 ? (
         <div className="w-full">
           <DataTable<Row> 
-            data={data} 
+            data={filteredData} 
             columns={columns} 
             searchableKeys={["title"]} 
             rowKey={(r) => r.id} 
+            toolbar={
+              selectedRowIds.length > 0 && (
+                <Button
+                  onClick={handleBulkDelete}
+                  disabled={deletingBulk}
+                  variant="destructive"
+                  size="sm"
+                  className="h-8 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all duration-200 animate-in fade-in slide-in-from-top-1 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {deletingBulk ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
+                  <span>Delete Selected ({selectedRowIds.length})</span>
+                </Button>
+              )
+            }
           />
         </div>
       ) : (
@@ -417,29 +677,39 @@ function ManagePapers() {
               </div>
             </div>
 
-            {/* Asset Binary File Override Stream */}
-            <div className="space-y-1.5 pt-1">
+            {/* PDF URL Input Field */}
+            <div className="space-y-1.5">
               <Label className="text-xs font-bold text-neutral-700 flex items-center gap-1">
                 <FileUp className="h-3.5 w-3.5 text-neutral-400" />
-                <span>Replace Examination Paper Document</span>
+                <span>PDF URL / File URL *</span>
               </Label>
-              
-              <div className="flex items-center gap-3 p-3 border border-neutral-200 rounded-xl bg-neutral-50/50">
-                <label className={cn(
-                  "px-3 py-1.5 bg-white border border-neutral-200 text-neutral-700 rounded-lg text-[11px] font-bold shadow-sm hover:bg-neutral-50 cursor-pointer flex-shrink-0 flex items-center gap-1",
-                  uploading && "opacity-40 cursor-wait pointer-events-none"
-                )}>
-                  {uploading ? "Streaming..." : "Choose File"}
-                  <input type="file" accept=".pdf,.docx,.doc,.pptx,.ppt,image/*" className="hidden" onChange={handleEditUpload} />
-                </label>
-                <div className="truncate text-[11px] text-neutral-500 font-medium">
-                  {fileUrl ? (
-                    <span className="text-emerald-600 font-bold flex items-center gap-0.5">
-                      <CheckCircle className="h-3 w-3" /> Binary Node Attached
-                    </span>
-                  ) : "No file linked"}
-                </div>
-              </div>
+              <Input 
+                required 
+                type="url"
+                value={fileUrl} 
+                onChange={(e) => setFileUrl(e.target.value)} 
+                placeholder="https://example.com/paper.pdf"
+                className="h-9 border-neutral-200 rounded-lg text-xs focus-visible:ring-0 focus-visible:border-neutral-400 bg-white"
+              />
+            </div>
+
+            {/* Solution Selector field */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-neutral-700 flex items-center gap-1">
+                <span>Solution Included? *</span>
+              </Label>
+              <Select
+                value={hasSolution ? "true" : "false"}
+                onValueChange={(val) => setHasSolution(val === "true")}
+              >
+                <SelectTrigger className="h-9 border-neutral-200 rounded-lg text-xs bg-white">
+                  <SelectValue placeholder="Is solution included?" />
+                </SelectTrigger>
+                <SelectContent className="rounded-lg bg-white shadow-md">
+                  <SelectItem value="true" className="text-xs cursor-pointer">Yes, with solution</SelectItem>
+                  <SelectItem value="false" className="text-xs cursor-pointer">No, question paper only</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Dialog Form Action Row */}
@@ -448,14 +718,14 @@ function ManagePapers() {
                 type="button" 
                 variant="outline" 
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-xl text-xs font-semibold h-9 px-4 border-neutral-200 hover:bg-neutral-50"
+                className="rounded-lg text-xs font-semibold h-9 px-4 border-neutral-200 hover:bg-neutral-50"
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                disabled={updating || uploading || !fileUrl}
-                className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-semibold h-9 px-5 shadow-sm transition-all"
+                disabled={updating || !fileUrl}
+                className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg text-xs font-semibold h-9 px-5 shadow-sm transition-all"
               >
                 {updating ? "Syncing..." : "Update Specifications"}
               </Button>
