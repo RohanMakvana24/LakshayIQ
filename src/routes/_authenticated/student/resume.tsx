@@ -161,6 +161,129 @@ const THEME_COLORS = [
 
 const FONTS = ["Sora", "Inter", "Playfair Display", "Fira Code"];
 
+const TEMPLATES = [
+  {
+    id: "tech-pioneer",
+    name: "Tech Pioneer",
+    badge: "Developer Choice",
+    description: "Sleek 2-column layout with high-density skills sidebar. Optimized for technical profiles.",
+    themeColor: "#10b981",
+    fontFamily: "Sora",
+    layoutMode: "split" as const,
+    primaryColorName: "Emerald",
+    tagLine: "Modern, high-performance & clean layout.",
+    colorClass: "bg-emerald-500"
+  },
+  {
+    id: "slate-pro",
+    name: "Slate Professional",
+    badge: "Recruiter Choice",
+    description: "Elegant single-column centered layout with classic serif typography. Best for business & management.",
+    themeColor: "#334155",
+    fontFamily: "Playfair Display",
+    layoutMode: "single" as const,
+    primaryColorName: "Slate",
+    tagLine: "Sophisticated, formal & highly readable.",
+    colorClass: "bg-slate-700"
+  },
+  {
+    id: "minimalist",
+    name: "Minimalist Clean",
+    badge: "Academic Standard",
+    description: "No-nonsense academic and research style featuring clean monospace fonts and thin borders.",
+    themeColor: "#0ea5e9",
+    fontFamily: "Fira Code",
+    layoutMode: "single" as const,
+    primaryColorName: "Sky",
+    tagLine: "Minimal, raw & code-style aesthetic.",
+    colorClass: "bg-sky-500"
+  },
+  {
+    id: "creative-bold",
+    name: "Creative Bold",
+    badge: "Creative Focus",
+    description: "Vibrant violet theme with a beautiful tinted left sidebar block for striking layouts.",
+    themeColor: "#6366f1",
+    fontFamily: "Inter",
+    layoutMode: "split" as const,
+    primaryColorName: "Violet",
+    tagLine: "Bold, modern & portfolio-driven.",
+    colorClass: "bg-indigo-500"
+  },
+  {
+    id: "modern-corporate",
+    name: "Modern Corporate",
+    badge: "Corporate Classic",
+    description: "Clean single-column structure with an elegant left margin accent bar and indigo typography.",
+    themeColor: "#4f46e5",
+    fontFamily: "Inter",
+    layoutMode: "single" as const,
+    primaryColorName: "Indigo",
+    tagLine: "Corporate-ready, authoritative & structured.",
+    colorClass: "bg-indigo-650"
+  },
+  {
+    id: "exec-director",
+    name: "Executive Director",
+    badge: "Executive Premium",
+    description: "Polished layout with a striking colored top header banner and serif typography.",
+    themeColor: "#1e3a8a",
+    fontFamily: "Playfair Display",
+    layoutMode: "single" as const,
+    primaryColorName: "Navy",
+    tagLine: "Premium top-banner, formal & highly readable.",
+    colorClass: "bg-blue-900"
+  },
+  {
+    id: "mkt-specialist",
+    name: "Marketing Specialist",
+    badge: "Modern Marketing",
+    description: "Warm amber accents and a clean split layout with custom tags for metrics and certifications.",
+    themeColor: "#d97706",
+    fontFamily: "Sora",
+    layoutMode: "split" as const,
+    primaryColorName: "Amber",
+    tagLine: "Modern split with warm accents.",
+    colorClass: "bg-amber-600"
+  },
+  {
+    id: "startup-founder",
+    name: "Startup Founder",
+    badge: "Startup Pick",
+    description: "High-impact bold typography with a modern minimalist layout. Optimized for founders & PMs.",
+    themeColor: "#1e293b",
+    fontFamily: "Inter",
+    layoutMode: "single" as const,
+    primaryColorName: "Charcoal",
+    tagLine: "Minimal, high-impact & bold.",
+    colorClass: "bg-slate-800"
+  },
+  {
+    id: "ux-designer",
+    name: "UX Designer",
+    badge: "Design Portfolio",
+    description: "Playful split layout with rose accents, rounded tags, and subtle metadata blocks for portfolios.",
+    themeColor: "#e11d48",
+    fontFamily: "Sora",
+    layoutMode: "split" as const,
+    primaryColorName: "Rose",
+    tagLine: "Playful, modern & tag-focused.",
+    colorClass: "bg-rose-500"
+  },
+  {
+    id: "academic-cv",
+    name: "Academic CV",
+    badge: "Classic CV",
+    description: "A traditional high-density layout using burgundy accents and classic serif font. Ideal for research.",
+    themeColor: "#991b1b",
+    fontFamily: "Playfair Display",
+    layoutMode: "single" as const,
+    primaryColorName: "Burgundy",
+    tagLine: "Classic high-density academic style.",
+    colorClass: "bg-red-800"
+  }
+];
+
 function ResumeBuilderPage() {
   const { user } = useAuth();
 
@@ -179,6 +302,9 @@ function ResumeBuilderPage() {
   const [activeFormTab, setActiveFormTab] = useState<string>("personal");
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<"editor" | "preview">("editor");
   const [editingTags, setEditingTags] = useState<Record<string, string>>({});
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [newResumeName, setNewResumeName] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("tech-pioneer");
 
   useEffect(() => {
     async function loadResumeData() {
@@ -382,16 +508,31 @@ function ResumeBuilderPage() {
     }
   };
 
-  const handleCreateNewResume = async () => {
-    const resumeName = prompt("Enter a name for your new resume:", `Resume #${resumesList.length + 1}`);
-    if (!resumeName) return;
+  const handleCreateNewResume = () => {
+    setNewResumeName(`Resume #${resumesList.length + 1}`);
+    setSelectedTemplateId("tech-pioneer");
+    setIsTemplateModalOpen(true);
+  };
+
+  const handleConfirmCreate = async () => {
+    if (!newResumeName.trim()) {
+      toast.error("Please enter a name for your resume.");
+      return;
+    }
+    const templatePreset = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
 
     const newResume = {
       id: `resume_${Date.now()}`,
-      name: resumeName,
+      name: newResumeName.trim(),
       personalInfo: DEFAULT_PERSONAL_INFO,
       sections: DEFAULT_SECTIONS,
-      styleConfig: DEFAULT_STYLE_CONFIG,
+      styleConfig: {
+        ...DEFAULT_STYLE_CONFIG,
+        templateId: templatePreset.id,
+        themeColor: templatePreset.themeColor,
+        fontFamily: templatePreset.fontFamily,
+        layoutMode: templatePreset.layoutMode,
+      },
       isPublished: false,
       updatedAt: new Date().toISOString()
     };
@@ -405,8 +546,9 @@ function ResumeBuilderPage() {
     setIsPublished(newResume.isPublished);
     setHasResumeData(true);
     setViewMode("editor");
+    setIsTemplateModalOpen(false);
     await saveVault(false, newList);
-    toast.success("New resume template created!");
+    toast.success(`${templatePreset.name} template created!`);
   };
 
   const downloadSpecificPDF = (resume: any) => {
@@ -929,6 +1071,134 @@ function ResumeBuilderPage() {
     return filtered.length > 0 ? filtered : [[]];
   };
 
+  const templateModalJSX = isTemplateModalOpen && (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-md no-print animate-fade-in text-slate-800 dark:text-slate-100">
+      <div className="bg-card border border-border w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:h-[620px] text-left">
+        {/* Modal Header */}
+        <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-black text-foreground flex items-center gap-2">
+              <Sparkles className="h-4.5 w-4.5 text-emerald-500" />
+              Select Your Design Template
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Choose a design layout to start. You can customize colors and typography anytime.</p>
+          </div>
+          <button 
+            onClick={() => setIsTemplateModalOpen(false)}
+            className="h-8 w-8 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Modal Content - Template Grid */}
+        <div className="flex-1 p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {TEMPLATES.map((t) => {
+            const isSelected = selectedTemplateId === t.id;
+            return (
+              <div
+                key={t.id}
+                onClick={() => setSelectedTemplateId(t.id)}
+                className={`group cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 flex flex-col justify-between ${
+                  isSelected
+                    ? "border-emerald-500 bg-emerald-500/[0.02] shadow-[0_4px_20px_-4px_rgba(16,185,129,0.1)]"
+                    : "border-border bg-card hover:border-slate-350 hover:bg-slate-50/20"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded ${
+                      isSelected ? "bg-emerald-500/10 text-emerald-600" : "bg-secondary text-muted-foreground"
+                    }`}>
+                      {t.badge}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`h-2.5 w-2.5 rounded-full ${t.colorClass}`} />
+                      <span className="text-[10px] text-muted-foreground font-mono">{t.primaryColorName}</span>
+                    </div>
+                  </div>
+
+                  <h4 className="text-xs font-black text-foreground">{t.name}</h4>
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{t.description}</p>
+                </div>
+
+                {/* Miniature Layout Graphic Preview */}
+                <div className="mt-4 p-3 bg-secondary/30 rounded-lg border border-border/50 space-y-2 relative overflow-hidden h-24 flex flex-col justify-between">
+                  {/* Grid representation */}
+                  <div className="flex gap-3 items-start h-full">
+                    {t.layoutMode === "split" ? (
+                      <>
+                        <div className="w-2/3 space-y-1">
+                          <div className="h-1.5 w-16 bg-slate-300 dark:bg-zinc-700 rounded-full" />
+                          <div className="h-1 w-10 bg-slate-250 dark:bg-zinc-850 rounded-full" />
+                          <div className="space-y-1 pt-1.5">
+                            <div className="h-1 w-full bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                            <div className="h-1 w-5/6 bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                          </div>
+                        </div>
+                        <div 
+                          className="w-1/3 p-1.5 rounded border border-dashed flex flex-col justify-between h-full bg-white dark:bg-zinc-950"
+                          style={{ borderColor: `${t.themeColor}30` }}
+                        >
+                          <div className="h-1.5 w-full rounded-full" style={{ backgroundColor: t.themeColor }} />
+                          <div className="flex flex-wrap gap-0.5 mt-1">
+                            <div className="h-1 w-4 bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                            <div className="h-1 w-3 bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                            <div className="h-1 w-5 bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full space-y-2">
+                        <div className="flex justify-between items-center">
+                          <div className="h-2 w-20 bg-slate-350 dark:bg-zinc-700 rounded-full" />
+                          <div className="h-1.5 w-8 bg-slate-250 dark:bg-zinc-800 rounded-full" />
+                        </div>
+                        <div className="h-0.5 w-full bg-border" />
+                        <div className="space-y-1">
+                          <div className="h-1 w-3/4 bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                          <div className="h-1 w-5/6 bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Modal Footer */}
+        <div className="px-6 py-4 bg-secondary/30 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex-1 max-w-xs">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">Resume Name</label>
+            <Input
+              value={newResumeName}
+              onChange={(e) => setNewResumeName(e.target.value)}
+              placeholder="E.g., Summer Internship Resume"
+              className="h-9 text-xs rounded-xl focus-visible:ring-emerald-500 bg-card"
+            />
+          </div>
+          <div className="flex items-center gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setIsTemplateModalOpen(false)}
+              className="h-9 px-4 rounded-xl border border-border text-xs font-bold text-muted-foreground hover:bg-secondary cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmCreate}
+              className="h-9 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider cursor-pointer shadow-md transition-all"
+            >
+              Start Customizing
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (viewMode === "dashboard") {
     const totalPublished = resumesList.filter(r => r.isPublished).length;
 
@@ -1124,6 +1394,7 @@ function ResumeBuilderPage() {
             </div>
           )}
         </div>
+        {templateModalJSX}
       </div>
     );
   }
@@ -1225,7 +1496,7 @@ function ResumeBuilderPage() {
         {/* Left Panel - Editor */}
         <div className={`lg:col-span-5 space-y-5 mt-5 no-print ${activeWorkspaceTab === "editor" ? "block" : "hidden lg:block"}`}>
           <Tabs defaultValue="branding" className="w-full space-y-5">
-            <TabsList className="grid grid-cols-3 bg-secondary p-1 rounded-xl h-10 border border-border">
+            <TabsList className="grid grid-cols-2 bg-secondary p-1 rounded-xl h-10 border border-border">
               <TabsTrigger value="branding" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
                 <User className="h-3.5 w-3.5 mr-1.5" />
                 Profile
@@ -1233,10 +1504,6 @@ function ResumeBuilderPage() {
               <TabsTrigger value="content" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
                 <Layers className="h-3.5 w-3.5 mr-1.5" />
                 Sections
-              </TabsTrigger>
-              <TabsTrigger value="aesthetics" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
-                <Palette className="h-3.5 w-3.5 mr-1.5" />
-                Style
               </TabsTrigger>
             </TabsList>
 
@@ -1579,84 +1846,6 @@ function ResumeBuilderPage() {
               </Card>
             </TabsContent>
 
-            {/* Style Tab */}
-            <TabsContent value="aesthetics" className="space-y-4 focus-visible:outline-none">
-              <Card className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm space-y-6">
-                <div>
-                  <label className="text-xs font-medium text-slate-700 block mb-3">Theme Color</label>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    {THEME_COLORS.map(color => {
-                      const isSelected = styleConfig.themeColor === color.value;
-                      return (
-                        <button
-                          key={color.value}
-                          onClick={() => updateStyle("themeColor", color.value)}
-                          className={`h-8 w-8 rounded-full border-2 border-white shadow-sm transition-all active:scale-95 flex items-center justify-center ${isSelected ? "ring-2 ring-slate-400 scale-110" : ""}`}
-                          style={{ backgroundColor: color.value }}
-                          title={color.name}
-                        >
-                          {isSelected && <Check className="h-4 w-4 text-white stroke-[3]" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-slate-700 block mb-3">Font Family</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {FONTS.map(font => {
-                      const isSelected = styleConfig.fontFamily === font;
-                      let fontStyleClass = "font-sans";
-                      if (font === "Playfair Display") fontStyleClass = "font-serif";
-                      if (font === "Fira Code") fontStyleClass = "font-mono";
-                      return (
-                        <button
-                          key={font}
-                          onClick={() => updateStyle("fontFamily", font)}
-                          className={`h-10 px-3 rounded-lg border text-xs font-medium text-left transition-all ${isSelected ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"}`}
-                        >
-                          <span className={`block ${fontStyleClass}`}>{font}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-slate-700 block mb-3">Layout</label>
-                  <div className="grid grid-cols-2 gap-2 bg-slate-50 p-1 rounded-lg">
-                    <button
-                      onClick={() => updateStyle("layoutMode", "single")}
-                      className={`h-9 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${styleConfig.layoutMode === "single" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
-                    >
-                      <AlignLeft className="h-4 w-4" /> Single Column
-                    </button>
-                    <button
-                      onClick={() => updateStyle("layoutMode", "split")}
-                      className={`h-9 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${styleConfig.layoutMode === "split" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
-                    >
-                      <LayoutGrid className="h-4 w-4" /> Split Column
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-slate-700 block mb-3">Spacing Density</label>
-                  <div className="grid grid-cols-3 gap-1 bg-slate-50 p-1 rounded-lg">
-                    {["tight", "medium", "relaxed"].map((spacing) => (
-                      <button
-                        key={spacing}
-                        onClick={() => updateStyle("sectionSpacing", spacing)}
-                        className={`h-9 text-xs font-medium rounded-md transition-all ${styleConfig.sectionSpacing === spacing ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
-                      >
-                        {spacing === "tight" ? "Compact" : spacing === "medium" ? "Standard" : "Relaxed"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            </TabsContent>
           </Tabs>
         </div>
 
@@ -1676,7 +1865,185 @@ function ResumeBuilderPage() {
                   }}
                 >
                   {/* Header - Only on Page 1 */}
-                  {pageIdx === 0 && (
+                  {pageIdx === 0 && styleConfig.templateId === "slate-pro" && (
+                    <div className="border-b-2 pb-5 mb-6 text-center space-y-3" style={{ borderColor: styleConfig.themeColor }}>
+                      {styleConfig.showAvatar !== "false" && personalInfo.avatarUrl && (
+                        <div className="h-16 w-16 rounded-full overflow-hidden border-2 shadow-sm mx-auto" style={{ borderColor: styleConfig.themeColor }}>
+                          <img src={personalInfo.avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+                        </div>
+                      )}
+                      <div>
+                        <h1 className="text-3xl font-extrabold font-serif tracking-tight" style={{ color: styleConfig.themeColor }}>
+                          {personalInfo.fullName}
+                        </h1>
+                        <p className="text-[10px] uppercase tracking-[0.2em] font-sans font-black text-slate-400 mt-1">{personalInfo.title}</p>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[10px] text-slate-500 font-medium">
+                        {personalInfo.location && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5" style={{ color: styleConfig.themeColor }} />
+                            <span>{personalInfo.location}</span>
+                          </span>
+                        )}
+                        {personalInfo.phone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="h-3.5 w-3.5" style={{ color: styleConfig.themeColor }} />
+                            <a href={`tel:${personalInfo.phone}`} className="hover:underline text-slate-600">{personalInfo.phone}</a>
+                          </span>
+                        )}
+                        {personalInfo.email && (
+                          <span className="flex items-center gap-1">
+                            <Mail className="h-3.5 w-3.5" style={{ color: styleConfig.themeColor }} />
+                            <a href={`mailto:${personalInfo.email}`} className="hover:underline text-slate-600">{personalInfo.email}</a>
+                          </span>
+                        )}
+                      </div>
+                      {personalInfo.socials.length > 0 && (
+                        <div className="flex items-center justify-center gap-4 text-[9px] font-medium pt-0.5">
+                          {personalInfo.socials.map((social, idx) => {
+                            const cleanUrl = social.url.startsWith("http") ? social.url : `https://${social.url}`;
+                            return (
+                              <a 
+                                key={idx} 
+                                href={cleanUrl}
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 hover:underline text-slate-500"
+                              >
+                                {social.platform === "Github" ? <Github className="h-3 w-3" style={{ color: styleConfig.themeColor }} /> : <Linkedin className="h-3 w-3" style={{ color: styleConfig.themeColor }} />}
+                                <span>{social.url.replace("https://", "").replace("http://", "")}</span>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {pageIdx === 0 && styleConfig.templateId === "minimalist" && (
+                    <div className="pb-4 mb-5 space-y-2" style={{ borderBottom: `1px solid ${styleConfig.themeColor}20` }}>
+                      <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+                        <h1 className="text-2xl font-black font-mono tracking-tight" style={{ color: styleConfig.themeColor }}>
+                          {personalInfo.fullName}
+                        </h1>
+                        <p className="text-xs font-mono font-bold text-slate-400">{personalInfo.title}</p>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-dashed border-slate-100 text-[10px] text-slate-500 font-mono">
+                        <div className="space-y-1">
+                          {personalInfo.location && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-slate-300">&gt;</span>
+                              <span>{personalInfo.location}</span>
+                            </div>
+                          )}
+                          {personalInfo.phone && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-slate-300">&gt;</span>
+                              <a href={`tel:${personalInfo.phone}`} className="hover:underline">{personalInfo.phone}</a>
+                            </div>
+                          )}
+                        </div>
+                        <div className="space-y-1 text-left sm:text-right">
+                          {personalInfo.email && (
+                            <div className="flex items-center sm:justify-end gap-1.5">
+                              <a href={`mailto:${personalInfo.email}`} className="hover:underline">{personalInfo.email}</a>
+                              <span className="text-slate-300">&lt;</span>
+                            </div>
+                          )}
+                          {personalInfo.socials.map((social, idx) => {
+                            const cleanUrl = social.url.startsWith("http") ? social.url : `https://${social.url}`;
+                            return (
+                              <div key={idx} className="flex items-center sm:justify-end gap-1.5">
+                                <a href={cleanUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                  {social.url.replace("https://", "").replace("http://", "")}
+                                </a>
+                                <span className="text-slate-300">&lt;</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {pageIdx === 0 && styleConfig.templateId === "creative-bold" && (
+                    <div className="relative rounded-2xl overflow-hidden mb-6 border p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-br from-slate-50 to-white" style={{ borderColor: `${styleConfig.themeColor}30` }}>
+                      <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ backgroundColor: styleConfig.themeColor }} />
+                      <div className="flex items-center gap-4 relative z-10">
+                        {styleConfig.showAvatar !== "false" && personalInfo.avatarUrl && (
+                          <div className="h-16 w-16 rounded-2xl overflow-hidden border-2 shadow-md shrink-0" style={{ borderColor: styleConfig.themeColor }}>
+                            <img src={personalInfo.avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+                          </div>
+                        )}
+                        <div>
+                          <h1 className="text-2xl font-black tracking-tight" style={{ color: styleConfig.themeColor }}>
+                            {personalInfo.fullName}
+                          </h1>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">{personalInfo.title}</p>
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-slate-500 space-y-1 relative z-10 text-left sm:text-right shrink-0">
+                        {personalInfo.location && <div className="flex items-center sm:justify-end gap-1"><span>{personalInfo.location}</span><MapPin className="h-3 w-3 text-slate-400" /></div>}
+                        {personalInfo.phone && <div className="flex items-center sm:justify-end gap-1"><a href={`tel:${personalInfo.phone}`} className="hover:underline font-semibold text-slate-750">{personalInfo.phone}</a><Phone className="h-3 w-3 text-slate-400" /></div>}
+                        {personalInfo.email && <div className="flex items-center sm:justify-end gap-1"><a href={`mailto:${personalInfo.email}`} className="hover:underline font-semibold text-slate-750">{personalInfo.email}</a><Mail className="h-3 w-3 text-slate-400" /></div>}
+                      </div>
+                    </div>
+                  )}
+
+                  {pageIdx === 0 && styleConfig.templateId === "exec-director" && (
+                    <div className="-mx-8 -mt-8 mb-6 p-8 text-white flex flex-col sm:flex-row justify-between items-center gap-4" style={{ backgroundColor: styleConfig.themeColor }}>
+                      <div className="text-center sm:text-left">
+                        <h1 className="text-3xl font-extrabold tracking-tight font-serif">
+                          {personalInfo.fullName}
+                        </h1>
+                        <p className="text-xs font-bold uppercase tracking-widest text-white/80 mt-1">{personalInfo.title}</p>
+                      </div>
+                      <div className="text-[10px] text-white/90 space-y-1 text-center sm:text-right font-medium">
+                        {personalInfo.location && <div className="flex items-center justify-center sm:justify-end gap-1"><span>{personalInfo.location}</span><MapPin className="h-3 w-3 text-white/70" /></div>}
+                        {personalInfo.phone && <div className="flex items-center justify-center sm:justify-end gap-1"><a href={`tel:${personalInfo.phone}`} className="hover:underline">{personalInfo.phone}</a><Phone className="h-3 w-3 text-white/70" /></div>}
+                        {personalInfo.email && <div className="flex items-center justify-center sm:justify-end gap-1"><a href={`mailto:${personalInfo.email}`} className="hover:underline">{personalInfo.email}</a><Mail className="h-3 w-3 text-white/70" /></div>}
+                        {personalInfo.socials.map((social, idx) => (
+                          <div key={idx} className="flex items-center justify-center sm:justify-end gap-1">
+                            <a href={social.url.startsWith("http") ? social.url : `https://${social.url}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                              {social.url.replace("https://", "").replace("http://", "")}
+                            </a>
+                            {social.platform === "Github" ? <Github className="h-3 w-3 text-white/70" /> : <Linkedin className="h-3 w-3 text-white/70" />}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {pageIdx === 0 && styleConfig.templateId === "modern-corporate" && (
+                    <div className="border-l-4 pl-4 mb-6 flex justify-between items-start gap-4" style={{ borderColor: styleConfig.themeColor }}>
+                      <div>
+                        <h1 className="text-2xl font-black uppercase tracking-tight text-slate-800">
+                          {personalInfo.fullName}
+                        </h1>
+                        <p className="text-xs font-bold uppercase tracking-wider mt-1" style={{ color: styleConfig.themeColor }}>{personalInfo.title}</p>
+                      </div>
+                      <div className="text-[10px] text-slate-500 space-y-1 text-right font-medium">
+                        {personalInfo.location && <div className="flex items-center justify-end gap-1"><span>{personalInfo.location}</span><MapPin className="h-3 w-3" style={{ color: styleConfig.themeColor }} /></div>}
+                        {personalInfo.phone && <div className="flex items-center justify-end gap-1"><a href={`tel:${personalInfo.phone}`} className="hover:underline text-slate-650 font-semibold">{personalInfo.phone}</a><Phone className="h-3 w-3" style={{ color: styleConfig.themeColor }} /></div>}
+                        {personalInfo.email && <div className="flex items-center justify-end gap-1"><a href={`mailto:${personalInfo.email}`} className="hover:underline text-slate-650 font-semibold">{personalInfo.email}</a><Mail className="h-3 w-3" style={{ color: styleConfig.themeColor }} /></div>}
+                        {personalInfo.socials.map((social, idx) => (
+                          <div key={idx} className="flex items-center justify-end gap-1">
+                            <a href={social.url.startsWith("http") ? social.url : `https://${social.url}`} target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-650 font-semibold">
+                              {social.url.replace("https://", "").replace("http://", "")}
+                            </a>
+                            {social.platform === "Github" ? <Github className="h-3 w-3" style={{ color: styleConfig.themeColor }} /> : <Linkedin className="h-3 w-3" style={{ color: styleConfig.themeColor }} />}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {pageIdx === 0 && 
+                   styleConfig.templateId !== "slate-pro" && 
+                   styleConfig.templateId !== "minimalist" && 
+                   styleConfig.templateId !== "creative-bold" && 
+                   styleConfig.templateId !== "exec-director" && 
+                   styleConfig.templateId !== "modern-corporate" && (
                     <div className="border-b pb-4 mb-5" style={{ borderColor: `${styleConfig.themeColor}40` }}>
                       <div className="flex justify-between items-start gap-4">
                         <div className="flex items-center gap-4">
@@ -1776,7 +2143,18 @@ function ResumeBuilderPage() {
                             </div>
                           ))}
                         </div>
-                        <div className={`col-span-4 ${spacing.sectionGap} border-l border-slate-100 pl-4`}>
+                        <div 
+                          className={`col-span-4 ${spacing.sectionGap} ${
+                            (styleConfig.templateId === "creative-bold" || styleConfig.templateId === "ux-designer" || styleConfig.templateId === "mkt-specialist")
+                              ? "border border-slate-100 p-4 rounded-2xl shadow-sm" 
+                              : "border-l border-slate-100 pl-4"
+                          }`}
+                          style={
+                            (styleConfig.templateId === "creative-bold" || styleConfig.templateId === "ux-designer" || styleConfig.templateId === "mkt-specialist")
+                              ? { backgroundColor: `${styleConfig.themeColor}0a`, borderColor: `${styleConfig.themeColor}20` }
+                              : {}
+                          }
+                        >
                           {pageSections.filter(s => s.type === "tags").map(section => (
                             <div key={section.id} className="space-y-2">
                               <h2 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: styleConfig.themeColor, borderColor: `${styleConfig.themeColor}30` }}>
@@ -1934,6 +2312,9 @@ function ResumeBuilderPage() {
         .animate-fade-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
+
+      {/* Canva-style Template Selector Modal */}
+      {templateModalJSX}
     </div>
   );
 }
