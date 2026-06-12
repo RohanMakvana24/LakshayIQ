@@ -84,33 +84,42 @@ interface StyleConfig {
 }
 
 const DEFAULT_PERSONAL_INFO: PersonalInfo = {
-  fullName: "Rohan Makwana",
-  title: "Full Stack Software Engineer",
-  email: "rohan@example.com",
+  fullName: "Aarav Sharma",
+  title: "Senior Full Stack Software Engineer",
+  email: "aarav.sharma@example.com",
   phone: "+91 98765 43210",
   location: "Ahmedabad, India",
   avatarUrl: "",
   socials: [
-    { platform: "Github", url: "https://github.com" },
-    { platform: "Linkedin", url: "https://linkedin.com" }
+    { platform: "Github", url: "https://github.com/aaravsharma" },
+    { platform: "Linkedin", url: "https://linkedin.com/in/aaravsharma" }
   ]
 };
 
 const DEFAULT_SECTIONS: ResumeSection[] = [
   {
-    id: "sec_education",
-    title: "Education",
+    id: "sec_experience",
+    title: "Work Experience",
     type: "timeline",
     isVisible: true,
     items: [
       {
-        id: "edu_1",
-        primaryHeader: "Gujarat Technological University",
-        secondaryHeader: "B.Tech in Computer Engineering",
-        dateRange: "2023 - Present",
+        id: "exp_1",
+        primaryHeader: "TechSolutions Cloud Systems",
+        secondaryHeader: "Senior Software Engineer",
+        dateRange: "2024 - Present",
         location: "Ahmedabad, India",
-        metrics: "CPI: 9.12 / 10.00",
-        description: "Specializing in High-Performance Distributed Systems, DBMS, and Web Technologies."
+        metrics: "React, Node.js, AWS",
+        description: "Developed and scaled enterprise cloud platforms using React, Node.js, and AWS. Refactored legacy backend to microservices, reducing server latency by 40%."
+      },
+      {
+        id: "exp_2",
+        primaryHeader: "WebCraft Development Studio",
+        secondaryHeader: "Software Developer",
+        dateRange: "2022 - 2024",
+        location: "Pune, India",
+        metrics: "Next.js, PostgreSQL",
+        description: "Built cross-platform client websites using Next.js, TypeScript, and PostgreSQL. Automated CI/CD pipelines, decreasing deployment times by 25%."
       }
     ]
   },
@@ -122,11 +131,11 @@ const DEFAULT_SECTIONS: ResumeSection[] = [
     categories: [
       {
         name: "Languages & Frameworks",
-        tags: ["TypeScript", "React.js", "Next.js", "Python", "Tailwind CSS"]
+        tags: ["TypeScript", "JavaScript", "React.js", "Next.js", "Node.js", "Tailwind CSS"]
       },
       {
-        name: "Backend & Databases",
-        tags: ["Node.js", "PostgreSQL", "Supabase", "REST APIs", "GraphQL"]
+        name: "Databases & DevOps",
+        tags: ["PostgreSQL", "Supabase", "REST APIs", "Git", "Docker", "AWS"]
       }
     ]
   },
@@ -141,9 +150,35 @@ const DEFAULT_SECTIONS: ResumeSection[] = [
         primaryHeader: "Lakshay IQ Portal",
         secondaryHeader: "Principal Web Engineer",
         dateRange: "2026",
-        location: "Web Environment",
+        location: "Ahmedabad, India",
         metrics: "React 19, Supabase",
         description: "Engineered a high-performance web education platform featuring instant A4 document printing, custom loaders, and visual identity updates using Sora typography."
+      },
+      {
+        id: "proj_2",
+        primaryHeader: "CloudScale Analytics Dashboard",
+        secondaryHeader: "Creator / Architect",
+        dateRange: "2025",
+        location: "Remote",
+        metrics: "Next.js, Redis, Go",
+        description: "Created a real-time server metrics dashboard featuring custom WebSockets, dynamic charts, and automated PDF report exports."
+      }
+    ]
+  },
+  {
+    id: "sec_education",
+    title: "Education",
+    type: "timeline",
+    isVisible: true,
+    items: [
+      {
+        id: "edu_1",
+        primaryHeader: "Gujarat Technological University",
+        secondaryHeader: "B.Tech in Computer Engineering",
+        dateRange: "2018 - 2022",
+        location: "Ahmedabad, India",
+        metrics: "CPI: 9.12 / 10.00",
+        description: "Specializing in High-Performance Distributed Systems, DBMS, and Web Technologies. Graduated first-class with distinction."
       }
     ]
   }
@@ -386,7 +421,45 @@ function ResumeBuilderPage() {
           setStyleConfig(active.styleConfig);
           setIsPublished(active.isPublished);
         } else {
-          setHasResumeData(false);
+          // Auto-create a fully pre-filled demo resume for new user
+          const initialResume = {
+            id: "primary",
+            name: "Primary Professional Resume",
+            personalInfo: DEFAULT_PERSONAL_INFO,
+            sections: DEFAULT_SECTIONS,
+            styleConfig: DEFAULT_STYLE_CONFIG,
+            isPublished: false,
+            updatedAt: new Date().toISOString()
+          };
+          const initialList = [initialResume];
+          setResumesList(initialList);
+          setHasResumeData(true);
+          setActiveResumeId("primary");
+          setPersonalInfo(DEFAULT_PERSONAL_INFO);
+          setSections(DEFAULT_SECTIONS);
+          setStyleConfig(DEFAULT_STYLE_CONFIG);
+          setIsPublished(false);
+          
+          // Auto-save so it persists in the cloud and locally
+          const vaultPayload = {
+            isVault: true,
+            resumes: initialList
+          };
+          supabase
+            .from("student_resumes" as any)
+            .upsert({
+              user_id: user.id,
+              personal_info: DEFAULT_PERSONAL_INFO,
+              sections: vaultPayload,
+              style_config: DEFAULT_STYLE_CONFIG,
+              is_published: false,
+              username: `student_${user.id.slice(0, 5)}`,
+              updated_at: new Date().toISOString()
+            }, { onConflict: "user_id" })
+            .then(({ error }) => {
+              if (error) console.error("Auto-upsert failed:", error);
+            });
+          localStorage.setItem(`resume_vault_${user.id}`, JSON.stringify(initialList));
         }
       } catch (err) {
         console.warn("Supabase fetch failed, falling back to LocalStorage:", err);
@@ -401,6 +474,26 @@ function ResumeBuilderPage() {
           setSections(active.sections);
           setStyleConfig(active.styleConfig);
           setIsPublished(active.isPublished);
+        } else {
+          // If local storage is also empty, create default demo resume
+          const initialResume = {
+            id: "primary",
+            name: "Primary Professional Resume",
+            personalInfo: DEFAULT_PERSONAL_INFO,
+            sections: DEFAULT_SECTIONS,
+            styleConfig: DEFAULT_STYLE_CONFIG,
+            isPublished: false,
+            updatedAt: new Date().toISOString()
+          };
+          const initialList = [initialResume];
+          setResumesList(initialList);
+          setHasResumeData(true);
+          setActiveResumeId("primary");
+          setPersonalInfo(DEFAULT_PERSONAL_INFO);
+          setSections(DEFAULT_SECTIONS);
+          setStyleConfig(DEFAULT_STYLE_CONFIG);
+          setIsPublished(false);
+          localStorage.setItem(`resume_vault_${user.id}`, JSON.stringify(initialList));
         }
       } finally {
         setLoading(false);
@@ -571,9 +664,9 @@ function ResumeBuilderPage() {
     setSections(resume.sections);
     setStyleConfig(resume.styleConfig);
     setIsPublished(resume.isPublished || false);
-    toast.info("Generating PDF, please wait...");
-    setTimeout(async () => {
-      await executeActualActivePDFDownload();
+    toast.info("Opening print dialog, please wait...");
+    setTimeout(() => {
+      window.print();
     }, 400);
   };
 
@@ -753,54 +846,7 @@ function ResumeBuilderPage() {
   };
 
   const downloadPDF = () => {
-    executeActualActivePDFDownload();
-  };
-
-  const executeActualActivePDFDownload = async () => {
-    const pageElements = document.querySelectorAll(".resume-page");
-    if (pageElements.length === 0) return;
-
-    try {
-      setSavingStatus("Saving...");
-      toast.info("Generating professional multi-page PDF, please wait...");
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const [{ jsPDF }, { default: html2canvas }] = await Promise.all([
-        import("jspdf"),
-        import("html2canvas")
-      ]);
-      
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 210;
-      const imgHeight = 297;
-
-      for (let i = 0; i < pageElements.length; i++) {
-        const element = pageElements[i];
-        const canvas = await html2canvas(element as HTMLElement, {
-          scale: 4,
-          useCORS: true,
-          logging: false,
-          backgroundColor: "#ffffff",
-          windowWidth: 793,
-          windowHeight: 1122,
-          imageTimeout: 0
-        });
-        const imgData = canvas.toDataURL("image/png");
-
-        if (i > 0) {
-          pdf.addPage();
-        }
-        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight, undefined, "NONE");
-      }
-
-      const cleanName = personalInfo.fullName.trim().replace(/\s+/g, "_") || "My";
-      pdf.save(`${cleanName}_Resume.pdf`);
-      setSavingStatus("Saved");
-      toast.success("PDF downloaded successfully!");
-    } catch (err) {
-      console.error("Direct PDF Generation error:", err);
-      window.print();
-    }
+    window.print();
   };
 
   const handlePublishToggle = async () => {
@@ -2529,6 +2575,34 @@ function ResumeBuilderPage() {
           background-color: rgba(0, 0, 0, 0.02);
           background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
           background-size: 24px 24px;
+        }
+        .resume-page, .resume-page * {
+          --background: #ffffff !important;
+          --foreground: #0f172a !important;
+          --surface: #f8fafc !important;
+          --surface-foreground: #0f172a !important;
+          --card: #ffffff !important;
+          --card-foreground: #0f172a !important;
+          --popover: #ffffff !important;
+          --popover-foreground: #0f172a !important;
+          --primary: #10b981 !important;
+          --primary-foreground: #ffffff !important;
+          --primary-glow: rgba(16, 185, 129, 0.15) !important;
+          --secondary: #f1f5f9 !important;
+          --secondary-foreground: #0f172a !important;
+          --muted: #f8fafc !important;
+          --muted-foreground: #64748b !important;
+          --accent: #f1f5f9 !important;
+          --accent-foreground: #0f172a !important;
+          --destructive: #ef4444 !important;
+          --destructive-foreground: #ffffff !important;
+          --success: #10b981 !important;
+          --success-foreground: #ffffff !important;
+          --warning: #f59e0b !important;
+          --warning-foreground: #ffffff !important;
+          --border: #e2e8f0 !important;
+          --input: #e2e8f0 !important;
+          --ring: #10b981 !important;
         }
         .resume-page {
           transform-origin: top center;
