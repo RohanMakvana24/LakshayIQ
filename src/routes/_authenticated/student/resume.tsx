@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createPortal } from "react-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,11 +13,19 @@ import {
   Settings, Type, Palette, AlignLeft, LayoutGrid, Check,
   MapPin, Phone, Mail, Linkedin, Github, FileText, Share2, Globe, Save,
   Briefcase, GraduationCap, Terminal, ExternalLink, SlidersHorizontal, User,
-  Copy, Trash, Layers, ChevronRight, ArrowRight, BookOpen, FolderGit2, FileUser, X
+  Copy, Trash, Layers, ChevronRight, ArrowRight, BookOpen, FolderGit2, FileUser, X,
+  List, MoreVertical, Folder, ChevronDown, Filter, RotateCcw, Upload, Search,
+  Puzzle, Users
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageLoader } from "@/components/page-loader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_authenticated/student/resume")({
   head: () => ({ meta: [{ title: "Resume Studio — Lakshay IQ" }] }),
@@ -305,6 +314,10 @@ function ResumeBuilderPage() {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [newResumeName, setNewResumeName] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("tech-pioneer");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "name">("date");
+  const [viewStyle, setViewStyle] = useState<"grid" | "list">("grid");
+  const [deleteResumeTarget, setDeleteResumeTarget] = useState<any | null>(null);
 
   useEffect(() => {
     async function loadResumeData() {
@@ -487,25 +500,27 @@ function ResumeBuilderPage() {
     toast.success("Resume duplicated successfully!");
   };
 
-  const handleDeleteResume = async (resumeId: string) => {
+  const handleDeleteResume = (resume: any) => {
     if (resumesList.length <= 1) {
       toast.error("You must keep at least one resume template.");
       return;
     }
-    if (confirm("Are you sure you want to delete this resume?")) {
-      const newList = resumesList.filter((r) => r.id !== resumeId);
-      setResumesList(newList);
-      if (activeResumeId === resumeId) {
-        const nextActive = newList[0];
-        setActiveResumeId(nextActive.id);
-        setPersonalInfo(nextActive.personalInfo);
-        setSections(nextActive.sections);
-        setStyleConfig(nextActive.styleConfig);
-        setIsPublished(nextActive.isPublished);
-      }
-      await saveVault(false, newList);
-      toast.success("Resume deleted successfully!");
+    setDeleteResumeTarget(resume);
+  };
+
+  const confirmDeleteResume = async (resumeId: string) => {
+    const newList = resumesList.filter((r) => r.id !== resumeId);
+    setResumesList(newList);
+    if (activeResumeId === resumeId) {
+      const nextActive = newList[0];
+      setActiveResumeId(nextActive.id);
+      setPersonalInfo(nextActive.personalInfo);
+      setSections(nextActive.sections);
+      setStyleConfig(nextActive.styleConfig);
+      setIsPublished(nextActive.isPublished);
     }
+    await saveVault(false, newList);
+    toast.success("Resume deleted successfully!");
   };
 
   const handleCreateNewResume = () => {
@@ -1071,9 +1086,9 @@ function ResumeBuilderPage() {
     return filtered.length > 0 ? filtered : [[]];
   };
 
-  const templateModalJSX = isTemplateModalOpen && (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-md no-print animate-fade-in text-slate-800 dark:text-slate-100">
-      <div className="bg-card border border-border w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:h-[620px] text-left">
+  const templateModalJSX = isTemplateModalOpen && typeof window !== "undefined" && document.body && createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md no-print animate-in fade-in duration-300 text-slate-800 dark:text-slate-100">
+      <div className="bg-card border border-border w-full max-w-4xl rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh] h-auto md:h-[620px] text-left animate-in zoom-in-95 duration-300">
         {/* Modal Header */}
         <div className="px-6 py-5 border-b border-border flex items-center justify-between">
           <div>
@@ -1099,7 +1114,7 @@ function ResumeBuilderPage() {
               <div
                 key={t.id}
                 onClick={() => setSelectedTemplateId(t.id)}
-                className={`group cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 flex flex-col justify-between ${
+                className={`group cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 flex flex-col justify-between ${
                   isSelected
                     ? "border-emerald-500 bg-emerald-500/[0.02] shadow-[0_4px_20px_-4px_rgba(16,185,129,0.1)]"
                     : "border-border bg-card hover:border-slate-350 hover:bg-slate-50/20"
@@ -1136,28 +1151,22 @@ function ResumeBuilderPage() {
                             <div className="h-1 w-5/6 bg-slate-200 dark:bg-zinc-800 rounded-full" />
                           </div>
                         </div>
-                        <div 
-                          className="w-1/3 p-1.5 rounded border border-dashed flex flex-col justify-between h-full bg-white dark:bg-zinc-950"
-                          style={{ borderColor: `${t.themeColor}30` }}
-                        >
+                        <div className="w-1/3 border-l border-border/80 pl-2 space-y-1">
                           <div className="h-1.5 w-full rounded-full" style={{ backgroundColor: t.themeColor }} />
-                          <div className="flex flex-wrap gap-0.5 mt-1">
-                            <div className="h-1 w-4 bg-slate-200 dark:bg-zinc-800 rounded-full" />
-                            <div className="h-1 w-3 bg-slate-200 dark:bg-zinc-800 rounded-full" />
-                            <div className="h-1 w-5 bg-slate-200 dark:bg-zinc-800 rounded-full" />
-                          </div>
+                          <div className="h-1 w-4 bg-slate-350 dark:bg-zinc-700 rounded-full" />
+                          <div className="h-1 w-5 bg-slate-350 dark:bg-zinc-700 rounded-full" />
                         </div>
                       </>
                     ) : (
-                      <div className="w-full space-y-2">
-                        <div className="flex justify-between items-center">
-                          <div className="h-2 w-20 bg-slate-350 dark:bg-zinc-700 rounded-full" />
-                          <div className="h-1.5 w-8 bg-slate-250 dark:bg-zinc-800 rounded-full" />
+                      <div className="w-full space-y-1">
+                        <div className="flex justify-between items-center pb-1 border-b border-border/80">
+                          <div className="h-2 w-12 bg-slate-350 dark:bg-zinc-700 rounded-full" style={{ backgroundColor: t.themeColor }} />
+                          <div className="h-1.5 w-6 bg-slate-250 dark:bg-zinc-800 rounded-full" />
                         </div>
-                        <div className="h-0.5 w-full bg-border" />
-                        <div className="space-y-1">
-                          <div className="h-1 w-3/4 bg-slate-200 dark:bg-zinc-800 rounded-full" />
-                          <div className="h-1 w-5/6 bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                        <div className="space-y-1 pt-1">
+                          <div className="h-1 w-full bg-slate-200 dark:bg-zinc-850 rounded-full" />
+                          <div className="h-1 w-11/12 bg-slate-200 dark:bg-zinc-850 rounded-full" />
+                          <div className="h-1 w-5/6 bg-slate-200 dark:bg-zinc-850 rounded-full" />
                         </div>
                       </div>
                     )}
@@ -1170,114 +1179,228 @@ function ResumeBuilderPage() {
 
         {/* Modal Footer */}
         <div className="px-6 py-4 bg-secondary/30 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex-1 max-w-xs">
+          <div className="w-full sm:flex-1 sm:max-w-xs">
             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">Resume Name</label>
             <Input
               value={newResumeName}
               onChange={(e) => setNewResumeName(e.target.value)}
               placeholder="E.g., Summer Internship Resume"
-              className="h-9 text-xs rounded-xl focus-visible:ring-emerald-500 bg-card"
+              className="h-9 text-xs rounded-lg focus-visible:ring-emerald-500 bg-card"
             />
           </div>
-          <div className="flex items-center gap-2 justify-end">
+          <div className="flex items-center gap-2 justify-end w-full sm:w-auto">
             <Button
               variant="outline"
               onClick={() => setIsTemplateModalOpen(false)}
-              className="h-9 px-4 rounded-xl border border-border text-xs font-bold text-muted-foreground hover:bg-secondary cursor-pointer"
+              className="flex-1 sm:flex-none h-9 px-4 rounded-lg border border-border text-xs font-bold text-muted-foreground hover:bg-secondary cursor-pointer"
             >
               Cancel
             </Button>
             <Button
               onClick={handleConfirmCreate}
-              className="h-9 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider cursor-pointer shadow-md transition-all"
+              className="flex-1 sm:flex-none h-9 px-5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider cursor-pointer shadow-md transition-all"
             >
               Start Customizing
             </Button>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
+  );
+
+  const deleteModalJSX = deleteResumeTarget && typeof window !== "undefined" && document.body && createPortal(
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md no-print animate-in fade-in duration-200">
+      <div className="bg-card border border-border w-full max-w-sm rounded-xl shadow-xl p-6 text-left animate-in zoom-in-95 duration-200">
+        <div className="flex items-center gap-3 text-rose-500 mb-3">
+          <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center">
+            <Trash2 className="h-5 w-5" />
+          </div>
+          <h3 className="text-sm font-extrabold text-foreground" style={{ fontFamily: "'Sora', sans-serif" }}>
+            Delete Resume?
+          </h3>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Are you sure you want to delete <span className="font-bold text-foreground">"{deleteResumeTarget.name}"</span>? This action cannot be undone.
+        </p>
+        <div className="flex items-center gap-2.5 mt-5">
+          <Button
+            variant="outline"
+            onClick={() => setDeleteResumeTarget(null)}
+            className="flex-1 h-9 rounded-lg border border-border text-xs font-bold text-muted-foreground hover:bg-secondary cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={async () => {
+              const targetId = deleteResumeTarget.id;
+              setDeleteResumeTarget(null);
+              await confirmDeleteResume(targetId);
+            }}
+            className="flex-1 h-9 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs uppercase tracking-wider cursor-pointer shadow-md"
+          >
+            Delete
+          </Button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 
   if (viewMode === "dashboard") {
-    const totalPublished = resumesList.filter(r => r.isPublished).length;
+    const calculateCompleteness = (r: any) => {
+      let score = 0;
+      let max = 6;
+      if (r.personalInfo?.fullName) score++;
+      if (r.personalInfo?.email) score++;
+      if (r.personalInfo?.phone) score++;
+      if (r.personalInfo?.location) score++;
+      if (r.personalInfo?.avatarUrl) score++;
+      if (r.personalInfo?.socials?.length > 0) score++;
+      
+      const timelineCount = r.sections?.filter((s: any) => s.type === "timeline" && s.items?.length > 0).length || 0;
+      const tagsCount = r.sections?.filter((s: any) => s.type === "tags" && s.categories?.length > 0).length || 0;
+      
+      score += Math.min(timelineCount, 2);
+      score += Math.min(tagsCount, 1);
+      max += 3;
+      
+      return Math.round((score / max) * 100);
+    };
+
+    const getRelativeTimeString = (dateStr: string) => {
+      try {
+        const elapsed = Date.now() - new Date(dateStr).getTime();
+        const secs = Math.floor(elapsed / 1000);
+        const mins = Math.floor(secs / 60);
+        const hours = Math.floor(mins / 60);
+        const days = Math.floor(hours / 24);
+        
+        if (days > 0) return `${days}d ago`;
+        if (hours > 0) return `${hours}h ago`;
+        if (mins > 0) return `${mins}m ago`;
+        return "just now";
+      } catch (e) {
+        return "recently";
+      }
+    };
+
+    const filteredResumes = resumesList
+      .filter((resume) => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase();
+        return (
+          (resume.name || "").toLowerCase().includes(query) ||
+          (resume.personalInfo?.fullName || "").toLowerCase().includes(query) ||
+          (resume.personalInfo?.title || "").toLowerCase().includes(query)
+        );
+      })
+      .sort((a, b) => {
+        if (sortBy === "name") {
+          return (a.name || "").localeCompare(b.name || "");
+        } else {
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        }
+      });
 
     return (
-      <div className="w-full bg-background min-h-screen text-slate-800 dark:text-zinc-200 antialiased no-print py-2 space-y-6">
-        {/* Premium Header Banner */}
-        <div className="relative rounded-2xl bg-gradient-to-br from-primary/[0.02] via-card to-emerald-500/[0.01] border border-border/80 overflow-hidden shadow-[0_12px_40px_-12px_rgba(0,0,0,0.03)] dark:shadow-none">
-          <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 px-6 py-6 md:px-8 md:py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div className="space-y-2 flex-1">
-              <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 rounded-full px-2.5 py-0.5">
-                <Sparkles className="h-3 w-3" />
-                <span className="text-[10px] font-bold tracking-wide uppercase">Portfolio Studio</span>
-              </div>
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-black tracking-tight text-foreground">
-                Resume & Portfolio Vault
+      <div className="w-full text-slate-800 dark:text-zinc-200 antialiased no-print flex flex-col gap-6 animate-in fade-in duration-500 py-2">
+        
+        {/* Clean Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground" style={{ fontFamily: "'Sora', sans-serif" }}>
+                My Resumes
               </h1>
-              <p className="text-muted-foreground text-xs md:text-sm max-w-2xl leading-relaxed">
-                Build, clone, and export recruiter-grade PDF resumes with precise A4 print boundaries.
-              </p>
             </div>
+            <p className="text-xs text-muted-foreground mt-1">Create, customize, and export professional A4 resume templates.</p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Button
+              variant="outline"
+              onClick={() => toast.info("Cloud import functionality is under development.")}
+              className="h-9 px-3.5 rounded-xl border border-border bg-card text-xs font-bold text-muted-foreground hover:bg-secondary cursor-pointer flex items-center gap-1.5 shadow-sm"
+            >
+              <Upload className="h-4 w-4" />
+              <span>Import</span>
+            </Button>
             <Button
               onClick={handleCreateNewResume}
-              className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center gap-2 cursor-pointer self-start md:self-auto"
+              className="h-9 px-4 rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center gap-2 cursor-pointer"
             >
               <Plus className="h-4 w-4" />
-              <span>Create New Template</span>
+              <span>New Resume</span>
             </Button>
           </div>
         </div>
 
-        {/* Stats Bento Grid */}
-        {resumesList.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-2xl bg-card border border-border/80 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] flex items-center gap-4">
-              <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-blue-500 shrink-0">
-                <Layers className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none">Total Templates</p>
-                <p className="text-lg font-black text-foreground mt-1.5">{resumesList.length} Saved</p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-card border border-border/80 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] flex items-center gap-4">
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-emerald-500 shrink-0">
-                <Palette className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none">Primary Theme</p>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="h-3.5 w-3.5 rounded-full border border-white dark:border-zinc-800" style={{ backgroundColor: resumesList[0]?.styleConfig?.themeColor || '#10b981' }} />
-                  <span className="text-xs font-extrabold text-foreground">
-                    {THEME_COLORS.find(c => c.value === resumesList[0]?.styleConfig?.themeColor)?.name || "Custom"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-card border border-border/80 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] flex items-center gap-4">
-              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/15 flex items-center justify-center text-indigo-500 shrink-0">
-                <Globe className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none">Online Portfolio</p>
-                <p className="text-lg font-black text-foreground mt-1.5">{totalPublished > 0 ? "Published & Live" : "Draft Mode"}</p>
-              </div>
+        {/* Filter and Control Bar */}
+        <div className="flex items-center justify-between gap-4 select-none">
+          {/* Left: Active count and Search */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-extrabold text-foreground whitespace-nowrap hidden sm:inline">
+              {filteredResumes.length} {filteredResumes.length === 1 ? 'Resume' : 'Resumes'}
+            </span>
+            <div className="relative group w-48 sm:w-64">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-755 transition-colors" />
+              <Input
+                placeholder="Search resumes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-8.5 bg-card border border-border focus-visible:ring-1 focus-visible:ring-indigo-500 rounded-xl text-xs placeholder:text-zinc-400 font-medium transition-all shadow-sm"
+              />
             </div>
           </div>
-        )}
+
+          {/* Right: Sort and View toggles */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 self-stretch sm:self-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-border/60">
+            {/* Sorting */}
+            <div className="relative">
+              <button
+                onClick={() => setSortBy(sortBy === "date" ? "name" : "date")}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-bold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all cursor-pointer shadow-sm"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Sort: {sortBy === "date" ? "Date Created" : "Name"}</span>
+                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Layout Toggles */}
+            <div className="flex bg-secondary p-0.5 rounded-lg border border-border">
+              <button
+                onClick={() => setViewStyle("grid")}
+                className={`p-1.5 rounded-md transition-all cursor-pointer ${
+                  viewStyle === "grid"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Grid View"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setViewStyle("list")}
+                className={`p-1.5 rounded-md transition-all cursor-pointer ${
+                  viewStyle === "list"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="List View"
+              >
+                <List className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Templates Feed Section */}
-        <div className="space-y-4 pt-2">
-          <h2 className="text-xs font-black uppercase tracking-widest text-muted-foreground">My Templates</h2>
-
-          {!hasResumeData || resumesList.length === 0 ? (
-            <div className="text-center py-20 bg-card border border-border/80 rounded-2xl shadow-sm px-4">
+        <div className="pt-2">
+          {filteredResumes.length === 0 ? (
+            <div className="text-center py-20 bg-card border border-border/80 rounded-xl shadow-sm px-4">
               <div className="h-14 w-14 bg-secondary border border-border rounded-xl flex items-center justify-center mx-auto mb-4">
                 <FileText className="h-6 w-6 text-muted-foreground" />
               </div>
@@ -1285,108 +1408,241 @@ function ResumeBuilderPage() {
               <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 leading-normal">
                 Build your professional portfolio and download or share your resume instantly.
               </p>
-              <Button onClick={handleCreateNewResume} className="mt-5 h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md">
+              <Button onClick={handleCreateNewResume} className="mt-5 h-10 px-5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-[#4f46e5] dark:hover:bg-[#4338ca] text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md">
                 <Plus className="h-4 w-4 mr-1.5" />
                 <span>Create First Resume</span>
               </Button>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {resumesList.map((resume) => {
+          ) : viewStyle === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+              {filteredResumes.map((resume) => {
                 const cardAccentColor = resume.styleConfig?.themeColor || '#10b981';
+                const percent = calculateCompleteness(resume);
+                const componentsCount = resume.sections?.length || 0;
+                const itemsCount = resume.sections?.reduce((acc: number, s: any) => acc + (s.items?.length || 0), 0) || 0;
+
                 return (
-                  <Card 
-                    key={resume.id} 
-                    className="group bg-card border border-border/85 rounded-xl overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-300 flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Top Accent Bar */}
-                      <div className="h-1 w-full" style={{ backgroundColor: cardAccentColor }} />
-                      
-                      <div className="p-4 space-y-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-7 w-7 rounded-md bg-secondary border border-border flex items-center justify-center text-muted-foreground">
-                              <FileUser className="h-3.5 w-3.5" />
-                            </div>
-                            <div>
-                              <h4 className="font-bold text-foreground text-[11px] line-clamp-1 leading-none">{resume.name || "Untitled Resume"}</h4>
-                              <p className="text-[8px] text-muted-foreground font-bold uppercase tracking-wider mt-1">
-                                Updated {new Date(resume.updatedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            {resume.isPublished ? (
-                              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/15 text-[8px] font-black uppercase rounded px-1.5 py-0.5 tracking-wider">
-                                Live
-                              </Badge>
+                  <div key={resume.id} className="relative pt-5">
+                    <div 
+                      onClick={() => handleEditResume(resume)}
+                      className="relative group bg-card border border-border/85 text-card-foreground shadow rounded-b-xl rounded-tr-xl rounded-tl-none hover:shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:border-slate-350 dark:hover:border-zinc-700 transition-all duration-300 flex flex-col justify-between cursor-pointer p-5 pt-6 z-10 min-h-[225px]"
+                    >
+                      {/* Folder Tab SVG Decoration (placed inside the card to align perfectly with its bounding box) */}
+                      <div className="absolute -top-[21px] left-[-1px] w-[130px] h-[22px] pointer-events-none select-none z-20">
+                        <svg viewBox="0 0 130 22" className="h-full w-full text-card fill-current stroke-border/85" style={{ strokeWidth: '1px' }}>
+                          <path d="M 1.5,22 L 1.5,9 C 1.5,4.5 5,1 9.5,1 L 95,1 C 99.5,1 103,4 105.5,8 L 115.5,18 C 117.5,20 120,22 123.5,22" />
+                        </svg>
+                      </div>
+
+                      {/* Mask to hide Card's top border under the tab area */}
+                      <div className="absolute -top-[1px] left-[1px] w-[121px] h-[2px] bg-card z-25" />
+
+                      {/* Dropdown Menu actions - Absolute positioned at top-right */}
+                      <div className="absolute top-3 right-3 z-30">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="h-3.5 w-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40 rounded-xl bg-card border border-border shadow-md" onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenuItem onClick={() => handleEditResume(resume)} className="text-xs font-semibold cursor-pointer py-2 px-3 hover:bg-secondary flex items-center gap-2">
+                              <SlidersHorizontal className="h-3.5 w-3.5" /> Edit Canvas
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDuplicateResume(resume)} className="text-xs font-semibold cursor-pointer py-2 px-3 hover:bg-secondary flex items-center gap-2">
+                              <Copy className="h-3.5 w-3.5" /> Duplicate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteResume(resume)} className="text-xs font-semibold cursor-pointer py-2 px-3 hover:bg-secondary text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 flex items-center gap-2">
+                              <Trash className="h-3.5 w-3.5" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* Card Content */}
+                      <div>
+                        {/* Top Row: Avatar and State Badge */}
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-7 w-7 rounded-full overflow-hidden border border-border/80 bg-secondary shrink-0 flex items-center justify-center">
+                            {resume.personalInfo?.avatarUrl ? (
+                              <img src={resume.personalInfo.avatarUrl} alt="avatar" className="h-full w-full object-cover" />
                             ) : (
-                              <Badge variant="outline" className="text-[8px] font-bold uppercase rounded px-1.5 py-0.5 tracking-wider border-border text-muted-foreground">
-                                Draft
-                              </Badge>
+                              <User className="h-3.5 w-3.5 text-muted-foreground" />
                             )}
                           </div>
+
+                          {resume.isPublished ? (
+                            <span className="inline-flex items-center gap-1 border border-emerald-500/20 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20 dark:text-emerald-400 text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md select-none">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              LIVE
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 border border-zinc-200 text-zinc-500 bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:bg-zinc-900/50 text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md select-none">
+                              <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                              DRAFT
+                            </span>
+                          )}
                         </div>
 
-                        {/* Mini Preview Box */}
-                        <div className="p-3 bg-secondary/30 rounded-lg border border-border/50 space-y-2">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-extrabold text-[11px] text-foreground leading-none">{resume.personalInfo?.fullName || "Your Name"}</p>
-                              <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-1">{resume.personalInfo?.title || "Professional Title"}</p>
-                            </div>
-                            <span className="text-[8px] font-black uppercase text-muted-foreground bg-secondary px-1 py-0.5 rounded border border-border/50">
-                              {resume.styleConfig?.layoutMode === 'split' ? '2-Col' : '1-Col'}
-                            </span>
-                          </div>
-                          
-                          {/* Mini Graphic Indicator lines */}
-                          <div className="flex flex-wrap gap-1 pt-0.5">
-                            <div className="h-0.5 w-10 bg-border/80 rounded-full"></div>
-                            <div className="h-0.5 w-6 bg-border/80 rounded-full"></div>
-                            <div className="h-0.5 w-8 bg-border/80 rounded-full"></div>
-                          </div>
+                        {/* Title: 2 lines max */}
+                        <h3 
+                          className="font-extrabold text-foreground text-[15px] tracking-tight leading-snug line-clamp-2 mt-3.5 group-hover:text-[#4f46e5] dark:group-hover:text-indigo-400 transition-colors" 
+                          style={{ fontFamily: "'Sora', sans-serif" }}
+                        >
+                          {resume.name || "Untitled Resume"}
+                        </h3>
+
+                        {/* Description: 3 lines max */}
+                        <p className="text-[11.5px] text-muted-foreground/90 font-medium leading-relaxed line-clamp-3 mt-2">
+                          {resume.personalInfo?.fullName || "Your Name"} • {resume.personalInfo?.title || "Professional Title"}
+                          {resume.personalInfo?.location ? ` • Based in ${resume.personalInfo.location}` : ""}
+                          {". Click to customize this resume, update contact details, experience entries, and list of skills."}
+                        </p>
+
+                        {/* Tags Row */}
+                        <div className="flex flex-wrap gap-1.5 pt-3">
+                          <span className="bg-slate-100 dark:bg-zinc-800 text-[8.5px] font-black text-slate-500 dark:text-zinc-400 tracking-wider uppercase px-2 py-0.5 rounded-md select-none">
+                            {resume.styleConfig?.layoutMode === "split" ? "Split" : "Single"}
+                          </span>
+                          <span className="bg-slate-100 dark:bg-zinc-800 text-[8.5px] font-black text-slate-500 dark:text-zinc-400 tracking-wider uppercase px-2 py-0.5 rounded-md select-none">
+                            {THEME_COLORS.find(c => c.value === resume.styleConfig?.themeColor)?.name || "Theme"}
+                          </span>
+                          <span className="bg-slate-100 dark:bg-zinc-800 text-[8.5px] font-black text-slate-500 dark:text-zinc-400 tracking-wider uppercase px-2 py-0.5 rounded-md select-none">
+                            {resume.styleConfig?.fontFamily || "Sora"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Divider Line */}
+                      <div className="border-t border-border/40 my-3.5" />
+
+                      {/* Footer Stats Row */}
+                      <div className="flex items-center justify-between select-none">
+                        <div className="flex items-center gap-1.5" title="Sections count">
+                          <Puzzle className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-[11px] text-foreground font-black leading-none">{componentsCount}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5" title="Total content items">
+                          <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-[11px] text-foreground font-black leading-none">{itemsCount}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5" title="Profile completeness">
+                          <svg className="h-3.5 w-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                          </svg>
+                          <span className="text-[11px] text-foreground font-black leading-none">{percent}%</span>
                         </div>
                       </div>
                     </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col space-y-4">
+              {filteredResumes.map((resume) => {
+                const cardAccentColor = resume.styleConfig?.themeColor || '#10b981';
+                const percent = calculateCompleteness(resume);
+                return (
+                  <Card 
+                    key={resume.id} 
+                    onClick={() => handleEditResume(resume)}
+                    className="group bg-card border border-border/85 rounded-xl overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.02)] hover:border-slate-350 dark:hover:border-zinc-700 transition-all duration-300 flex flex-row items-center justify-between p-4 gap-4 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      {/* Accent color left bar */}
+                      <div className="w-1.5 h-12 rounded-full shrink-0" style={{ backgroundColor: cardAccentColor }} />
+                      
+                      {/* Name & Updated info */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5">
+                          <h4 className="font-bold text-foreground text-sm truncate group-hover:text-[#4f46e5] dark:group-hover:text-indigo-400 transition-colors">{resume.name || "Untitled Resume"}</h4>
+                          {resume.isPublished ? (
+                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/15 text-[8px] font-black uppercase rounded px-1.5 py-0.5 tracking-wider shrink-0">
+                              Live
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[8px] font-bold uppercase rounded px-1.5 py-0.5 tracking-wider border-border text-muted-foreground shrink-0">
+                              Draft
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground font-medium mt-1 truncate">
+                          {resume.personalInfo?.fullName || "Your Name"} • {resume.personalInfo?.title || "Professional Title"}
+                        </p>
+                      </div>
+                    </div>
 
-                    {/* Bottom Actions Bar */}
-                    <div className="px-4 pb-4 pt-2 border-t border-border/40 flex items-center gap-1.5">
+                    {/* Progress Completeness */}
+                    <div className="hidden md:flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-1.5 bg-secondary/50 rounded-lg px-2.5 py-1 border border-border/50">
+                        <svg className="h-4 w-4 transform -rotate-90 select-none shrink-0" viewBox="0 0 36 36">
+                          <path
+                            className="text-zinc-150 dark:text-zinc-800"
+                            strokeWidth="4"
+                            stroke="currentColor"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className="text-emerald-500"
+                            strokeWidth="4"
+                            strokeDasharray={`${percent}, 100`}
+                            strokeLinecap="round"
+                            stroke="currentColor"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <span className="text-[10px] text-foreground font-bold">{percent}% Complete</span>
+                      </div>
+                    </div>
+
+                    {/* Actions and details */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider hidden sm:inline">
+                        Edited {getRelativeTimeString(resume.updatedAt)}
+                      </span>
                       <Button
-                        onClick={() => handleEditResume(resume)}
-                        className="flex-1 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider transition-all"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditResume(resume);
+                        }}
+                        className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-[#4f46e5] dark:hover:bg-[#4338ca] text-white text-[10px] font-black uppercase tracking-wider transition-all"
                       >
-                        <SlidersHorizontal className="h-3 w-3 mr-1" />
-                        Edit Canvas
+                        Edit
                       </Button>
-                      <Button
-                        onClick={() => downloadSpecificPDF(resume)}
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg border-border hover:bg-secondary text-muted-foreground hover:text-foreground shrink-0"
-                        title="Download PDF"
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        onClick={() => handleDuplicateResume(resume)}
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg border-border hover:bg-secondary text-muted-foreground hover:text-foreground shrink-0"
-                        title="Duplicate Template"
-                      >
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteResume(resume.id)}
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg border-border text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/20 shrink-0"
-                        title="Delete"
-                      >
-                        <Trash className="h-3.5 w-3.5" />
-                      </Button>
+                      
+                      {/* Three dot actions dropdown */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg border-border hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40 rounded-xl bg-card border border-border shadow-md" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenuItem onClick={() => handleDuplicateResume(resume)} className="text-xs font-semibold cursor-pointer py-2 px-3 hover:bg-secondary flex items-center gap-2">
+                            <Copy className="h-3.5 w-3.5" /> Duplicate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteResume(resume)} className="text-xs font-semibold cursor-pointer py-2 px-3 hover:bg-secondary text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 flex items-center gap-2">
+                            <Trash className="h-3.5 w-3.5" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </Card>
                 );
@@ -1395,6 +1651,7 @@ function ResumeBuilderPage() {
           )}
         </div>
         {templateModalJSX}
+        {deleteModalJSX}
       </div>
     );
   }
@@ -1402,79 +1659,8 @@ function ResumeBuilderPage() {
   // Editor View
   return (
     <div className="w-full bg-background min-h-screen text-slate-800 dark:text-zinc-100 antialiased selection:bg-emerald-100 selection:text-emerald-800 print:bg-white print:text-slate-900">
-      {/* Sticky Header - Ultra-Modern & Premium */}
-      <div className="sticky top-0 z-40 w-full bg-card/90 backdrop-blur-md border-b border-border px-3 sm:px-6 md:px-8 py-3.5 no-print flex flex-row items-center justify-between gap-3 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setViewMode("dashboard")}
-            className="h-9 px-4 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all hidden md:flex items-center gap-1.5 text-xs font-bold bg-card cursor-pointer shadow-sm shrink-0"
-          >
-            <ArrowLeft className="h-4 w-4 stroke-[2]" />
-            <span>Back</span>
-          </Button>
-          
-          <div className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-emerald-500 shrink-0">
-            <FileText className="h-5 w-5 stroke-[2]" />
-          </div>
-          <div className="flex flex-col justify-center">
-            <h1 className="text-xs md:text-sm font-bold text-foreground tracking-tight leading-none">
-              {resumesList.find(r => r.id === activeResumeId)?.name || "Resume Editor"}
-            </h1>
-            <div className="flex items-center gap-1.5 mt-1.5">
-              {savingStatus === "Saving..." ? (
-                <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/15 rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider">
-                  <span className="h-1 w-1 rounded-full bg-amber-500 animate-ping" />
-                  Saving
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider">
-                  <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                  Saved
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Manual Save button */}
-          <Button
-            size="sm"
-            onClick={() => saveVault(true)}
-            variant="outline"
-            className="h-9 px-3 sm:px-4 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer bg-card shadow-sm"
-          >
-            <Save className="h-4 w-4 stroke-[2]" />
-            <span className="hidden sm:inline">Save</span>
-          </Button>
-
-          {/* Share/Print fallback button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={triggerPrint}
-            className="h-9 w-9 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all cursor-pointer flex items-center justify-center bg-card shadow-sm"
-            title="Print"
-          >
-            <Share2 className="h-4 w-4 stroke-[2]" />
-          </Button>
-
-          {/* Download PDF button */}
-          <Button
-            size="sm"
-            onClick={downloadPDF}
-            className="h-9 px-3 sm:px-4.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shrink-0"
-          >
-            <Download className="h-4 w-4 stroke-[2.2]" />
-            <span className="hidden sm:inline">Export PDF</span>
-          </Button>
-        </div>
-      </div>
-
       {/* Mobile Tabs */}
-      <div className="flex lg:hidden justify-center px-4 mt-4 mb-4 no-print">
+      <div className="flex lg:hidden justify-center px-4 mt-6 mb-4 no-print">
         <div className="flex w-full max-w-xs bg-secondary p-0.5 rounded-xl border border-border">
           <button
             onClick={() => setActiveWorkspaceTab("editor")}
@@ -1492,16 +1678,78 @@ function ResumeBuilderPage() {
       </div>
 
       {/* Main Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start px-4 md:px-6 pb-12 print:block print:p-0 print:m-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start px-4 md:px-6 pt-6 pb-12 print:block print:p-0 print:m-0">
         {/* Left Panel - Editor */}
-        <div className={`lg:col-span-5 space-y-5 mt-5 no-print ${activeWorkspaceTab === "editor" ? "block" : "hidden lg:block"}`}>
+        <div className={`lg:col-span-5 space-y-5 mt-2 no-print ${activeWorkspaceTab === "editor" ? "block" : "hidden lg:block"}`}>
+          
+          {/* Back & Control Actions */}
+          <div className="flex items-center justify-between gap-3 px-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("dashboard")}
+              className="h-8 px-2 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-slate-200/50 dark:hover:bg-zinc-800 rounded-md transition-all flex items-center gap-1 cursor-pointer shrink-0"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back</span>
+            </Button>
+            
+            <div className="flex items-center gap-1.5">
+              <Button
+                size="sm"
+                onClick={() => saveVault(true)}
+                variant="outline"
+                className="h-8 px-3 rounded-md border border-border bg-card text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer shadow-sm"
+              >
+                <Save className="h-3.5 w-3.5 mr-1 text-slate-400 dark:text-zinc-500" />
+                <span>Save</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={downloadPDF}
+                className="h-8 w-8 rounded-md border border-border bg-card hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer flex items-center justify-center shadow-sm"
+                title="Download PDF"
+              >
+                <Download className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+          
+          {/* Title Area */}
+          <div className="flex items-center justify-between gap-3 px-1.5">
+            <input
+              type="text"
+              value={resumesList.find(r => r.id === activeResumeId)?.name || ""}
+              onChange={(e) => {
+                const newName = e.target.value;
+                const nextList = resumesList.map(r => r.id === activeResumeId ? { ...r, name: newName } : r);
+                setResumesList(nextList);
+                triggerAutosave(personalInfo, sections, styleConfig);
+              }}
+              className="text-base font-extrabold text-foreground bg-transparent border border-transparent hover:border-border/50 focus:bg-white dark:focus:bg-zinc-900 focus:border-border rounded-md px-2 py-1 transition-all flex-1 outline-none font-bold"
+              placeholder="Untitled Resume"
+            />
+            {savingStatus === "Saving..." ? (
+              <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/15 rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider select-none shrink-0">
+                <span className="h-1 w-1 rounded-full bg-amber-500 animate-ping" />
+                Saving
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider select-none shrink-0">
+                <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                Saved
+              </span>
+            )}
+          </div>
+
           <Tabs defaultValue="branding" className="w-full space-y-5">
-            <TabsList className="grid grid-cols-2 bg-secondary p-1 rounded-xl h-10 border border-border">
-              <TabsTrigger value="branding" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
+            <TabsList className="grid grid-cols-2 bg-secondary p-1 rounded-lg h-9.5 border border-border">
+              <TabsTrigger value="branding" className="text-xs font-bold uppercase tracking-wider rounded-md data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
                 <User className="h-3.5 w-3.5 mr-1.5" />
                 Profile
               </TabsTrigger>
-              <TabsTrigger value="content" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
+              <TabsTrigger value="content" className="text-xs font-bold uppercase tracking-wider rounded-md data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
                 <Layers className="h-3.5 w-3.5 mr-1.5" />
                 Sections
               </TabsTrigger>
@@ -1509,7 +1757,7 @@ function ResumeBuilderPage() {
 
             {/* Profile Tab */}
             <TabsContent value="branding" className="space-y-4 focus-visible:outline-none">
-              <Card className="p-5 border border-border/80 rounded-2xl bg-card shadow-[0_8px_30px_rgba(0,0,0,0.01)]">
+              <Card className="p-5 border border-border/80 rounded-xl bg-card shadow-[0_8px_30px_rgba(0,0,0,0.01)]">
                 <div className="flex items-center gap-2 mb-5 pb-2 border-b border-slate-100">
                   <div className="h-7 w-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                     <User className="h-4 w-4" />
@@ -1521,7 +1769,7 @@ function ResumeBuilderPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl mb-1">
+                  <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg mb-1">
                     <div className="h-12 w-12 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
                       {personalInfo.avatarUrl ? (
                         <img src={personalInfo.avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
@@ -1545,7 +1793,7 @@ function ResumeBuilderPage() {
                       <Input
                         value={personalInfo.avatarUrl || ""}
                         onChange={(e) => updatePersonalInfo("avatarUrl", e.target.value)}
-                        className="h-8 text-xs rounded-lg focus-visible:ring-emerald-500 bg-white"
+                        className="h-8 text-xs rounded-md focus-visible:ring-emerald-500 bg-white"
                         placeholder="https://..."
                       />
                     </div>
@@ -1557,7 +1805,7 @@ function ResumeBuilderPage() {
                       <Input
                         value={personalInfo.fullName}
                         onChange={(e) => updatePersonalInfo("fullName", e.target.value)}
-                        className="h-9 text-sm rounded-lg focus-visible:ring-emerald-500"
+                        className="h-9 text-sm rounded-md focus-visible:ring-emerald-500"
                       />
                     </div>
                     <div>
@@ -1565,7 +1813,7 @@ function ResumeBuilderPage() {
                       <Input
                         value={personalInfo.title}
                         onChange={(e) => updatePersonalInfo("title", e.target.value)}
-                        className="h-9 text-sm rounded-lg focus-visible:ring-emerald-500"
+                        className="h-9 text-sm rounded-md focus-visible:ring-emerald-500"
                       />
                     </div>
                   </div>
@@ -1576,7 +1824,7 @@ function ResumeBuilderPage() {
                       <Input
                         value={personalInfo.email}
                         onChange={(e) => updatePersonalInfo("email", e.target.value)}
-                        className="h-9 text-sm rounded-lg focus-visible:ring-emerald-500"
+                        className="h-9 text-sm rounded-md focus-visible:ring-emerald-500"
                       />
                     </div>
                     <div>
@@ -1584,7 +1832,7 @@ function ResumeBuilderPage() {
                       <Input
                         value={personalInfo.phone}
                         onChange={(e) => updatePersonalInfo("phone", e.target.value)}
-                        className="h-9 text-sm rounded-lg focus-visible:ring-emerald-500"
+                        className="h-9 text-sm rounded-md focus-visible:ring-emerald-500"
                       />
                     </div>
                   </div>
@@ -1595,7 +1843,7 @@ function ResumeBuilderPage() {
                       <Input
                         value={personalInfo.location || ""}
                         onChange={(e) => updatePersonalInfo("location", e.target.value)}
-                        className="h-9 text-sm rounded-lg focus-visible:ring-emerald-500"
+                        className="h-9 text-sm rounded-md focus-visible:ring-emerald-500"
                       />
                     </div>
                     <div>
@@ -1608,7 +1856,7 @@ function ResumeBuilderPage() {
                           if (val.trim()) nextSocials.push({ platform: "Github", url: val.trim() });
                           updatePersonalInfo("socials", nextSocials);
                         }}
-                        className="h-9 text-sm rounded-lg focus-visible:ring-emerald-500"
+                        className="h-9 text-sm rounded-md focus-visible:ring-emerald-500"
                       />
                     </div>
                   </div>
@@ -1623,7 +1871,7 @@ function ResumeBuilderPage() {
                         if (val.trim()) nextSocials.push({ platform: "Linkedin", url: val.trim() });
                         updatePersonalInfo("socials", nextSocials);
                       }}
-                      className="h-9 text-sm rounded-lg focus-visible:ring-emerald-500"
+                      className="h-9 text-sm rounded-md focus-visible:ring-emerald-500"
                     />
                   </div>
                 </div>
@@ -1678,7 +1926,7 @@ function ResumeBuilderPage() {
                             <Input
                               value={section.title}
                               onChange={(e) => updateSectionTitle(section.id, e.target.value)}
-                              className="h-8 text-sm rounded-lg focus-visible:ring-emerald-500"
+                              className="h-8 text-sm rounded-md focus-visible:ring-emerald-500"
                             />
                           </div>
 
@@ -1698,7 +1946,7 @@ function ResumeBuilderPage() {
                                       <Input
                                         value={item.primaryHeader}
                                         onChange={(e) => updateTimelineItem(section.id, item.id, "primaryHeader", e.target.value)}
-                                        className="h-8 text-xs rounded-lg"
+                                        className="h-8 text-xs rounded-md"
                                       />
                                     </div>
                                     <div>
@@ -1706,7 +1954,7 @@ function ResumeBuilderPage() {
                                       <Input
                                         value={item.secondaryHeader}
                                         onChange={(e) => updateTimelineItem(section.id, item.id, "secondaryHeader", e.target.value)}
-                                        className="h-8 text-xs rounded-lg"
+                                        className="h-8 text-xs rounded-md"
                                       />
                                     </div>
                                   </div>
@@ -1716,7 +1964,7 @@ function ResumeBuilderPage() {
                                       <Input
                                         value={item.dateRange}
                                         onChange={(e) => updateTimelineItem(section.id, item.id, "dateRange", e.target.value)}
-                                        className="h-8 text-xs rounded-lg"
+                                        className="h-8 text-xs rounded-md"
                                       />
                                     </div>
                                     <div>
@@ -1724,7 +1972,7 @@ function ResumeBuilderPage() {
                                       <Input
                                         value={item.metrics}
                                         onChange={(e) => updateTimelineItem(section.id, item.id, "metrics", e.target.value)}
-                                        className="h-8 text-xs rounded-lg"
+                                        className="h-8 text-xs rounded-md"
                                       />
                                     </div>
                                   </div>
@@ -1733,7 +1981,7 @@ function ResumeBuilderPage() {
                                     <Textarea
                                       value={item.description}
                                       onChange={(e) => updateTimelineItem(section.id, item.id, "description", e.target.value)}
-                                      className="text-xs min-h-[70px] rounded-lg focus-visible:ring-emerald-500"
+                                      className="text-xs min-h-[70px] rounded-md focus-visible:ring-emerald-500"
                                     />
                                   </div>
                                 </div>
@@ -1741,7 +1989,7 @@ function ResumeBuilderPage() {
                               <Button
                                 onClick={() => addTimelineItem(section.id)}
                                 variant="outline"
-                                className="w-full h-9 text-xs font-medium border-dashed rounded-lg gap-1"
+                                className="w-full h-9 text-xs font-medium border-dashed rounded-md gap-1"
                               >
                                 <Plus className="h-3.5 w-3.5" />
                                 Add Entry
@@ -1765,7 +2013,7 @@ function ResumeBuilderPage() {
                                   <Input
                                     value={cat.name}
                                     onChange={(e) => updateTagCategoryName(section.id, catIdx, e.target.value)}
-                                    className="h-8 text-sm rounded-lg"
+                                    className="h-8 text-sm rounded-md"
                                   />
                                   <div>
                                     <label className="text-[10px] font-medium text-slate-500 block mb-1">Skills (comma separated)</label>
@@ -1783,7 +2031,7 @@ function ResumeBuilderPage() {
                                           return next;
                                         });
                                       }}
-                                      className="h-8 text-sm rounded-lg"
+                                      className="h-8 text-sm rounded-md"
                                     />
                                   </div>
                                 </div>
@@ -1791,7 +2039,7 @@ function ResumeBuilderPage() {
                               <Button
                                 onClick={() => addTagCategory(section.id)}
                                 variant="outline"
-                                className="w-full h-9 text-xs font-medium border-dashed rounded-lg gap-1"
+                                className="w-full h-9 text-xs font-medium border-dashed rounded-md gap-1"
                               >
                                 <Plus className="h-3.5 w-3.5" />
                                 Add Category
@@ -1805,14 +2053,14 @@ function ResumeBuilderPage() {
                               <Textarea
                                 value={section.textContent || ""}
                                 onChange={(e) => updateTextContent(section.id, e.target.value)}
-                                className="text-xs min-h-[120px] rounded-lg focus-visible:ring-emerald-500"
+                                className="text-xs min-h-[120px] rounded-md focus-visible:ring-emerald-500"
                                 placeholder="Enter your custom text here..."
                               />
                             </div>
                           )}
 
                           {section.type === "pagebreak" && (
-                            <div className="text-slate-500 text-xs p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center gap-2">
+                            <div className="text-slate-500 text-xs p-3 bg-slate-50 rounded-md border border-slate-200 flex items-center gap-2">
                               <span>📄</span>
                               <span>Page break - forces a new page in PDF export.</span>
                             </div>
@@ -1858,7 +2106,7 @@ function ResumeBuilderPage() {
                 <div
                   key={pageIdx}
                   data-page-index={pageIdx}
-                  className={`resume-page w-[210mm] h-[297mm] bg-white p-8 relative overflow-hidden shrink-0 ${getFontFamilyClass()}`}
+                  className={`resume-page w-[210mm] h-[297mm] bg-white p-8 relative overflow-hidden shrink-0 lining-nums ${getFontFamilyClass()}`}
                   style={{
                     fontSize: styleConfig.fontSize === "xs" ? "12px" : styleConfig.fontSize === "sm" ? "13px" : "14px",
                     lineHeight: styleConfig.lineHeight === "tight" ? "1.2" : styleConfig.lineHeight === "relaxed" ? "1.6" : "1.4"
@@ -2122,10 +2370,25 @@ function ResumeBuilderPage() {
                                 {section.title}
                               </h2>
                               {section.type === "timeline" && (
-                                <div className="relative pl-4 border-l-2 ml-1" style={{ borderColor: `${styleConfig.themeColor}20` }}>
+                                <div className="relative pl-5 border-l border-dashed ml-2" style={{ borderColor: `${styleConfig.themeColor}40` }}>
                                   {(section.items || []).map(item => (
                                     <div key={item.id} className={`relative ${spacing.timelineItemGap} text-xs ${spacing.itemGap}`}>
-                                      <div className="absolute -left-[22px] top-1.5 h-2 w-2 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: styleConfig.themeColor }} />
+                                      {/* Premium Concentric Halo Timeline Node */}
+                                      <div 
+                                        className="absolute rounded-full z-10 flex items-center justify-center pointer-events-none"
+                                        style={{ 
+                                          left: "-27px", 
+                                          top: "3px",
+                                          width: "14px",
+                                          height: "14px",
+                                          backgroundColor: `${styleConfig.themeColor}20`
+                                        }}
+                                      >
+                                        <div 
+                                          className="h-1.5 w-1.5 rounded-full" 
+                                          style={{ backgroundColor: styleConfig.themeColor }}
+                                        />
+                                      </div>
                                       <div className="flex justify-between items-start gap-3">
                                         <h3 className="font-bold text-slate-800">{item.primaryHeader}</h3>
                                         <span className="text-[10px] font-medium text-slate-400">{item.dateRange}</span>
@@ -2186,10 +2449,25 @@ function ResumeBuilderPage() {
                               {section.title}
                             </h2>
                             {section.type === "timeline" && (
-                              <div className="relative pl-4 border-l-2 ml-1" style={{ borderColor: `${styleConfig.themeColor}20` }}>
+                              <div className="relative pl-5 border-l border-dashed ml-2" style={{ borderColor: `${styleConfig.themeColor}40` }}>
                                 {(section.items || []).map(item => (
                                   <div key={item.id} className={`relative ${spacing.timelineItemGap} text-xs ${spacing.itemGap}`}>
-                                    <div className="absolute -left-[22px] top-1.5 h-2 w-2 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: styleConfig.themeColor }} />
+                                    {/* Premium Concentric Halo Timeline Node */}
+                                    <div 
+                                      className="absolute rounded-full z-10 flex items-center justify-center pointer-events-none"
+                                      style={{ 
+                                        left: "-27px", 
+                                        top: "3px",
+                                        width: "14px",
+                                        height: "14px",
+                                        backgroundColor: `${styleConfig.themeColor}20`
+                                      }}
+                                    >
+                                      <div 
+                                        className="h-1.5 w-1.5 rounded-full" 
+                                        style={{ backgroundColor: styleConfig.themeColor }}
+                                      />
+                                    </div>
                                     <div className="flex justify-between items-start gap-3">
                                       <h3 className="font-bold text-slate-800">{item.primaryHeader}</h3>
                                       <span className="text-[10px] font-medium text-slate-400">{item.dateRange}</span>

@@ -602,7 +602,7 @@ function StudentDashboard() {
               </div>
 
               {/* Title & Search Bar Row */}
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/60 pb-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4  border-border/60 pb-6">
                 <div className="space-y-1">
                   <h1 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-2.5" style={{ fontFamily: "'Sora', sans-serif" }}>
                     <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
