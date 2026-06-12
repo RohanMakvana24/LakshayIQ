@@ -2,10 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Sparkles, Building2, BookOpen, Search, ArrowUpDown, Compass, School,
   FileText, CalendarCheck, MessageSquare, Bookmark, FolderGit2, ArrowRight,
-  ArrowLeft, GraduationCap, TrendingUp, Clock, Calendar, Zap, Award, Heart
+  ArrowLeft, GraduationCap, TrendingUp, Clock, Calendar, Zap, Award, Heart,
+  ArrowUpRight
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/student/")({
@@ -65,15 +67,16 @@ const tools = [
     textTheme: "text-amber-600 dark:text-amber-400"
   },
   {
-    title: "Chat Hub",
-    desc: "Connect with teachers & classmates",
+    title: "WhatsApp Support",
+    desc: "Direct help & academic support",
     icon: MessageSquare,
-    href: "/student/chat",
-    gradient: "from-fuchsia-500 to-pink-400",
-    glow: "shadow-fuchsia-500/10",
-    cardBg: "bg-fuchsia-500/[0.03] dark:bg-fuchsia-500/[0.02]",
-    cardBorder: "border-fuchsia-500/10 dark:border-fuchsia-500/5 hover:border-fuchsia-500/30",
-    textTheme: "text-fuchsia-600 dark:text-fuchsia-400"
+    href: "https://wa.me/917043853092",
+    gradient: "from-green-500 to-emerald-400",
+    glow: "shadow-green-500/10",
+    cardBg: "bg-green-500/[0.03] dark:bg-green-500/[0.02]",
+    cardBorder: "border-green-500/10 dark:border-green-500/5 hover:border-green-500/30",
+    textTheme: "text-green-600 dark:text-green-400",
+    isExternal: true
   },
   {
     title: "Bookmarks",
@@ -101,6 +104,7 @@ export const cardGradients = [
 
 /* ════════════════════════════════════════════════════════════════════════ */
 function StudentDashboard() {
+  const isMobile = useIsMobile();
   const [activeView, setActiveView] = useState<"dashboard" | "university">("dashboard");
   const [universities, setUniversities] = useState<UniversityRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,67 +193,59 @@ function StudentDashboard() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="relative bg-gradient-to-br from-primary/[0.02] via-card to-emerald-500/[0.01] rounded-2xl border border-border/80 overflow-hidden flex flex-col md:flex-row items-center justify-between p-6 md:p-8 lg:px-12 gap-8 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.03)] dark:shadow-none"
+                className="relative bg-gradient-to-br from-primary/[0.04] via-card to-emerald-500/[0.03] dark:from-zinc-950 dark:via-zinc-900 dark:to-emerald-950/70 text-foreground rounded-3xl border border-border/80 dark:border-zinc-800/80 overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-8 shadow-[0_12px_45px_-12px_rgba(16,185,129,0.05)] dark:shadow-none"
               >
-                {/* Decorative background grid */}
-                <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+                {/* Decorative background grid and neon glow blobs */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:32px_32px] opacity-40 pointer-events-none" />
+                <div className="absolute -left-20 -top-20 w-80 h-80 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-emerald-500/8 rounded-full blur-[120px] pointer-events-none" />
 
-                {/* Left Student Illustration with floating animation */}
-                <div className="hidden md:flex items-end w-1/4 max-w-[180px] lg:max-w-[220px] select-none shrink-0 self-end">
-                  <motion.img
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0, y: [0, -8, 0] }}
-                    transition={{
-                      x: { delay: 0.2, type: "spring", stiffness: 100 },
-                      y: { repeat: Infinity, duration: 6, ease: "easeInOut" }
-                    }}
-                    src="/category-1 (2).svg"
-                    alt="Student illustrating"
-                    className="w-full h-auto object-contain"
-                  />
-                </div>
+                {/* Left Student Illustration with floating animation & premium glowing drop-shadow (Desktop only) */}
+                {!isMobile && (
+                  <div className="hidden md:block w-1/4 max-w-[180px] lg:max-w-[220px] select-none shrink-0 self-end relative">
+                    {/* Floating pill badge on top of illustration */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
+                      transition={{ delay: 0.8, y: { repeat: Infinity, duration: 4, ease: "easeInOut" } }}
+                      className="absolute -top-6 -left-6 backdrop-blur-md bg-card/75 border border-border/80 shadow-md px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[10px] font-black text-foreground z-20 whitespace-nowrap select-none"
+                    >
+                      <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>📚 1,200+ Syllabus Units</span>
+                    </motion.div>
+
+                    <motion.img
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0, y: [0, -8, 0] }}
+                      transition={{
+                        x: { delay: 0.2, type: "spring", stiffness: 100 },
+                        y: { repeat: Infinity, duration: 6, ease: "easeInOut" }
+                      }}
+                      src="/category-1 (2).svg"
+                      alt="Student illustrating"
+                      className="w-full h-auto object-contain filter drop-shadow-[0_8px_30px_rgba(16,185,129,0.12)] dark:drop-shadow-[0_8px_30px_rgba(16,185,129,0.2)]"
+                    />
+                  </div>
+                )}
 
                 {/* Center Content */}
-                <div className="flex-1 w-full max-w-2xl mx-auto text-center space-y-4 md:space-y-6 relative z-10 px-1 py-4">
-                  {/* Floating Plus Icon Decoration */}
-                  <motion.div
-                    animate={{ y: [0, -6, 0], rotate: [0, 15, -15, 0] }}
-                    transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                    className="absolute -top-6 left-6 hidden lg:block text-orange-500 font-extrabold text-2xl select-none"
-                  >
-                    +
-                  </motion.div>
-
-                  {/* Spinning/pulsing Purple Star Decoration */}
-                  <motion.div
-                    animate={{ y: [0, -8, 0], rotate: 360 }}
-                    transition={{
-                      y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
-                      rotate: { repeat: Infinity, duration: 18, ease: "linear" }
-                    }}
-                    className="absolute -top-10 left-[48%] hidden lg:block text-purple-600 dark:text-purple-400 select-none"
-                  >
-                    <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current">
-                      <path d="M12 0l2.5 7.5L22 10l-7.5 2.5L12 20l-2.5-7.5L2 10l7.5-2.5z" />
-                    </svg>
-                  </motion.div>
+                <div className="flex-1 w-full max-w-2xl mx-auto text-center space-y-5 md:space-y-6 relative z-10 px-1 py-4">
+                  
+                  {/* Floating badge inside the content flow */}
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm text-[10px] font-extrabold tracking-wider text-primary uppercase select-none mb-1">
+                    <Sparkles className="h-3 w-3 text-emerald-500 animate-pulse" />
+                    <span>Smart Scholar Workspace</span>
+                  </div>
 
                   <div className="relative inline-block space-y-3">
-                    <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-[2.65rem] font-black tracking-tight text-foreground leading-tight">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-foreground leading-none">
                       What do you want to{" "}
-                      <span className="relative inline-block px-1">
-                        learn?
-                        {/* Curved underline SVG aligned exactly with the word */}
-                        <div className="absolute -bottom-2.5 left-0 w-full h-3 pointer-events-none overflow-visible">
-                          <svg className="w-full h-full text-amber-400 dark:text-amber-300" viewBox="0 0 100 10" fill="none" preserveAspectRatio="none">
-                            <path d="M2 3 Q 50 8, 98 3" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
-                          </svg>
-                        </div>
+                      <span className="bg-gradient-to-r from-emerald-500 via-teal-400 to-primary bg-clip-text text-transparent drop-shadow-sm">
+                        learn today?
                       </span>
                     </h1>
-                    <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm font-medium tracking-wide">
-                      Grow your skill with the most reliable online courses and certifications
+                    <p className="text-muted-foreground text-xs md:text-sm font-medium max-w-lg mx-auto leading-relaxed">
+                      Access a curated repository of past papers, customizable revision calendars, and ATS resume builders powered by AI.
                     </p>
                   </div>
 
@@ -258,85 +254,90 @@ function StudentDashboard() {
                       e.preventDefault();
                       setActiveView("university");
                     }}
-                    className="max-w-md mx-auto pt-2"
+                    className="max-w-xl mx-auto pt-2"
                   >
-                    <div className="relative flex items-center bg-card/85 dark:bg-card/95 backdrop-blur border border-border/80 rounded-2xl p-1.5 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all shadow-[0_8px_30px_rgba(0,0,0,0.02)]">
-                      <Search className="absolute left-3.5 sm:left-4.5 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+                    <div className="relative flex items-center bg-card/60 dark:bg-zinc-950/40 backdrop-blur-xl border border-border/85 rounded-full p-2 hover:border-primary/50 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 shadow-md">
+                      <Search className="absolute left-5 h-4.5 w-4.5 text-muted-foreground" />
                       <input
                         type="text"
-                        placeholder="Search course..."
+                        placeholder="Search course, university, or subject..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-transparent pl-9 sm:pl-12 pr-20 sm:pr-28 py-2 sm:py-3 text-xs sm:text-sm text-foreground focus:outline-none placeholder:text-muted-foreground"
+                        className="w-full bg-transparent pl-12 pr-32 py-3.5 text-sm text-foreground focus:outline-none placeholder:text-muted-foreground font-semibold"
                       />
                       <button
                         type="submit"
-                        className="absolute right-1 px-4 sm:px-6 py-2 sm:py-2.5 bg-foreground hover:bg-foreground/90 dark:bg-primary dark:hover:bg-primary-glow text-background dark:text-primary-foreground text-[10px] sm:text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+                        className="absolute right-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-500 hover:opacity-95 text-white text-xs font-black rounded-full transition-all shadow-md active:scale-95 cursor-pointer uppercase tracking-wider flex items-center gap-1.5"
                       >
-                        Search
+                        <span>Search</span>
                       </button>
                     </div>
                   </form>
 
                   {/* Centered student illustrations side-by-side with animated connector (mobile-only) */}
-                  <div className="flex md:hidden items-center justify-center gap-24 pt-6 relative select-none">
-                    {/* Left illustration */}
-                    <motion.img
-                      animate={{ y: [0, -6, 0] }}
-                      transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                      src="/category-1 (2).svg"
-                      alt="Student illustrating"
-                      className="w-[90px] h-auto object-contain z-10"
-                    />
+                  {isMobile && (
+                    <div className="flex md:hidden items-center justify-center gap-24 pt-6 relative select-none">
+                      {/* Left illustration */}
+                      <img
+                        src="/category-1 (2).svg"
+                        alt="Student illustrating"
+                        className="w-[90px] h-auto object-contain z-10 filter drop-shadow-[0_8px_24px_rgba(16,185,129,0.08)]"
+                      />
 
-                    {/* Animated Connection Arc and Zap Badge */}
-                    <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-12 flex items-center justify-center overflow-visible pointer-events-none z-0">
-                      <svg className="w-full h-full text-primary/30" viewBox="0 0 100 40" fill="none">
-                        <motion.path
-                          d="M 10 32 Q 50 2 90 32"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeDasharray="4 4"
-                          animate={{ strokeDashoffset: [0, -20] }}
-                          transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                        />
-                      </svg>
-                      {/* Floating Connection Zap Icon */}
-                      <motion.div
-                        animate={{ y: [0, -4, 0], scale: [1, 1.1, 1] }}
-                        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                        className="absolute -top-3.5 bg-gradient-to-r from-amber-500 to-orange-400 text-white rounded-full p-1.5 shadow-md shadow-orange-500/30"
-                      >
-                        <Zap className="h-4 w-4 fill-current" />
-                      </motion.div>
+                      {/* Animated Connection Arc and Zap Badge */}
+                      <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-12 flex items-center justify-center overflow-visible pointer-events-none z-0">
+                        <svg className="w-full h-full text-primary/30" viewBox="0 0 100 40" fill="none">
+                          <path
+                            d="M 10 32 Q 50 2 90 32"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeDasharray="4 4"
+                          />
+                        </svg>
+                        {/* Floating Connection Zap Icon */}
+                        <div className="absolute -top-3.5 bg-gradient-to-r from-amber-500 to-orange-400 text-white rounded-full p-1.5 shadow-md shadow-orange-500/30">
+                          <Zap className="h-4 w-4 fill-current" />
+                        </div>
+                      </div>
+
+                      {/* Right illustration */}
+                      <img
+                        src="/category-2.svg"
+                        alt="Student illustrating"
+                        className="w-[90px] h-auto object-contain z-10 filter drop-shadow-[0_8px_24px_rgba(16,185,129,0.08)]"
+                      />
                     </div>
+                  )}
+                </div>
 
-                    {/* Right illustration */}
+                {/* Right Student Illustration with floating animation & premium glowing drop-shadow (Desktop only) */}
+                {!isMobile && (
+                  <div className="hidden md:block w-1/4 max-w-[180px] lg:max-w-[220px] select-none shrink-0 self-end relative">
+                    {/* Floating pill badge on top of illustration */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
+                      transition={{ delay: 1, y: { repeat: Infinity, duration: 4, ease: "easeInOut", delay: 2 } }}
+                      className="absolute -top-6 -right-6 backdrop-blur-md bg-card/75 border border-border/80 shadow-md px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[10px] font-black text-foreground z-20 whitespace-nowrap select-none"
+                    >
+                      <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                      <span>⚡ AI Prep Active</span>
+                    </motion.div>
+
                     <motion.img
-                      animate={{ y: [0, -6, 0] }}
-                      transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }}
+                      initial={{ opacity: 0, x: 30 }}
+                      animate={{ opacity: 1, x: 0, y: [0, -8, 0] }}
+                      transition={{
+                        x: { delay: 0.2, type: "spring", stiffness: 100 },
+                        y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 0.6 }
+                      }}
                       src="/category-2.svg"
                       alt="Student illustrating"
-                      className="w-[90px] h-auto object-contain z-10"
+                      className="w-full h-auto object-contain filter drop-shadow-[0_8px_30px_rgba(16,185,129,0.12)] dark:drop-shadow-[0_8px_30px_rgba(16,185,129,0.2)]"
                     />
                   </div>
-                </div>
-
-                {/* Right Student Illustration with floating animation */}
-                <div className="hidden md:flex items-end w-1/4 max-w-[180px] lg:max-w-[220px] select-none shrink-0 self-end">
-                  <motion.img
-                    initial={{ opacity: 0, x: 30 }}
-                    animate={{ opacity: 1, x: 0, y: [0, -8, 0] }}
-                    transition={{
-                      x: { delay: 0.2, type: "spring", stiffness: 100 },
-                      y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 0.6 }
-                    }}
-                    src="/category-2.svg"
-                    alt="Student illustrating"
-                    className="w-full h-auto object-contain"
-                  />
-                </div>
+                )}
               </motion.div>
 
               {/* ════ TOOL CARDS ════════════════════════════════════════ */}
@@ -344,11 +345,11 @@ function StudentDashboard() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
                   className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-sm font-black text-foreground tracking-tight flex items-center gap-2">
+                    <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2.5">
                       <div className="h-5 w-1 rounded-full bg-gradient-to-b from-primary to-emerald-400" />
                       Academic Command Center
                     </h2>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 ml-[22px]">Select a tool to begin</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 ml-[14px]">Select a tool to start learning</p>
                   </div>
                 </motion.div>
 
@@ -361,117 +362,335 @@ function StudentDashboard() {
                       <motion.div variants={pop}
                         onHoverStart={() => setHoveredTool(idx)} onHoverEnd={() => setHoveredTool(null)}
                         className="h-full">
-                        <div className={`h-full ${tool.cardBg} rounded-2xl border ${tool.cardBorder} p-6 flex flex-col justify-between gap-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg hover:shadow-primary/5 group/c relative overflow-hidden`}>
-                          {/* Subtle background gradient match */}
-                          <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${tool.gradient} opacity-[0.03] rounded-full blur-2xl group-hover/c:opacity-[0.08] transition-opacity duration-300`} />
-
-                          <div className="relative z-10 space-y-4">
-                            <div className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center shadow-lg ${tool.glow} group-hover/c:scale-110 group-hover/c:rotate-3 transition-all duration-300`}>
-                              <Icon className="h-5.5 w-5.5 text-white" />
+                        <div className="h-full bg-card rounded-2xl border border-border/80 p-6 sm:p-7 flex flex-col justify-between min-h-[250px] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/[0.02] group/c relative overflow-hidden">
+                          
+                          {/* Radial colorful glow inside the card, centered, active on hover */}
+                          <div className={`absolute top-1/2 right-1/4 -translate-y-1/2 w-48 h-48 rounded-full bg-gradient-to-br ${tool.gradient} opacity-0 group-hover/c:opacity-[0.15] blur-[40px] transition-all duration-500 pointer-events-none z-0`} />
+                          
+                          {/* Top Row: Soft Badge Icon on Left, ArrowUpRight on Right */}
+                          <div className="flex items-center justify-between relative z-10">
+                            <div className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${tool.gradient}/10 flex items-center justify-center shadow-sm group-hover/c:scale-105 transition-all duration-300`}>
+                              <Icon className={`h-5.5 w-5.5 ${tool.textTheme}`} />
                             </div>
-                            <div>
-                              <h3 className="text-[15px] font-black tracking-tight text-foreground group-hover/c:text-primary transition-colors duration-200">{tool.title}</h3>
-                              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed font-medium">{tool.desc}</p>
+                            <ArrowUpRight className="h-4 w-4 text-muted-foreground/60 group-hover/c:text-foreground group-hover/c:translate-x-0.5 group-hover/c:-translate-y-0.5 transition-all duration-300" />
+                          </div>
+
+                          {/* Middle Body: Large Title, Short Description */}
+                          <div className="space-y-2.5 my-5 relative z-10">
+                            <h3 className="text-lg font-black tracking-tight text-foreground group-hover/c:text-primary transition-colors duration-200">
+                              {tool.title}
+                            </h3>
+                            <p className="text-xs text-muted-foreground/90 leading-relaxed font-semibold">
+                              {tool.desc}
+                            </p>
+                          </div>
+
+                          {/* Bottom Row: Pill Button on Left, Circular Icon Action Buttons on Right */}
+                          <div className="flex items-center justify-between pt-2 relative z-10 mt-auto">
+                            <div className="px-5 py-2 rounded-full border border-foreground/80 hover:bg-foreground hover:text-background text-[11px] font-black transition-all duration-200 cursor-pointer select-none uppercase tracking-wider">
+                              Learn more
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <div className="h-9.5 w-9.5 rounded-full bg-muted/40 hover:bg-muted border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all duration-200 cursor-pointer">
+                                <Bookmark className="h-4 w-4" />
+                              </div>
+                              <div className="h-9.5 w-9.5 rounded-full bg-muted/40 hover:bg-muted border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all duration-200 cursor-pointer">
+                                <ArrowRight className="h-4 w-4" />
+                              </div>
                             </div>
                           </div>
 
-                          <div className="relative z-10 flex items-center justify-between pt-2">
-                            <div className={`flex items-center gap-1.5 text-xs font-black ${tool.textTheme} group-hover/c:gap-2.5 transition-all`}>
-                              <span>Launch</span>
-                              <ArrowRight className="h-3.5 w-3.5 group-hover/c:translate-x-0.5 transition-transform" />
-                            </div>
-                          </div>
                         </div>
                       </motion.div>
                     );
 
-                    if ("isAction" in tool) return <button key={tool.title} onClick={() => setActiveView("university")} className="text-left h-full">{card}</button>;
+                    if ("isAction" in tool) return <button key={tool.title} onClick={() => setActiveView("university")} className="text-left h-full w-full">{card}</button>;
+                    if ("isExternal" in tool) return <a key={tool.title} href={(tool as any).href} target="_blank" rel="noopener noreferrer" className="h-full block">{card}</a>;
                     return <Link key={tool.title} to={(tool as any).href} className="h-full block">{card}</Link>;
                   })}
                 </motion.div>
               </div>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-                className="bg-card/65 dark:bg-card/45 backdrop-blur-md rounded-2xl border border-border/60 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg shadow-primary/20">
-                    <TrendingUp className="h-5 w-5 text-white" />
-                  </div>
+
+              {/* ════ FEATURED CAMPUSES ══════════════════════════════════ */}
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-bold text-foreground">This Week's Activity</p>
-                    <p className="text-[11px] text-muted-foreground">7 units completed — you're on fire! 🔥</p>
+                    <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2.5">
+                      <div className="h-5 w-1 rounded-full bg-gradient-to-b from-emerald-500 to-teal-400" />
+                      Featured Campuses
+                    </h2>
+                    <p className="text-xs text-muted-foreground mt-0.5 ml-[14px]">Explore top institutions and program past papers</p>
+                  </div>
+                  <button 
+                    onClick={() => setActiveView("university")}
+                    className="flex items-center gap-1.5 text-xs font-black text-primary hover:gap-2 transition-all cursor-pointer"
+                  >
+                    <span>View Directory</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                {loading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((n) => (
+                      <div key={n} className="bg-card border border-border/80 rounded-2xl overflow-hidden h-[280px] animate-pulse flex flex-col">
+                        <div className="h-32 bg-muted-foreground/10" />
+                        <div className="p-5 flex-1 flex flex-col justify-between">
+                          <div className="space-y-3">
+                            <div className="h-5 w-20 rounded bg-muted-foreground/15" />
+                            <div className="h-4 w-5/6 rounded bg-muted-foreground/20" />
+                            <div className="h-3 w-1/2 rounded bg-muted-foreground/10" />
+                          </div>
+                          <div className="h-9 w-full rounded-xl bg-muted-foreground/10" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : universities.length === 0 ? (
+                  <div className="text-center py-10 bg-card rounded-2xl border border-border/60">
+                    <School className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-sm font-bold text-foreground">No universities loaded yet</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row flex-wrap gap-6">
+                    {universities.slice(0, 3).map((u, index) => {
+                      const c = u.courses?.length || 0;
+                      const gradient = cardGradients[index % cardGradients.length];
+                      const badgeText = c === 0 ? "Upcoming" : c === 1 ? "Specialized" : "Popular";
+                      const badgeStyle = 
+                        c === 0 ? "bg-muted text-muted-foreground" :
+                        c === 1 ? "bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400" :
+                        "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400";
+
+                      return (
+                        <div key={u.id} className="group h-full max-w-sm w-full">
+                          <Link to="/student/university/$id" params={{ id: u.id }} className="block h-full">
+                            <div className="h-full bg-card border border-border/80 rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300 hover:-translate-y-1.5 flex flex-col relative">
+                              
+                              {/* Card Header Band */}
+                              <div className={`relative h-32 w-full bg-gradient-to-br ${gradient} flex flex-col items-center justify-center p-4 text-white shrink-0 overflow-hidden`}>
+                                {u.banner_url && (
+                                  <img src={u.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-overlay pointer-events-none" />
+                                )}
+                                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1.5px,transparent_1.5px)] [background-size:12px_12px] pointer-events-none" />
+                                <div className="h-14 w-14 rounded-xl bg-white/95 backdrop-blur-sm shadow-md border-2 border-white flex items-center justify-center p-1.5 mb-1.5 transition-transform duration-300 group-hover:scale-105 z-10">
+                                  {u.logo_url ? (
+                                    <img src={u.logo_url} alt={u.name} className="h-full w-full object-contain rounded-md" />
+                                  ) : (
+                                    <School className="h-7 w-7 text-primary" />
+                                  )}
+                                </div>
+                                <span className="text-[10px] font-black tracking-wider uppercase text-white drop-shadow-sm truncate max-w-full px-2 z-10">
+                                  {u.slug || "CAMPUS"}
+                                </span>
+                              </div>
+
+                              {/* Card Body */}
+                              <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider ${badgeStyle}`}>
+                                      {badgeText}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                                      <BookOpen className="h-3 w-3" />
+                                      {c} {c === 1 ? "Program" : "Programs"}
+                                    </span>
+                                  </div>
+                                  <h3 className="font-extrabold text-foreground group-hover:text-primary transition-colors text-base line-clamp-1">
+                                    {u.name}
+                                  </h3>
+                                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                    {u.description || "Browse available syllabi, semesters, past papers, and internal subject materials."}
+                                  </p>
+                                </div>
+
+                                <div className="w-full py-2 bg-muted/40 group-hover:bg-primary/10 rounded-xl text-center text-xs font-black text-foreground group-hover:text-primary transition-all duration-200 border border-border/40 group-hover:border-primary/20">
+                                  Browse Past Papers
+                                </div>
+                              </div>
+
+                            </div>
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* ════ QUICK RESOURCES SECTION ════════════════════════════ */}
+              <div className="space-y-4 pt-2">
+                <div>
+                  <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2.5">
+                    <div className="h-5 w-1 rounded-full bg-gradient-to-b from-violet-500 to-indigo-500" />
+                    Essential Academic Tools
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5 ml-[14px]">Supercharge your studies and career preparation</p>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Tool 1: ATS Resume Studio */}
+                  <div className="relative overflow-hidden bg-card border border-border/80 rounded-2xl p-6 flex flex-col justify-between min-h-[180px] hover:shadow-lg transition-all duration-300 hover:border-violet-500/30 group max-w-md w-full">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/[0.02] rounded-full blur-2xl group-hover:opacity-100 transition-opacity" />
+                    <div className="space-y-3 relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <h3 className="font-extrabold text-foreground text-base">ATS Resume Studio</h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Build, format, and download ATS-friendly resumes that help you secure internship and placement opportunities.
+                      </p>
+                    </div>
+                    <div className="pt-4 relative z-10 flex justify-end">
+                      <Link to="/student/resume" className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                        <span>Launch Builder</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Tool 2: Study Revision Planner */}
+                  <div className="relative overflow-hidden bg-card border border-border/80 rounded-2xl p-6 flex flex-col justify-between min-h-[180px] hover:shadow-lg transition-all duration-300 hover:border-sky-500/30 group max-w-md w-full">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/[0.02] rounded-full blur-2xl group-hover:opacity-100 transition-opacity" />
+                    <div className="space-y-3 relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                          <CalendarCheck className="h-5 w-5" />
+                        </div>
+                        <h3 className="font-extrabold text-foreground text-base">Syllabus Revision Planner</h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Stay on top of deadlines, generate customized revision calendars, and track exam prep progress week by week.
+                      </p>
+                    </div>
+                    <div className="pt-4 relative z-10 flex justify-end">
+                      <Link to="/student/planner" className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                        <span>Open Planner</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-end gap-1.5 h-10">
-                  {[35, 65, 45, 80, 55, 90, 70].map((h, i) => (
-                    <motion.div key={i} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
-                      transition={{ delay: 0.7 + i * 0.06, type: "spring", stiffness: 180 }}
-                      className="w-3 rounded-t-full origin-bottom overflow-hidden bg-border" style={{ height: `${h * 0.4}px` }}>
-                      <motion.div initial={{ height: 0 }} animate={{ height: "100%" }}
-                        transition={{ delay: 0.9 + i * 0.06, duration: 0.5 }}
-                        className="w-full bg-gradient-to-t from-primary to-primary-glow rounded-t-full" />
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
+              </div>
 
             </motion.div>
           ) : (
             /* ═══════════ UNIVERSITY DIRECTORY VIEW ═══════════════════ */
             <motion.div key="uni" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ type: "spring", stiffness: 100, damping: 20 }} className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              {/* Back Row & Sort Control */}
+              <div className="flex items-center justify-between">
                 <button onClick={() => setActiveView("dashboard")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border text-xs font-bold text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all w-fit">
-                  <ArrowLeft className="h-4 w-4" /><span>Back to Hub</span>
+                  className="group flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted text-xs font-bold text-muted-foreground hover:text-foreground transition-all duration-200 cursor-pointer">
+                  <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+                  <span className="uppercase tracking-wider font-extrabold text-[10px]" style={{ fontFamily: "'Sora', sans-serif" }}>Dashboard</span>
                 </button>
-                <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-3 py-1.5 shadow-soft">
+
+                <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-sm hover:border-primary/20 transition-all duration-200">
                   <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
                   <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)}
-                    className="bg-transparent text-[10px] font-bold text-muted-foreground focus:outline-none cursor-pointer border-none p-0">
-                    <option value="name">A–Z Name</option>
-                    <option value="courses_desc">Most Programs</option>
-                    <option value="courses_asc">Least Programs</option>
+                    className="bg-transparent text-[10px] font-black text-muted-foreground focus:outline-none cursor-pointer border-none p-0">
+                    <option value="name">A–Z NAME</option>
+                    <option value="courses_desc">MOST PROGRAMS</option>
+                    <option value="courses_asc">LEAST PROGRAMS</option>
                   </select>
                 </div>
               </div>
 
-              <div className="border-b border-border pb-5">
-                <h1 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-2">
-                  <School className="text-primary h-6 w-6" /> University Directory
-                </h1>
-                <p className="text-xs text-muted-foreground mt-1">Select a campus to access syllabi, courses & past papers</p>
-                <div className="relative max-w-md mt-4">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              {/* Title & Search Bar Row */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/60 pb-6">
+                <div className="space-y-1">
+                  <h1 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-2.5" style={{ fontFamily: "'Sora', sans-serif" }}>
+                    <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <School className="text-primary h-4.5 w-4.5" />
+                    </div>
+                    University Directory
+                  </h1>
+                  <p className="text-xs text-muted-foreground">Select a campus to access syllabi, courses & past papers</p>
+                </div>
+
+                <div className="relative w-full md:max-w-xs shrink-0">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input type="text" placeholder="Search campus…" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-card text-foreground pl-10 pr-4 py-2.5 rounded-xl text-xs border border-border focus:border-primary focus:outline-none placeholder:text-muted-foreground" />
+                    className="w-full h-9 bg-card text-foreground pl-9 pr-3 rounded-xl text-xs border border-border focus:border-primary focus:outline-none placeholder:text-muted-foreground shadow-sm transition-all focus:ring-1 focus:ring-primary/20" />
                 </div>
               </div>
 
-              {/* Shaded Tab Bar (like reference image) */}
-              <div className="flex border-b border-border/80 w-full mb-2 overflow-x-auto scrollbar-none bg-muted/30 dark:bg-card/30 p-1 gap-1">
-                {(["all", "popular", "specialized", "bookmarked"] as const).map((tab) => {
-                  const label = tab === "all" ? "All" : tab === "popular" ? "Popular" : tab === "specialized" ? "Specialized" : "Bookmarked";
-                  const isActive = activeTab === tab;
-                  return (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`py-2 px-4 text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-sm rounded-none"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted rounded-none"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
+              {/* Shaded Tab Bar & Count stats in single aligned row */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-1 mb-6 gap-3">
+                <div className="flex overflow-x-auto scrollbar-none bg-muted/30 dark:bg-card/30 p-1 gap-1 rounded-lg">
+                  {(["all", "popular", "specialized", "bookmarked"] as const).map((tab) => {
+                    const label = tab === "all" ? "All" : tab === "popular" ? "Popular" : tab === "specialized" ? "Specialized" : "Bookmarked";
+                    const isActive = activeTab === tab;
+                    return (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`py-1.5 px-4 text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-sm rounded-md"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {!loading && (
+                  <div className="flex items-center gap-2 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.02] border border-emerald-500/10 px-3 py-1.5 rounded-lg shrink-0 w-fit">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 tracking-wider uppercase">
+                      Showing {filtered.length} of {universities.length} {universities.length === 1 ? "University" : "Universities"}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <AnimatePresence mode="popLayout">
                 {loading ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {[...Array(8)].map((_, i) => <div key={i} className="bg-card h-72 rounded-none border border-border animate-pulse" />)}
+                    {[...Array(8)].map((_, i) => (
+                      <div key={i} className="bg-card border border-border rounded-xl overflow-hidden flex flex-col relative h-[380px] animate-pulse">
+                        {/* Top banner band placeholder */}
+                        <div className="h-36 w-full bg-muted/60 dark:bg-card/60 flex flex-col items-center justify-center p-4 relative shrink-0">
+                          {/* Logo placeholder */}
+                          <div className="h-16 w-16 rounded-lg bg-muted-foreground/10 border-2 border-border/40 mb-2" />
+                          {/* Slug text placeholder */}
+                          <div className="h-3.5 w-16 rounded bg-muted-foreground/15" />
+                        </div>
+                        {/* Body content placeholder */}
+                        <div className="p-5 flex-1 flex flex-col justify-between">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              {/* Tag placeholder */}
+                              <div className="h-5 w-20 rounded bg-muted-foreground/15" />
+                              {/* Heart placeholder */}
+                              <div className="h-4 w-4 rounded-full bg-muted-foreground/15" />
+                            </div>
+                            {/* Title placeholder */}
+                            <div className="space-y-1.5">
+                              <div className="h-4 w-5/6 rounded bg-muted-foreground/20" />
+                              <div className="h-4 w-1/2 rounded bg-muted-foreground/20" />
+                            </div>
+                            {/* Subtitle placeholder */}
+                            <div className="h-3 w-2/3 rounded bg-muted-foreground/10" />
+                            {/* Rating stars placeholder */}
+                            <div className="h-3 w-1/2 rounded bg-muted-foreground/10 mt-1" />
+                          </div>
+                          {/* Footer placeholder */}
+                          <div className="flex items-center justify-between border-t border-border/40 pt-4 mt-2">
+                            <div className="h-3 w-16 rounded bg-muted-foreground/10" />
+                            <div className="h-3.5 w-10 rounded bg-muted-foreground/15" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : filtered.length === 0 ? (
                   <div className="text-center py-16 bg-card rounded-none border border-border">

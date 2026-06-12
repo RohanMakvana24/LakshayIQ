@@ -301,11 +301,15 @@ function Landing() {
   const nav = useNavigate();
 
   useEffect(() => {
+    let t: NodeJS.Timeout | null = null;
     if (typeof window !== "undefined" && window.location.hash) {
-      setTimeout(() => {
+      t = setTimeout(() => {
         window.history.replaceState(null, "", window.location.pathname + window.location.search);
       }, 150);
     }
+    return () => {
+      if (t) clearTimeout(t);
+    };
   }, []);
 
   const handleScrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -1163,7 +1167,7 @@ function Landing() {
               <ul className="space-y-2 text-xs font-semibold">
                 <li><Link to="/student/resume-builder" className="hover:text-emerald-500 transition-colors">Resume Builder</Link></li>
                 <li><Link to="/student/projects" className="hover:text-emerald-400 transition-colors">Project Helper</Link></li>
-                <li><Link to="/student/chat" className="hover:text-emerald-400 transition-colors">Live Chat</Link></li>
+                <li><a href="https://wa.me/917043853092" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">WhatsApp Support</a></li>
                 <li><Link to="/student/planner" className="hover:text-emerald-400 transition-colors">Study Planner</Link></li>
               </ul>
             </div>

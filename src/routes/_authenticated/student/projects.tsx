@@ -382,16 +382,18 @@ function StudentProjectsPage() {
                 {currentStep >= CHAT_STREAM.length && !isTyping ? (
                   <div className="w-full space-y-2">
                     <Button
-                      onClick={() => nav({ to: "/student/chat" })}
+                      onClick={() => window.open(`https://wa.me/917043853092?text=${encodeURIComponent(activeChat.whatsappText)}`, "_blank")}
                       className="w-full h-13 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-sm shadow-md shadow-emerald-600/10 hover:scale-[1.01] active:scale-98 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden group py-3.5 border border-emerald-500/10"
                     >
                       <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                      <MessageSquare className="h-5 w-5 fill-white stroke-none animate-pulse" />
-                      <span>Chat with Admin</span>
+                      <svg className="h-5 w-5 fill-white shrink-0" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.488 1.459 5.407 1.461 5.61.003 10.174-4.515 10.177-10.119.002-2.715-1.05-5.267-2.962-7.182C17.35 1.398 14.8 1.345 12.01 1.345c-5.61 0-10.175 4.514-10.179 10.118-.001 1.838.497 3.633 1.442 5.213L2.24 21.05l4.407-1.157zm11.554-7.067c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.013-.374-1.93-1.192-.713-.637-1.196-1.425-1.336-1.665-.14-.24-.015-.37.105-.49.108-.108.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.195-.47-.393-.406-.54-.414-.14-.007-.3-.008-.46-.008-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2.01 0 1.19.87 2.33.99 2.49.12.16 1.71 2.61 4.14 3.66.58.25 1.03.4 1.385.513.58.184 1.11.158 1.53.095.465-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28z"/>
+                      </svg>
+                      <span>{activeChat.buttonLabel}</span>
                       <ChevronRight className="h-4.5 w-4.5 ml-0.5 group-hover:translate-x-1 transition-transform" />
                     </Button>
                     <p className="text-[10px] text-slate-400 text-center font-semibold">
-                      💬 Chat directly with admin — messages auto-delete in 2 minutes
+                      💬 Contact directly on WhatsApp for pricing and details
                     </p>
                   </div>
                 ) : (

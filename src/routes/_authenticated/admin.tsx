@@ -71,7 +71,6 @@ const adminNavigationRegistry: NavItem[] = [
     ],
   },
   { to: "/admin/users", label: "Users Registry", icon: Users },
-  { to: "/admin/chat", label: "Messages", icon: MessageSquare },
 ];
 
 export const Route = createFileRoute("/_authenticated/admin")({

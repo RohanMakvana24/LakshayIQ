@@ -121,10 +121,10 @@ function Search() {
           <div className="space-y-2 flex-1">
             <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 rounded-full px-2.5 py-0.5">
               <Sparkles className="h-3 w-3" />
-              <span className="text-[10px] font-bold tracking-wide uppercase">Discovery Engine</span>
+              <span className="text-[10px] font-bold tracking-wide uppercase">Academic Search</span>
             </div>
             <h1 className="text-xl md:text-2xl lg:text-3xl font-black tracking-tight text-foreground">
-              Curriculum Discovery Engine
+              Syllabus & Course Search
             </h1>
             <p className="text-muted-foreground text-xs md:text-sm max-w-2xl leading-relaxed">
               Instantly find registered universities, degree programs, specific subjects, or syllabus unit lessons.
@@ -229,7 +229,7 @@ function Search() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-foreground group-hover:text-emerald-500 text-xs truncate transition-colors">{uni.name}</h3>
-                        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{uni.description || "Active registered campus"}</p>
+                        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{uni.description || "Registered campus curriculum and academic resources."}</p>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-emerald-500 transition-colors shrink-0" />
                     </Card>
@@ -261,7 +261,7 @@ function Search() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-foreground group-hover:text-emerald-500 text-xs truncate transition-colors">{course.name}</h3>
-                        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{course.slug || "Degree Program"}</p>
+                        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{course.description || (course.slug ? `Degree program (${course.slug.toUpperCase()})` : "Comprehensive academic degree program.")}</p>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-emerald-500 transition-colors shrink-0" />
                     </Card>
@@ -293,7 +293,7 @@ function Search() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-foreground group-hover:text-emerald-500 text-xs truncate transition-colors">{subject.name}</h3>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{subject.subject_code || "Subject"}</p>
+                        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{subject.description || (subject.subject_code ? `Course subject (${subject.subject_code})` : "Syllabus, chapters, and past paper modules.")}</p>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-emerald-500 transition-colors shrink-0" />
                     </Card>
@@ -325,7 +325,7 @@ function Search() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-foreground group-hover:text-emerald-500 text-xs truncate transition-colors">{unit.title}</h3>
-                        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">Unit {unit.unit_number} • {unit.description || "Click to view"}</p>
+                        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">Unit {unit.unit_number} • {unit.description || "Syllabus lessons and learning objectives."}</p>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-emerald-500 transition-colors shrink-0" />
                     </Card>

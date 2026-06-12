@@ -16,8 +16,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageLoader } from "@/components/page-loader";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/student/resume")({
@@ -609,6 +607,11 @@ function ResumeBuilderPage() {
       setSavingStatus("Saving...");
       toast.info("Generating professional multi-page PDF, please wait...");
       await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const [{ jsPDF }, { default: html2canvas }] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas")
+      ]);
       
       const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = 210;

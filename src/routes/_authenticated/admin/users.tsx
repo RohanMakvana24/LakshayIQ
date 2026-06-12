@@ -329,16 +329,6 @@ function UsersPage() {
                             )}
                           </Button>
 
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 text-[10px] font-black uppercase tracking-wider rounded-lg gap-1 transition-all text-emerald-600 border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950 hover:bg-emerald-100/50"
-                            onClick={() => nav({ to: "/admin/chat", search: { userId: r.id } })}
-                            title="Chat with this user"
-                          >
-                            <MessageSquare className="h-3 w-3 stroke-[2.5]" /> Chat
-                          </Button>
-
                           <Button 
                             size="icon" 
                             variant="ghost" 

@@ -11,7 +11,6 @@ const items: NavItem[] = [
   { to: "/student/search", label: "Search", icon: Search },
   { to: "/student/resume", label: "Resume Builder", icon: FileText },
   { to: "/student/projects", label: "Project Helper", icon: FolderGit2 },
-  { to: "/student/chat", label: "Messages", icon: MessageSquare },
   {
     label: "Study Planner",
     icon: CalendarCheck,
@@ -89,16 +88,21 @@ function StudentLayout() {
     };
 
     // 4. Smart selection validation: allow small selections (clicks/words), block large selections (bulk copy)
+    let selectionTimeout: NodeJS.Timeout | null = null;
     const handleSelectionChange = () => {
-      const selection = window.getSelection();
-      if (!selection) return;
-      const selectedText = selection.toString().trim();
+      if (selectionTimeout) return;
+      selectionTimeout = setTimeout(() => {
+        selectionTimeout = null;
+        const selection = window.getSelection();
+        if (!selection) return;
+        const selectedText = selection.toString().trim();
 
-      // If student tries to select a large block (more than 30 characters)
-      if (selectedText.length > 30) {
-        selection.removeAllRanges(); // Clear selection instantly
-        toast.warning("🔒 Bulk selection is restricted to protect content integrity.");
-      }
+        // If student tries to select a large block (more than 30 characters)
+        if (selectedText.length > 30) {
+          selection.removeAllRanges(); // Clear selection instantly
+          toast.warning("🔒 Bulk selection is restricted to protect content integrity.");
+        }
+      }, 150);
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -115,6 +119,7 @@ function StudentLayout() {
       window.removeEventListener("cut", handleCut);
       window.removeEventListener("dragstart", handleDragStart);
       document.removeEventListener("selectionchange", handleSelectionChange);
+      if (selectionTimeout) clearTimeout(selectionTimeout);
     };
   }, [pathname]);
 
