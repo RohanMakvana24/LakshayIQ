@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Sparkles, Building2, BookOpen, Search, ArrowUpDown, Compass, School,
@@ -111,7 +110,6 @@ function StudentDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "courses_desc" | "courses_asc">("name");
   const [greeting, setGreeting] = useState("Welcome");
-  const [hoveredTool, setHoveredTool] = useState<number | null>(null);
   const [bookmarkedUnis, setBookmarkedUnis] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"all" | "popular" | "specialized" | "bookmarked">("all");
 
@@ -179,22 +177,14 @@ function StudentDashboard() {
     return r;
   }, [universities, searchQuery, sortBy, activeTab, bookmarkedUnis]);
 
-  const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
-  const pop = { hidden: { opacity: 0, y: 24, scale: 0.95 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring" as const, stiffness: 120, damping: 16 } } };
-
   return (
     <div className="w-full py-2">
-        <AnimatePresence mode="wait">
+        <div>
           {activeView === "dashboard" ? (
-            <motion.div key="dash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
+            <div className="space-y-8">
 
               {/* ════ HERO SECTION ════════════════════════════════════════ */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="relative bg-gradient-to-br from-primary/[0.04] via-card to-emerald-500/[0.03] dark:from-zinc-950 dark:via-zinc-900 dark:to-emerald-950/70 text-foreground rounded-3xl border border-border/80 dark:border-zinc-800/80 overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-8 shadow-[0_12px_45px_-12px_rgba(16,185,129,0.05)] dark:shadow-none"
-              >
+              <div className="relative bg-gradient-to-br from-primary/[0.04] via-card to-emerald-500/[0.03] dark:from-zinc-950 dark:via-zinc-900 dark:to-emerald-950/70 text-foreground rounded-3xl border border-border/80 dark:border-zinc-800/80 overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-8 shadow-[0_12px_45px_-12px_rgba(16,185,129,0.05)] dark:shadow-none">
                 {/* Decorative background grid and neon glow blobs */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:32px_32px] opacity-40 pointer-events-none" />
                 <div className="absolute -left-20 -top-20 w-80 h-80 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
@@ -204,23 +194,12 @@ function StudentDashboard() {
                 {!isMobile && (
                   <div className="hidden md:block w-1/4 max-w-[180px] lg:max-w-[220px] select-none shrink-0 self-end relative">
                     {/* Floating pill badge on top of illustration */}
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
-                      transition={{ delay: 0.8, y: { repeat: Infinity, duration: 4, ease: "easeInOut" } }}
-                      className="absolute -top-6 -left-6 backdrop-blur-md bg-card/75 border border-border/80 shadow-md px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[10px] font-black text-foreground z-20 whitespace-nowrap select-none"
-                    >
+                    <div className="absolute -top-6 -left-6 backdrop-blur-md bg-card/75 border border-border/80 shadow-md px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[10px] font-black text-foreground z-20 whitespace-nowrap select-none">
                       <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                       <span>📚 1,200+ Syllabus Units</span>
-                    </motion.div>
+                    </div>
 
-                    <motion.img
-                      initial={{ opacity: 0, x: -30 }}
-                      animate={{ opacity: 1, x: 0, y: [0, -8, 0] }}
-                      transition={{
-                        x: { delay: 0.2, type: "spring", stiffness: 100 },
-                        y: { repeat: Infinity, duration: 6, ease: "easeInOut" }
-                      }}
+                    <img
                       src="/category-1 (2).svg"
                       alt="Student illustrating"
                       className="w-full h-auto object-contain filter drop-shadow-[0_8px_30px_rgba(16,185,129,0.12)] dark:drop-shadow-[0_8px_30px_rgba(16,185,129,0.2)]"
@@ -316,35 +295,23 @@ function StudentDashboard() {
                 {!isMobile && (
                   <div className="hidden md:block w-1/4 max-w-[180px] lg:max-w-[220px] select-none shrink-0 self-end relative">
                     {/* Floating pill badge on top of illustration */}
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
-                      transition={{ delay: 1, y: { repeat: Infinity, duration: 4, ease: "easeInOut", delay: 2 } }}
-                      className="absolute -top-6 -right-6 backdrop-blur-md bg-card/75 border border-border/80 shadow-md px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[10px] font-black text-foreground z-20 whitespace-nowrap select-none"
-                    >
+                    <div className="absolute -top-6 -right-6 backdrop-blur-md bg-card/75 border border-border/80 shadow-md px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[10px] font-black text-foreground z-20 whitespace-nowrap select-none">
                       <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                       <span>⚡ AI Prep Active</span>
-                    </motion.div>
+                    </div>
 
-                    <motion.img
-                      initial={{ opacity: 0, x: 30 }}
-                      animate={{ opacity: 1, x: 0, y: [0, -8, 0] }}
-                      transition={{
-                        x: { delay: 0.2, type: "spring", stiffness: 100 },
-                        y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 0.6 }
-                      }}
+                    <img
                       src="/category-2.svg"
                       alt="Student illustrating"
                       className="w-full h-auto object-contain filter drop-shadow-[0_8px_30px_rgba(16,185,129,0.12)] dark:drop-shadow-[0_8px_30px_rgba(16,185,129,0.2)]"
                     />
                   </div>
                 )}
-              </motion.div>
+              </div>
 
               {/* ════ TOOL CARDS ════════════════════════════════════════ */}
               <div className="space-y-4">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-                  className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2.5">
                       <div className="h-5 w-1 rounded-full bg-gradient-to-b from-primary to-emerald-400" />
@@ -352,17 +319,14 @@ function StudentDashboard() {
                     </h2>
                     <p className="text-xs text-muted-foreground mt-0.5 ml-[14px]">Select a tool to start learning</p>
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div variants={stagger} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tools.map((tool, idx) => {
                     const Icon = tool.icon;
-                    const isHovered = hoveredTool === idx;
 
                     const card = (
-                      <motion.div variants={pop}
-                        onHoverStart={() => setHoveredTool(idx)} onHoverEnd={() => setHoveredTool(null)}
-                        className="h-full">
+                      <div className="h-full">
                         <div className="h-full bg-card rounded-2xl border border-border/80 p-6 sm:p-7 flex flex-col justify-between min-h-[250px] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/[0.02] group/c relative overflow-hidden">
                           
                           {/* Radial colorful glow inside the card, centered, active on hover */}
@@ -403,14 +367,14 @@ function StudentDashboard() {
                           </div>
 
                         </div>
-                      </motion.div>
+                      </div>
                     );
 
                     if ("isAction" in tool) return <button key={tool.title} onClick={() => setActiveView("university")} className="text-left h-full w-full">{card}</button>;
                     if ("isExternal" in tool) return <a key={tool.title} href={(tool as any).href} target="_blank" rel="noopener noreferrer" className="h-full block">{card}</a>;
                     return <Link key={tool.title} to={(tool as any).href} className="h-full block">{card}</Link>;
                   })}
-                </motion.div>
+                </div>
               </div>
 
 
@@ -579,15 +543,15 @@ function StudentDashboard() {
                 </div>
               </div>
 
-            </motion.div>
+            </div>
           ) : (
             /* ═══════════ UNIVERSITY DIRECTORY VIEW ═══════════════════ */
-            <motion.div key="uni" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ type: "spring", stiffness: 100, damping: 20 }} className="space-y-6">
+            <div key="uni" className="space-y-6">
               {/* Back Row & Sort Control */}
               <div className="flex items-center justify-between">
                 <button onClick={() => setActiveView("dashboard")}
                   className="group flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted text-xs font-bold text-muted-foreground hover:text-foreground transition-all duration-200 cursor-pointer">
-                  <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+                  <ArrowLeft className="h-4 w-4" />
                   <span className="uppercase tracking-wider font-extrabold text-[10px]" style={{ fontFamily: "'Sora', sans-serif" }}>Dashboard</span>
                 </button>
 
@@ -653,7 +617,7 @@ function StudentDashboard() {
                 )}
               </div>
 
-              <AnimatePresence mode="popLayout">
+              <div>
                 {loading ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {[...Array(8)].map((_, i) => (
@@ -700,7 +664,7 @@ function StudentDashboard() {
                     <p className="text-xs text-muted-foreground mt-1">Try a different search</p>
                   </div>
                 ) : (
-                  <motion.div variants={stagger} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {filtered.map((u, index) => {
                       const c = u.courses?.length || 0;
                       const gradient = cardGradients[index % cardGradients.length];
@@ -711,7 +675,7 @@ function StudentDashboard() {
                         "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-none";
                       
                       return (
-                        <motion.div variants={pop} key={u.id} className="group">
+                        <div key={u.id} className="group">
                            <Link to="/student/university/$id" params={{ id: u.id }} className="block h-full">
                             <div className="h-full bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300 hover:-translate-y-1.5 flex flex-col relative">
                               {/* Header colored band like the second image */}
@@ -785,15 +749,15 @@ function StudentDashboard() {
                               </div>
                             </div>
                           </Link>
-                        </motion.div>
+                        </div>
                       );
                     })}
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
-            </motion.div>
+              </div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
     </div>
   );
 }
