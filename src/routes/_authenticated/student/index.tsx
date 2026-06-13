@@ -254,22 +254,23 @@ function StudentDashboard() {
                       e.preventDefault();
                       setActiveView("university");
                     }}
-                    className="max-w-xl mx-auto pt-2"
+                    className="max-w-xl mx-auto pt-2 px-4 md:px-0"
                   >
-                    <div className="relative flex items-center bg-card/60 dark:bg-zinc-950/40 backdrop-blur-xl border border-border/85 rounded-full p-2 hover:border-primary/50 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 shadow-md">
-                      <Search className="absolute left-5 h-4.5 w-4.5 text-muted-foreground" />
+                    <div className="relative flex items-center bg-card/60 dark:bg-zinc-950/40 backdrop-blur-xl border border-border/85 rounded-full p-1.5 md:p-2 hover:border-primary/50 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 shadow-md">
+                      <Search className="absolute left-5 h-4.5 w-4.5 text-muted-foreground hidden md:block" />
                       <input
                         type="text"
                         placeholder="Search course, university, or subject..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-transparent pl-12 pr-32 py-3.5 text-sm text-foreground focus:outline-none placeholder:text-muted-foreground font-semibold"
+                        className="w-full bg-transparent pl-4 md:pl-12 pr-14 md:pr-32 py-2 md:py-3.5 text-sm text-foreground focus:outline-none placeholder:text-muted-foreground font-semibold"
                       />
                       <button
                         type="submit"
-                        className="absolute right-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-500 hover:opacity-95 text-white text-xs font-black rounded-full transition-all shadow-md active:scale-95 cursor-pointer uppercase tracking-wider flex items-center gap-1.5"
+                        className="absolute right-1.5 md:right-2 p-2.5 md:px-6 md:py-3 bg-gradient-to-r from-primary to-emerald-500 hover:opacity-95 text-white text-xs font-black rounded-full transition-all shadow-md active:scale-95 cursor-pointer uppercase tracking-wider flex items-center justify-center gap-1.5"
                       >
-                        <span>Search</span>
+                        <Search className="h-4.5 w-4.5 md:hidden" />
+                        <span className="hidden md:inline">Search</span>
                       </button>
                     </div>
                   </form>

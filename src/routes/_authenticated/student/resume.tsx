@@ -32,6 +32,127 @@ export const Route = createFileRoute("/_authenticated/student/resume")({
   component: ResumeBuilderPage,
 });
 
+const getIconSize = (className?: string) => {
+  if (className?.includes("h-3.5") || className?.includes("w-3.5")) return "14px";
+  if (className?.includes("h-4") || className?.includes("w-4")) return "16px";
+  return "12px";
+};
+
+const GithubIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => {
+  const color = style?.color as string || "#475569";
+  const size = getIconSize(className);
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24" 
+      width="12" 
+      height="12" 
+      fill="none" 
+      stroke={color} 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+      style={{ display: "inline-block", verticalAlign: "middle", width: size, height: size, ...style }}
+    >
+      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+      <path d="M9 18c-4.51 2-5-2-7-2" />
+    </svg>
+  );
+};
+
+const LinkedinIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => {
+  const color = style?.color as string || "#475569";
+  const size = getIconSize(className);
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24" 
+      width="12" 
+      height="12" 
+      fill="none" 
+      stroke={color} 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+      style={{ display: "inline-block", verticalAlign: "middle", width: size, height: size, ...style }}
+    >
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect width="4" height="12" x="2" y="9" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  );
+};
+
+const MapPinIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => {
+  const color = style?.color as string || "#475569";
+  const size = getIconSize(className);
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24" 
+      width="12" 
+      height="12" 
+      fill="none" 
+      stroke={color} 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+      style={{ display: "inline-block", verticalAlign: "middle", width: size, height: size, ...style }}
+    >
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+};
+
+const PhoneIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => {
+  const color = style?.color as string || "#475569";
+  const size = getIconSize(className);
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24" 
+      width="12" 
+      height="12" 
+      fill="none" 
+      stroke={color} 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+      style={{ display: "inline-block", verticalAlign: "middle", width: size, height: size, ...style }}
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+};
+
+const MailIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => {
+  const color = style?.color as string || "#475569";
+  const size = getIconSize(className);
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24" 
+      width="12" 
+      height="12" 
+      fill="none" 
+      stroke={color} 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+      style={{ display: "inline-block", verticalAlign: "middle", width: size, height: size, ...style }}
+    >
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  );
+};
+
 interface SocialLink {
   platform: string;
   url: string;
@@ -353,6 +474,9 @@ function ResumeBuilderPage() {
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [viewStyle, setViewStyle] = useState<"grid" | "list">("grid");
   const [deleteResumeTarget, setDeleteResumeTarget] = useState<any | null>(null);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [downloadQuality, setDownloadQuality] = useState<"low" | "high">("high");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     async function loadResumeData() {
@@ -664,10 +788,7 @@ function ResumeBuilderPage() {
     setSections(resume.sections);
     setStyleConfig(resume.styleConfig);
     setIsPublished(resume.isPublished || false);
-    toast.info("Opening print dialog, please wait...");
-    setTimeout(() => {
-      window.print();
-    }, 400);
+    setIsDownloadModalOpen(true);
   };
 
   const updatePersonalInfo = (field: keyof PersonalInfo, value: any) => {
@@ -846,7 +967,249 @@ function ResumeBuilderPage() {
   };
 
   const downloadPDF = () => {
-    window.print();
+    setIsDownloadModalOpen(true);
+  };
+
+  const executePDFDownload = async () => {
+    const pageElements = document.querySelectorAll(".resume-page");
+    if (pageElements.length === 0) {
+      toast.error("No resume pages found to download.");
+      return;
+    }
+
+    setIsDownloading(true);
+    const isHigh = downloadQuality === "high";
+    toast.info(isHigh ? "Generating High Quality PDF, please wait..." : "Generating Standard PDF, please wait...", {
+      id: "pdf-gen-toast",
+      duration: isHigh ? 4000 : 2000
+    });
+
+    const originalStyles: { el: HTMLElement; display: string; visibility: string }[] = [];
+    let restoreSVGs: (() => void) | null = null;
+
+    try {
+      // 1. Force the pages and their containers to be display: block and visibility: visible in the DOM
+      const forceVisible = (selector: string) => {
+        const el = document.querySelector(selector) as HTMLElement;
+        if (el) {
+          originalStyles.push({ el, display: el.style.display, visibility: el.style.visibility });
+          el.style.setProperty("display", "block", "important");
+          el.style.setProperty("visibility", "visible", "important");
+        }
+      };
+
+      forceVisible(".canvas-container");
+      forceVisible(".lg\\:col-span-7");
+
+      pageElements.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        originalStyles.push({ el: htmlEl, display: htmlEl.style.display, visibility: htmlEl.style.visibility });
+        htmlEl.style.setProperty("display", "block", "important");
+        htmlEl.style.setProperty("visibility", "visible", "important");
+      });
+
+      // 2. Measure link coordinates synchronously in the visible layout context
+      const pagesLinkCoords: {
+        pageWidth: number;
+        pageHeight: number;
+        links: { href: string; left: number; top: number; width: number; height: number }[];
+      }[] = [];
+
+      for (let i = 0; i < pageElements.length; i++) {
+        const element = pageElements[i] as HTMLElement;
+        const rect = element.getBoundingClientRect();
+        const pageLinks: { href: string; left: number; top: number; width: number; height: number }[] = [];
+        
+        const links = element.querySelectorAll("a");
+        links.forEach((linkEl) => {
+          const href = linkEl.getAttribute("href");
+          if (href) {
+            const linkRect = linkEl.getBoundingClientRect();
+            pageLinks.push({
+              href,
+              left: linkRect.left - rect.left,
+              top: linkRect.top - rect.top,
+              width: linkRect.width,
+              height: linkRect.height
+            });
+          }
+        });
+
+        pagesLinkCoords.push({
+          pageWidth: rect.width || 793,
+          pageHeight: rect.height || 1122,
+          links: pageLinks
+        });
+      }
+
+      // 3. Convert all SVGs in the visible DOM to Canvas Elements before html2canvas runs
+      // This is crucial because html2canvas often fails to render SVG tags inside the cloned document.
+      const svgs = Array.from(document.querySelectorAll(".resume-page svg"));
+      const replacements: { svg: SVGElement; canvas: HTMLCanvasElement }[] = [];
+
+      for (const svg of svgs) {
+        try {
+          // Get the original unscaled CSS dimensions of the SVG (ignores scale transforms)
+          let width = 12;
+          let height = 12;
+          
+          const computedStyle = window.getComputedStyle(svg);
+          const compWidth = parseFloat(computedStyle.width);
+          const compHeight = parseFloat(computedStyle.height);
+          
+          if (!isNaN(compWidth) && compWidth > 0) {
+            width = compWidth;
+          } else {
+            const attrWidth = svg.getAttribute("width");
+            if (attrWidth) width = parseFloat(attrWidth);
+          }
+          
+          if (!isNaN(compHeight) && compHeight > 0) {
+            height = compHeight;
+          } else {
+            const attrHeight = svg.getAttribute("height");
+            if (attrHeight) height = parseFloat(attrHeight);
+          }
+          
+          const canvas = document.createElement("canvas");
+          const canvasScale = 4; // High-resolution canvas for crisp icons
+          canvas.width = width * canvasScale;
+          canvas.height = height * canvasScale;
+          
+          // Copy styles exactly, maintaining unscaled dimensions and alignment
+          canvas.style.cssText = svg.style.cssText;
+          canvas.style.width = `${width}px`;
+          canvas.style.height = `${height}px`;
+          canvas.style.display = svg.style.display || "inline-block";
+          canvas.style.verticalAlign = svg.style.verticalAlign || "middle";
+          canvas.style.margin = svg.style.margin || "0";
+          
+          const className = svg.className?.baseVal || (typeof svg.className === 'string' ? svg.className : '');
+          canvas.className = className;
+          
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.scale(canvasScale, canvasScale);
+            
+            // Serialize SVG to XML string
+            const serializer = new XMLSerializer();
+            let svgString = serializer.serializeToString(svg);
+            if (!svgString.includes('xmlns="http://www.w3.org/2000/svg"')) {
+              svgString = svgString.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+            
+            const img = new Image();
+            const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(svgBlob);
+            
+            await new Promise<void>((resolve) => {
+              img.onload = () => {
+                ctx.drawImage(img, 0, 0, width, height);
+                URL.revokeObjectURL(url);
+                resolve();
+              };
+              img.onerror = () => {
+                console.error("Failed to load SVG into image for canvas draw");
+                URL.revokeObjectURL(url);
+                resolve();
+              };
+              img.src = url;
+            });
+          }
+          replacements.push({ svg: svg as SVGElement, canvas });
+        } catch (e) {
+          console.error("Error converting SVG to canvas:", e);
+        }
+      }
+
+      // Perform the DOM swap
+      replacements.forEach(({ svg, canvas }) => {
+        if (svg.parentNode) {
+          svg.parentNode.replaceChild(canvas, svg);
+        }
+      });
+
+      // Save restore handler
+      restoreSVGs = () => {
+        replacements.forEach(({ svg, canvas }) => {
+          if (canvas.parentNode) {
+            canvas.parentNode.replaceChild(svg, canvas);
+          }
+        });
+      };
+
+      // 4. Generate the PDF pages using html2canvas and jsPDF
+      const scale = downloadQuality === "high" ? 4 : 1.5;
+      const html2canvasModule = await import("html2canvas-pro");
+      const html2canvas = html2canvasModule.default || html2canvasModule;
+      
+      const jspdfModule = await import("jspdf");
+      const jsPDF = jspdfModule.jsPDF || jspdfModule.default || jspdfModule;
+      
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210;
+      const imgHeight = 297;
+
+      for (let i = 0; i < pageElements.length; i++) {
+        const element = pageElements[i];
+        const canvas = await html2canvas(element as HTMLElement, {
+          scale: scale,
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+          windowWidth: 793,
+          windowHeight: 1122,
+          imageTimeout: 0,
+        });
+        const imgData = canvas.toDataURL("image/jpeg", 0.98);
+
+        if (i > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
+
+        // Add clickable link annotations on top of this PDF page
+        if (pagesLinkCoords[i]) {
+          const coords = pagesLinkCoords[i];
+          const mmPerPxWidth = imgWidth / coords.pageWidth;
+          const mmPerPxHeight = imgHeight / coords.pageHeight;
+
+          coords.links.forEach((link) => {
+            const linkX = link.left * mmPerPxWidth;
+            const linkY = link.top * mmPerPxHeight;
+            const linkW = link.width * mmPerPxWidth;
+            const linkH = link.height * mmPerPxHeight;
+
+            let cleanUrl = link.href;
+            if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://") && !cleanUrl.startsWith("mailto:") && !cleanUrl.startsWith("tel:")) {
+              cleanUrl = `https://${cleanUrl}`;
+            }
+
+            pdf.link(linkX, linkY, linkW, linkH, { url: cleanUrl });
+          });
+        }
+      }
+
+      const cleanName = personalInfo.fullName.trim().replace(/\s+/g, "_") || "My";
+      pdf.save(`${cleanName}_Resume.pdf`);
+      toast.success("PDF downloaded successfully!", { id: "pdf-gen-toast" });
+      setIsDownloadModalOpen(false);
+    } catch (err: any) {
+      console.error("PDF generation failed:", err);
+      toast.error(`Failed to generate PDF: ${err.message || err}`, { id: "pdf-gen-toast" });
+    } finally {
+      // 5. Restore SVGs and original display styles
+      if (restoreSVGs) {
+        restoreSVGs();
+      }
+      originalStyles.forEach(({ el, display, visibility }) => {
+        if (display) el.style.display = display;
+        else el.style.removeProperty("display");
+        if (visibility) el.style.visibility = visibility;
+        else el.style.removeProperty("visibility");
+      });
+      setIsDownloading(false);
+    }
   };
 
   const handlePublishToggle = async () => {
@@ -1293,6 +1656,104 @@ function ResumeBuilderPage() {
     document.body
   );
 
+  const downloadModalJSX = isDownloadModalOpen && typeof window !== "undefined" && document.body && createPortal(
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md no-print animate-in fade-in duration-200">
+      <div className="bg-card border border-border w-full max-w-md rounded-xl shadow-xl p-6 text-left animate-in zoom-in-95 duration-200">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-10 w-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500">
+            <Download className="h-5 w-5 animate-bounce" />
+          </div>
+          <div>
+            <h3 className="text-sm font-extrabold text-foreground" style={{ fontFamily: "'Sora', sans-serif" }}>
+              Download PDF
+            </h3>
+            <p className="text-[10px] text-muted-foreground">Select print resolution/quality</p>
+          </div>
+        </div>
+
+        <div className="space-y-3 my-4">
+          <div
+            onClick={() => setDownloadQuality("high")}
+            className={`flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+              downloadQuality === "high"
+                ? "border-violet-500 bg-violet-50/50 dark:bg-violet-950/15"
+                : "border-border hover:border-border-hover bg-card"
+            }`}
+          >
+            <div className={`mt-0.5 h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
+              downloadQuality === "high" ? "border-violet-500 text-violet-500" : "border-muted-foreground"
+            }`}>
+              {downloadQuality === "high" && <div className="h-2 w-2 rounded-full bg-violet-500" />}
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                High Quality (Recommended)
+                <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded select-none">
+                  Best
+                </span>
+              </h4>
+              <p className="text-[10px] text-muted-foreground mt-1 leading-normal">
+                Generates a high-resolution PDF (4x scale). Crisp text, perfect for job applications and ATS. (Takes ~5-8 seconds)
+              </p>
+            </div>
+          </div>
+
+          <div
+            onClick={() => setDownloadQuality("low")}
+            className={`flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+              downloadQuality === "low"
+                ? "border-violet-500 bg-violet-50/50 dark:bg-violet-950/15"
+                : "border-border hover:border-border-hover bg-card"
+            }`}
+          >
+            <div className={`mt-0.5 h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
+              downloadQuality === "low" ? "border-violet-500 text-violet-500" : "border-muted-foreground"
+            }`}>
+              {downloadQuality === "low" && <div className="h-2 w-2 rounded-full bg-violet-500" />}
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-foreground">
+                Low Quality (Fast)
+              </h4>
+              <p className="text-[10px] text-muted-foreground mt-1 leading-normal">
+                Generates a lower resolution PDF (1.5x scale). Small file size, best for sharing via Email/WhatsApp. (Instant rendering)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 mt-5">
+          <Button
+            variant="outline"
+            disabled={isDownloading}
+            onClick={() => setIsDownloadModalOpen(false)}
+            className="flex-1 h-9 rounded-lg border border-border text-xs font-bold text-muted-foreground hover:bg-secondary cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={isDownloading}
+            onClick={executePDFDownload}
+            className="flex-1 h-9 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:bg-violet-600/50 text-white font-extrabold text-xs uppercase tracking-wider cursor-pointer shadow-md flex items-center justify-center gap-1.5"
+          >
+            {isDownloading ? (
+              <>
+                <span className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent inline-block" />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <Download className="h-3.5 w-3.5" />
+                <span>Download</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+
   if (viewMode === "dashboard") {
     const calculateCompleteness = (r: any) => {
       let score = 0;
@@ -1384,13 +1845,13 @@ function ResumeBuilderPage() {
         </div>
 
         {/* Filter and Control Bar */}
-        <div className="flex items-center justify-between gap-4 select-none">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 select-none">
           {/* Left: Active count and Search */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <span className="text-xs font-extrabold text-foreground whitespace-nowrap hidden sm:inline">
               {filteredResumes.length} {filteredResumes.length === 1 ? 'Resume' : 'Resumes'}
             </span>
-            <div className="relative group w-48 sm:w-64">
+            <div className="relative group w-full sm:w-64">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-755 transition-colors" />
               <Input
                 placeholder="Search resumes..."
@@ -1471,17 +1932,52 @@ function ResumeBuilderPage() {
                   <div key={resume.id} className="relative pt-5">
                     <div 
                       onClick={() => handleEditResume(resume)}
-                      className="relative group bg-card border border-border/85 text-card-foreground shadow rounded-b-xl rounded-tr-xl rounded-tl-none hover:shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:border-slate-350 dark:hover:border-zinc-700 transition-all duration-300 flex flex-col justify-between cursor-pointer p-5 pt-6 z-10 min-h-[225px]"
+                      style={{
+                        ['--theme-color' as any]: cardAccentColor,
+                        ['--theme-bg' as any]: `${cardAccentColor}04`, // Faint gradient tint
+                        ['--theme-border-hover' as any]: `${cardAccentColor}50`, // Hover border
+                        ['--theme-glow' as any]: `0 12px 30px -10px ${cardAccentColor}20`, // Glowing theme shadow
+                      }}
+                      className="relative group bg-card hover:bg-[var(--theme-bg)] border border-border/85 hover:border-[var(--theme-border-hover)] text-card-foreground shadow hover:shadow-[var(--theme-glow)] rounded-b-xl rounded-tr-xl rounded-tl-none transition-all duration-300 flex flex-col justify-between cursor-pointer p-5 pt-6 z-10 min-h-[225px]"
                     >
+                      {/* Glow & BG container with card rounding and overflow-hidden */}
+                      <div className="absolute inset-0 rounded-b-xl rounded-tr-xl rounded-tl-none overflow-hidden pointer-events-none z-0">
+                        {/* Radial colorful glow inside the card, active on hover */}
+                        <div 
+                          className="absolute top-1/2 right-1/4 -translate-y-1/2 w-48 h-48 rounded-full opacity-0 group-hover:opacity-[0.14] blur-[45px] transition-all duration-500" 
+                          style={{
+                            background: `radial-gradient(circle, ${cardAccentColor} 0%, transparent 70%)`
+                          }}
+                        />
+                      </div>
                       {/* Folder Tab SVG Decoration (placed inside the card to align perfectly with its bounding box) */}
-                      <div className="absolute -top-[21px] left-[-1px] w-[130px] h-[22px] pointer-events-none select-none z-20">
-                        <svg viewBox="0 0 130 22" className="h-full w-full text-card fill-current stroke-border/85" style={{ strokeWidth: '1px' }}>
-                          <path d="M 1.5,22 L 1.5,9 C 1.5,4.5 5,1 9.5,1 L 95,1 C 99.5,1 103,4 105.5,8 L 115.5,18 C 117.5,20 120,22 123.5,22" />
+                      <div className="absolute w-[130px] h-[22px] pointer-events-none select-none z-20" style={{ top: '-22.5px', left: '-2px' }}>
+                        <svg viewBox="0 0 130 22" className="h-full w-full">
+                           {/* Folder Tab Fill (transitions opacity on hover) */}
+                          <path 
+                            d="M 1.5,22 L 1.5,9 C 1.5,4.5 5,1 9.5,1 L 95,1 C 99.5,1 103,4 105.5,8 L 115.5,18 C 117.5,20 120,22 123.5,22" 
+                            fill={cardAccentColor} 
+                            className="opacity-[0.05] group-hover:opacity-[0.12] transition-opacity duration-300"
+                          />
+                          {/* Folder Tab Background Mask (matches card background behind fill) */}
+                          <path 
+                            d="M 1.5,22 L 1.5,9 C 1.5,4.5 5,1 9.5,1 L 95,1 C 99.5,1 103,4 105.5,8 L 115.5,18 C 117.5,20 120,22 123.5,22" 
+                            fill="currentColor" 
+                            className="text-card opacity-[0.9] -z-10"
+                          />
+                          {/* Folder Tab Outline (transitions color on hover) */}
+                          <path 
+                            d="M 1.5,22 L 1.5,9 C 1.5,4.5 5,1 9.5,1 L 95,1 C 99.5,1 103,4 105.5,8 L 115.5,18 C 117.5,20 120,22 123.5,22" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            className="text-border/85 group-hover:text-[var(--theme-border-hover)] transition-colors duration-300" 
+                            style={{ strokeWidth: '1px' }} 
+                          />
                         </svg>
                       </div>
-
+ 
                       {/* Mask to hide Card's top border under the tab area */}
-                      <div className="absolute -top-[1px] left-[1px] w-[121px] h-[2px] bg-card z-25" />
+                      <div className="absolute bg-card z-10" style={{ top: '-1px', left: '0px', width: '122px', height: '2px' }} />
 
                       {/* Dropdown Menu actions - Absolute positioned at top-right */}
                       <div className="absolute top-3 right-3 z-30">
@@ -1511,25 +2007,31 @@ function ResumeBuilderPage() {
                       </div>
 
                       {/* Card Content */}
-                      <div>
+                      <div className="relative z-10">
                         {/* Top Row: Avatar and State Badge */}
                         <div className="flex items-center gap-2.5">
-                          <div className="h-7 w-7 rounded-full overflow-hidden border border-border/80 bg-secondary shrink-0 flex items-center justify-center">
+                          <div 
+                            className="h-7 w-7 rounded-full overflow-hidden border shrink-0 flex items-center justify-center transition-all duration-300"
+                            style={{
+                              background: `linear-gradient(135deg, ${cardAccentColor}12, ${cardAccentColor}28)`,
+                              borderColor: `${cardAccentColor}20`
+                            }}
+                          >
                             {resume.personalInfo?.avatarUrl ? (
                               <img src={resume.personalInfo.avatarUrl} alt="avatar" className="h-full w-full object-cover" />
                             ) : (
-                              <User className="h-3.5 w-3.5 text-muted-foreground" />
+                              <User className="h-3.5 w-3.5 transition-colors duration-300" style={{ color: cardAccentColor }} />
                             )}
                           </div>
 
                           {resume.isPublished ? (
                             <span className="inline-flex items-center gap-1 border border-emerald-500/20 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20 dark:text-emerald-400 text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md select-none">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                               LIVE
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 border border-zinc-200 text-zinc-500 bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:bg-zinc-900/50 text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md select-none">
-                              <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                            <span className="inline-flex items-center gap-1 border border-amber-500/20 text-amber-600 bg-amber-50/50 dark:border-amber-500/15 dark:bg-amber-950/10 dark:text-amber-400 text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md select-none">
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                               DRAFT
                             </span>
                           )}
@@ -1537,7 +2039,7 @@ function ResumeBuilderPage() {
 
                         {/* Title: 2 lines max */}
                         <h3 
-                          className="font-extrabold text-foreground text-[15px] tracking-tight leading-snug line-clamp-2 mt-3.5 group-hover:text-[#4f46e5] dark:group-hover:text-indigo-400 transition-colors" 
+                          className="font-extrabold text-foreground text-[15px] tracking-tight leading-snug line-clamp-2 mt-3.5 group-hover:text-[var(--theme-color)] transition-colors" 
                           style={{ fontFamily: "'Sora', sans-serif" }}
                         >
                           {resume.name || "Untitled Resume"}
@@ -1552,40 +2054,54 @@ function ResumeBuilderPage() {
 
                         {/* Tags Row */}
                         <div className="flex flex-wrap gap-1.5 pt-3">
-                          <span className="bg-slate-100 dark:bg-zinc-800 text-[8.5px] font-black text-slate-500 dark:text-zinc-400 tracking-wider uppercase px-2 py-0.5 rounded-md select-none">
+                          <span className="bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100/60 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[8.5px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md select-none">
                             {resume.styleConfig?.layoutMode === "split" ? "Split" : "Single"}
                           </span>
-                          <span className="bg-slate-100 dark:bg-zinc-800 text-[8.5px] font-black text-slate-500 dark:text-zinc-400 tracking-wider uppercase px-2 py-0.5 rounded-md select-none">
+                          <span 
+                            className="text-[8.5px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md select-none border"
+                            style={{
+                              backgroundColor: `${cardAccentColor}12`,
+                              color: cardAccentColor,
+                              borderColor: `${cardAccentColor}25`
+                            }}
+                          >
                             {THEME_COLORS.find(c => c.value === resume.styleConfig?.themeColor)?.name || "Theme"}
                           </span>
-                          <span className="bg-slate-100 dark:bg-zinc-800 text-[8.5px] font-black text-slate-500 dark:text-zinc-400 tracking-wider uppercase px-2 py-0.5 rounded-md select-none">
+                          <span className="bg-amber-50 dark:bg-amber-950/40 border border-amber-100/60 dark:border-amber-900/30 text-amber-600 dark:text-amber-400 text-[8.5px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md select-none">
                             {resume.styleConfig?.fontFamily || "Sora"}
                           </span>
                         </div>
                       </div>
 
                       {/* Divider Line */}
-                      <div className="border-t border-border/40 my-3.5" />
+                      <div className="border-t border-border/40 my-3.5 relative z-10" />
 
                       {/* Footer Stats Row */}
-                      <div className="flex items-center justify-between select-none">
-                        <div className="flex items-center gap-1.5" title="Sections count">
-                          <Puzzle className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-[11px] text-foreground font-black leading-none">{componentsCount}</span>
+                      <div className="flex items-center justify-between select-none relative z-10">
+                        <div className="flex items-center gap-1.5 bg-violet-50/50 dark:bg-violet-950/10 px-2 py-1 rounded-md border border-violet-100/50 dark:border-violet-900/10" title="Sections count">
+                          <Puzzle className="h-3.5 w-3.5 text-violet-500" />
+                          <span className="text-[11px] text-violet-750 dark:text-violet-300 font-extrabold leading-none">{componentsCount}</span>
                         </div>
 
-                        <div className="flex items-center gap-1.5" title="Total content items">
-                          <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-[11px] text-foreground font-black leading-none">{itemsCount}</span>
+                        <div className="flex items-center gap-1.5 bg-sky-50/50 dark:bg-sky-950/10 px-2 py-1 rounded-md border border-sky-100/50 dark:border-sky-900/10" title="Total content items">
+                          <Users className="h-3.5 w-3.5 text-sky-500" />
+                          <span className="text-[11px] text-sky-750 dark:text-sky-300 font-extrabold leading-none">{itemsCount}</span>
                         </div>
 
-                        <div className="flex items-center gap-1.5" title="Profile completeness">
-                          <svg className="h-3.5 w-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <div 
+                          className="flex items-center gap-1.5 px-2 py-1 rounded-md border transition-colors duration-300" 
+                          style={{ 
+                            backgroundColor: `${cardAccentColor}08`,
+                            borderColor: `${cardAccentColor}15`,
+                          }}
+                          title="Profile completeness"
+                        >
+                          <svg className="h-3.5 w-3.5 transition-colors duration-300" style={{ color: cardAccentColor }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="20" x2="18" y2="10"></line>
                             <line x1="12" y1="20" x2="12" y2="4"></line>
                             <line x1="6" y1="20" x2="6" y2="14"></line>
                           </svg>
-                          <span className="text-[11px] text-foreground font-black leading-none">{percent}%</span>
+                          <span className="text-[11px] font-black leading-none transition-colors duration-300" style={{ color: cardAccentColor }}>{percent}%</span>
                         </div>
                       </div>
                     </div>
@@ -1602,24 +2118,40 @@ function ResumeBuilderPage() {
                   <Card 
                     key={resume.id} 
                     onClick={() => handleEditResume(resume)}
-                    className="group bg-card border border-border/85 rounded-xl overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.02)] hover:border-slate-350 dark:hover:border-zinc-700 transition-all duration-300 flex flex-row items-center justify-between p-4 gap-4 cursor-pointer"
+                    style={{
+                      ['--theme-color' as any]: cardAccentColor,
+                      ['--theme-bg' as any]: `${cardAccentColor}04`,
+                      ['--theme-border-hover' as any]: `${cardAccentColor}50`,
+                      ['--theme-glow' as any]: `0 8px 25px -10px ${cardAccentColor}18`,
+                    }}
+                    className="group bg-card hover:bg-[var(--theme-bg)] border border-border/85 hover:border-[var(--theme-border-hover)] rounded-xl overflow-hidden hover:shadow-[var(--theme-glow)] transition-all duration-300 flex flex-row items-center justify-between p-4 gap-4 cursor-pointer relative"
                   >
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                    {/* Radial colorful glow inside the card, active on hover */}
+                    <div 
+                      className="absolute top-1/2 right-1/4 -translate-y-1/2 w-48 h-48 rounded-full opacity-0 group-hover:opacity-[0.14] blur-[45px] transition-all duration-500 pointer-events-none z-0" 
+                      style={{
+                        background: `radial-gradient(circle, ${cardAccentColor} 0%, transparent 70%)`
+                      }}
+                    />
+
+                    <div className="flex items-center gap-4 flex-1 min-w-0 relative z-10">
                       {/* Accent color left bar */}
                       <div className="w-1.5 h-12 rounded-full shrink-0" style={{ backgroundColor: cardAccentColor }} />
                       
                       {/* Name & Updated info */}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2.5">
-                          <h4 className="font-bold text-foreground text-sm truncate group-hover:text-[#4f46e5] dark:group-hover:text-indigo-400 transition-colors">{resume.name || "Untitled Resume"}</h4>
+                          <h4 className="font-bold text-foreground text-sm truncate group-hover:text-[var(--theme-color)] transition-colors">{resume.name || "Untitled Resume"}</h4>
                           {resume.isPublished ? (
-                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/15 text-[8px] font-black uppercase rounded px-1.5 py-0.5 tracking-wider shrink-0">
-                              Live
-                            </Badge>
+                            <span className="inline-flex items-center gap-1 border border-emerald-500/20 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20 dark:text-emerald-400 text-[8px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded select-none shrink-0">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              LIVE
+                            </span>
                           ) : (
-                            <Badge variant="outline" className="text-[8px] font-bold uppercase rounded px-1.5 py-0.5 tracking-wider border-border text-muted-foreground shrink-0">
-                              Draft
-                            </Badge>
+                            <span className="inline-flex items-center gap-1 border border-amber-500/20 text-amber-600 bg-amber-50/50 dark:border-amber-500/15 dark:bg-amber-950/10 dark:text-amber-400 text-[8px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded select-none shrink-0">
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                              DRAFT
+                            </span>
                           )}
                         </div>
                         <p className="text-[10px] text-muted-foreground font-medium mt-1 truncate">
@@ -1629,8 +2161,14 @@ function ResumeBuilderPage() {
                     </div>
 
                     {/* Progress Completeness */}
-                    <div className="hidden md:flex items-center gap-2 shrink-0">
-                      <div className="flex items-center gap-1.5 bg-secondary/50 rounded-lg px-2.5 py-1 border border-border/50">
+                    <div className="hidden md:flex items-center gap-2 shrink-0 relative z-10">
+                      <div 
+                        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 border transition-colors duration-300"
+                        style={{
+                          backgroundColor: `${cardAccentColor}08`,
+                          borderColor: `${cardAccentColor}15`,
+                        }}
+                      >
                         <svg className="h-4 w-4 transform -rotate-90 select-none shrink-0" viewBox="0 0 36 36">
                           <path
                             className="text-zinc-150 dark:text-zinc-800"
@@ -1640,7 +2178,7 @@ function ResumeBuilderPage() {
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                           />
                           <path
-                            className="text-emerald-500"
+                            style={{ color: cardAccentColor }}
                             strokeWidth="4"
                             strokeDasharray={`${percent}, 100`}
                             strokeLinecap="round"
@@ -1649,12 +2187,12 @@ function ResumeBuilderPage() {
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                           />
                         </svg>
-                        <span className="text-[10px] text-foreground font-bold">{percent}% Complete</span>
+                        <span className="text-[10px] font-bold transition-colors duration-300" style={{ color: cardAccentColor }}>{percent}% Complete</span>
                       </div>
                     </div>
 
                     {/* Actions and details */}
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0 relative z-10">
                       <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider hidden sm:inline">
                         Edited {getRelativeTimeString(resume.updatedAt)}
                       </span>
@@ -1698,13 +2236,14 @@ function ResumeBuilderPage() {
         </div>
         {templateModalJSX}
         {deleteModalJSX}
+        {downloadModalJSX}
       </div>
     );
   }
 
   // Editor View
   return (
-    <div className="w-full bg-background min-h-screen text-slate-800 dark:text-zinc-100 antialiased selection:bg-emerald-100 selection:text-emerald-800 print:bg-white print:text-slate-900">
+    <div className="w-full bg-transparent min-h-screen text-slate-800 dark:text-zinc-100 antialiased selection:bg-emerald-100 selection:text-emerald-800 print:bg-white print:text-slate-900">
       {/* Mobile Tabs */}
       <div className="flex lg:hidden justify-center px-4 mt-6 mb-4 no-print">
         <div className="flex w-full max-w-xs bg-secondary p-0.5 rounded-xl border border-border">
@@ -1754,10 +2293,15 @@ function ResumeBuilderPage() {
                 variant="outline"
                 size="sm"
                 onClick={downloadPDF}
-                className="h-8 w-8 rounded-md border border-border bg-card hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer flex items-center justify-center shadow-sm"
-                title="Download PDF"
+                disabled={isDownloading}
+                className="h-8 w-8 rounded-md border border-border bg-card hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer flex items-center justify-center shadow-sm disabled:opacity-50"
+                title={isDownloading ? "Generating PDF..." : "Download PDF"}
               >
-                <Download className="h-3.5 w-3.5" />
+                {isDownloading ? (
+                  <span className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-muted-foreground border-t-transparent inline-block" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" />
+                )}
               </Button>
             </div>
           </div>
@@ -1790,13 +2334,19 @@ function ResumeBuilderPage() {
           </div>
 
           <Tabs defaultValue="branding" className="w-full space-y-5">
-            <TabsList className="grid grid-cols-2 bg-secondary p-1 rounded-lg h-9.5 border border-border">
-              <TabsTrigger value="branding" className="text-xs font-bold uppercase tracking-wider rounded-md data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
-                <User className="h-3.5 w-3.5 mr-1.5" />
+            <TabsList className="flex w-full border-b border-border/65 bg-transparent p-0 gap-6 h-10 rounded-none justify-start">
+              <TabsTrigger 
+                value="branding" 
+                className="h-full px-1 py-2 text-xs font-black uppercase tracking-wider bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-transparent shadow-none hover:text-foreground transition-all duration-200 text-muted-foreground/85 flex items-center gap-1.5 focus-visible:ring-0 focus-visible:outline-none cursor-pointer"
+              >
+                <User className="h-3.5 w-3.5" />
                 Profile
               </TabsTrigger>
-              <TabsTrigger value="content" className="text-xs font-bold uppercase tracking-wider rounded-md data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground">
-                <Layers className="h-3.5 w-3.5 mr-1.5" />
+              <TabsTrigger 
+                value="content" 
+                className="h-full px-1 py-2 text-xs font-black uppercase tracking-wider bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-transparent shadow-none hover:text-foreground transition-all duration-200 text-muted-foreground/85 flex items-center gap-1.5 focus-visible:ring-0 focus-visible:outline-none cursor-pointer"
+              >
+                <Layers className="h-3.5 w-3.5" />
                 Sections
               </TabsTrigger>
             </TabsList>
@@ -2175,19 +2725,19 @@ function ResumeBuilderPage() {
                       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[10px] text-slate-500 font-medium">
                         {personalInfo.location && (
                           <span className="flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5" style={{ color: styleConfig.themeColor }} />
+                            <MapPinIcon className="h-3.5 w-3.5" style={{ color: styleConfig.themeColor }} />
                             <span>{personalInfo.location}</span>
                           </span>
                         )}
                         {personalInfo.phone && (
                           <span className="flex items-center gap-1">
-                            <Phone className="h-3.5 w-3.5" style={{ color: styleConfig.themeColor }} />
+                            <PhoneIcon className="h-3.5 w-3.5" style={{ color: styleConfig.themeColor }} />
                             <a href={`tel:${personalInfo.phone}`} className="hover:underline text-slate-600">{personalInfo.phone}</a>
                           </span>
                         )}
                         {personalInfo.email && (
                           <span className="flex items-center gap-1">
-                            <Mail className="h-3.5 w-3.5" style={{ color: styleConfig.themeColor }} />
+                            <MailIcon className="h-3.5 w-3.5" style={{ color: styleConfig.themeColor }} />
                             <a href={`mailto:${personalInfo.email}`} className="hover:underline text-slate-600">{personalInfo.email}</a>
                           </span>
                         )}
@@ -2204,7 +2754,7 @@ function ResumeBuilderPage() {
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-1 hover:underline text-slate-500"
                               >
-                                {social.platform === "Github" ? <Github className="h-3 w-3" style={{ color: styleConfig.themeColor }} /> : <Linkedin className="h-3 w-3" style={{ color: styleConfig.themeColor }} />}
+                                {social.platform === "Github" ? <GithubIcon className="h-3 w-3" style={{ color: styleConfig.themeColor }} /> : <LinkedinIcon className="h-3 w-3" style={{ color: styleConfig.themeColor }} />}
                                 <span>{social.url.replace("https://", "").replace("http://", "")}</span>
                               </a>
                             );
@@ -2277,9 +2827,9 @@ function ResumeBuilderPage() {
                         </div>
                       </div>
                       <div className="text-[10px] text-slate-500 space-y-1 relative z-10 text-left sm:text-right shrink-0">
-                        {personalInfo.location && <div className="flex items-center sm:justify-end gap-1"><span>{personalInfo.location}</span><MapPin className="h-3 w-3 text-slate-400" /></div>}
-                        {personalInfo.phone && <div className="flex items-center sm:justify-end gap-1"><a href={`tel:${personalInfo.phone}`} className="hover:underline font-semibold text-slate-750">{personalInfo.phone}</a><Phone className="h-3 w-3 text-slate-400" /></div>}
-                        {personalInfo.email && <div className="flex items-center sm:justify-end gap-1"><a href={`mailto:${personalInfo.email}`} className="hover:underline font-semibold text-slate-750">{personalInfo.email}</a><Mail className="h-3 w-3 text-slate-400" /></div>}
+                        {personalInfo.location && <div className="flex items-center sm:justify-end gap-1"><span>{personalInfo.location}</span><MapPinIcon className="h-3 w-3 text-slate-400" style={{ color: "#94a3b8" }} /></div>}
+                        {personalInfo.phone && <div className="flex items-center sm:justify-end gap-1"><a href={`tel:${personalInfo.phone}`} className="hover:underline font-semibold text-slate-750">{personalInfo.phone}</a><PhoneIcon className="h-3 w-3 text-slate-400" style={{ color: "#94a3b8" }} /></div>}
+                        {personalInfo.email && <div className="flex items-center sm:justify-end gap-1"><a href={`mailto:${personalInfo.email}`} className="hover:underline font-semibold text-slate-750">{personalInfo.email}</a><MailIcon className="h-3 w-3 text-slate-400" style={{ color: "#94a3b8" }} /></div>}
                       </div>
                     </div>
                   )}
@@ -2293,15 +2843,15 @@ function ResumeBuilderPage() {
                         <p className="text-xs font-bold uppercase tracking-widest text-white/80 mt-1">{personalInfo.title}</p>
                       </div>
                       <div className="text-[10px] text-white/90 space-y-1 text-center sm:text-right font-medium">
-                        {personalInfo.location && <div className="flex items-center justify-center sm:justify-end gap-1"><span>{personalInfo.location}</span><MapPin className="h-3 w-3 text-white/70" /></div>}
-                        {personalInfo.phone && <div className="flex items-center justify-center sm:justify-end gap-1"><a href={`tel:${personalInfo.phone}`} className="hover:underline">{personalInfo.phone}</a><Phone className="h-3 w-3 text-white/70" /></div>}
-                        {personalInfo.email && <div className="flex items-center justify-center sm:justify-end gap-1"><a href={`mailto:${personalInfo.email}`} className="hover:underline">{personalInfo.email}</a><Mail className="h-3 w-3 text-white/70" /></div>}
+                        {personalInfo.location && <div className="flex items-center justify-center sm:justify-end gap-1"><span>{personalInfo.location}</span><MapPinIcon className="h-3 w-3 text-white/70" style={{ color: "rgba(255, 255, 255, 0.7)" }} /></div>}
+                        {personalInfo.phone && <div className="flex items-center justify-center sm:justify-end gap-1"><a href={`tel:${personalInfo.phone}`} className="hover:underline">{personalInfo.phone}</a><PhoneIcon className="h-3 w-3 text-white/70" style={{ color: "rgba(255, 255, 255, 0.7)" }} /></div>}
+                        {personalInfo.email && <div className="flex items-center justify-center sm:justify-end gap-1"><a href={`mailto:${personalInfo.email}`} className="hover:underline">{personalInfo.email}</a><MailIcon className="h-3 w-3 text-white/70" style={{ color: "rgba(255, 255, 255, 0.7)" }} /></div>}
                         {personalInfo.socials.map((social, idx) => (
                           <div key={idx} className="flex items-center justify-center sm:justify-end gap-1">
                             <a href={social.url.startsWith("http") ? social.url : `https://${social.url}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
                               {social.url.replace("https://", "").replace("http://", "")}
                             </a>
-                            {social.platform === "Github" ? <Github className="h-3 w-3 text-white/70" /> : <Linkedin className="h-3 w-3 text-white/70" />}
+                            {social.platform === "Github" ? <GithubIcon className="h-3 w-3 text-white/70" style={{ color: "rgba(255, 255, 255, 0.7)" }} /> : <LinkedinIcon className="h-3 w-3 text-white/70" style={{ color: "rgba(255, 255, 255, 0.7)" }} />}
                           </div>
                         ))}
                       </div>
@@ -2317,15 +2867,15 @@ function ResumeBuilderPage() {
                         <p className="text-xs font-bold uppercase tracking-wider mt-1" style={{ color: styleConfig.themeColor }}>{personalInfo.title}</p>
                       </div>
                       <div className="text-[10px] text-slate-500 space-y-1 text-right font-medium">
-                        {personalInfo.location && <div className="flex items-center justify-end gap-1"><span>{personalInfo.location}</span><MapPin className="h-3 w-3" style={{ color: styleConfig.themeColor }} /></div>}
-                        {personalInfo.phone && <div className="flex items-center justify-end gap-1"><a href={`tel:${personalInfo.phone}`} className="hover:underline text-slate-650 font-semibold">{personalInfo.phone}</a><Phone className="h-3 w-3" style={{ color: styleConfig.themeColor }} /></div>}
-                        {personalInfo.email && <div className="flex items-center justify-end gap-1"><a href={`mailto:${personalInfo.email}`} className="hover:underline text-slate-650 font-semibold">{personalInfo.email}</a><Mail className="h-3 w-3" style={{ color: styleConfig.themeColor }} /></div>}
+                        {personalInfo.location && <div className="flex items-center justify-end gap-1"><span>{personalInfo.location}</span><MapPinIcon className="h-3 w-3" style={{ color: styleConfig.themeColor }} /></div>}
+                        {personalInfo.phone && <div className="flex items-center justify-end gap-1"><a href={`tel:${personalInfo.phone}`} className="hover:underline text-slate-650 font-semibold">{personalInfo.phone}</a><PhoneIcon className="h-3 w-3" style={{ color: styleConfig.themeColor }} /></div>}
+                        {personalInfo.email && <div className="flex items-center justify-end gap-1"><a href={`mailto:${personalInfo.email}`} className="hover:underline text-slate-650 font-semibold">{personalInfo.email}</a><MailIcon className="h-3 w-3" style={{ color: styleConfig.themeColor }} /></div>}
                         {personalInfo.socials.map((social, idx) => (
                           <div key={idx} className="flex items-center justify-end gap-1">
                             <a href={social.url.startsWith("http") ? social.url : `https://${social.url}`} target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-650 font-semibold">
                               {social.url.replace("https://", "").replace("http://", "")}
                             </a>
-                            {social.platform === "Github" ? <Github className="h-3 w-3" style={{ color: styleConfig.themeColor }} /> : <Linkedin className="h-3 w-3" style={{ color: styleConfig.themeColor }} />}
+                            {social.platform === "Github" ? <GithubIcon className="h-3 w-3" style={{ color: styleConfig.themeColor }} /> : <LinkedinIcon className="h-3 w-3" style={{ color: styleConfig.themeColor }} />}
                           </div>
                         ))}
                       </div>
@@ -2357,7 +2907,7 @@ function ResumeBuilderPage() {
                           {personalInfo.location && (
                             <div className="flex items-center justify-end gap-1">
                               <span>{personalInfo.location}</span>
-                              <MapPin className="h-3 w-3" style={{ color: styleConfig.themeColor }} />
+                              <MapPinIcon className="h-3 w-3" style={{ color: styleConfig.themeColor }} />
                             </div>
                           )}
                           {personalInfo.phone && (
@@ -2365,7 +2915,7 @@ function ResumeBuilderPage() {
                               <a href={`tel:${personalInfo.phone}`} className="text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
                                 {personalInfo.phone}
                               </a>
-                              <Phone className="h-3 w-3 text-blue-600" />
+                              <PhoneIcon className="h-3 w-3 text-blue-600" style={{ color: "#2563eb" }} />
                             </div>
                           )}
                           {personalInfo.email && (
@@ -2373,7 +2923,7 @@ function ResumeBuilderPage() {
                               <a href={`mailto:${personalInfo.email}`} className="text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
                                 {personalInfo.email}
                               </a>
-                              <Mail className="h-3 w-3 text-blue-600" />
+                              <MailIcon className="h-3 w-3 text-blue-600" style={{ color: "#2563eb" }} />
                             </div>
                           )}
                         </div>
@@ -2390,7 +2940,7 @@ function ResumeBuilderPage() {
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer font-medium"
                               >
-                                {social.platform === "Github" ? <Github className="h-3 w-3 text-blue-600" /> : <Linkedin className="h-3 w-3 text-blue-600" />}
+                                {social.platform === "Github" ? <GithubIcon className="h-3 w-3 text-blue-600" style={{ color: "#2563eb" }} /> : <LinkedinIcon className="h-3 w-3 text-blue-600" style={{ color: "#2563eb" }} />}
                                 <span>{social.url.replace("https://", "").replace("http://", "")}</span>
                               </a>
                             );
@@ -2667,6 +3217,7 @@ function ResumeBuilderPage() {
 
       {/* Canva-style Template Selector Modal */}
       {templateModalJSX}
+      {downloadModalJSX}
     </div>
   );
 }

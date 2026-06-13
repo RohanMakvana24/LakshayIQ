@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   X, 
+  ArrowLeft,
   Sparkles, 
   Code, 
   FileText, 
@@ -169,7 +170,7 @@ function StudentProjectsPage() {
   const activeTrust = DICTIONARY.trust[lang];
 
   return (
-    <div className="w-full bg-gradient-to-tr from-background via-emerald-500/[0.02] to-sky-500/[0.02] text-foreground antialiased relative rounded-3xl p-4 md:p-8 pt-4 md:pt-6 min-h-screen flex flex-col justify-start items-center border border-border shadow-sm overflow-x-hidden">
+    <div className="w-full text-foreground antialiased relative py-2 flex flex-col justify-start items-center overflow-x-hidden">
       
       {/* Premium Language Selection Modal */}
       {showModal && typeof window !== "undefined" && document.body && createPortal(
@@ -246,7 +247,7 @@ function StudentProjectsPage() {
               className="h-10 w-10 rounded-full border border-border bg-card shadow-sm hover:bg-muted shrink-0 cursor-pointer transition-all duration-200 hover:-translate-x-0.5 active:scale-95"
               title="Return Dashboard"
             >
-              <X className="h-5 w-5 text-muted-foreground" />
+              <ArrowLeft className="h-5 w-5 text-muted-foreground" />
             </Button>
             <div className="space-y-1">
               <div className="flex items-center gap-2">

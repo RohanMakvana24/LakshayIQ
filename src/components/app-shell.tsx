@@ -676,8 +676,6 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
               {isDarkMode ? <Sun className="h-4.5 w-4.5 animate-[spin_12s_linear_infinite]" /> : <Moon className="h-4.5 w-4.5" />}
             </Button>
 
-            <span className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 mx-1" />
-
             <NotificationBell variant={variant} />
           </div>
         </header>

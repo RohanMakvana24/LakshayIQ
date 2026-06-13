@@ -28,7 +28,11 @@ function AdminProfilePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [updatingPassword, setUpdatingPassword] = useState(false);
 
-  const isEmailUser = user?.app_metadata?.provider === "email";
+  const isGoogleUser = user?.app_metadata?.provider === "google" || 
+                       user?.app_metadata?.providers?.includes("google") ||
+                       user?.identities?.some(identity => identity.provider === "google");
+
+  const isEmailUser = !isGoogleUser && user?.app_metadata?.provider === "email";
 
   // Sync state when profile loads
   useEffect(() => {

@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
-import { Input } from "@/components/ui/input";
 import {
   BookOpen,
   ArrowRight,
@@ -189,37 +188,52 @@ function UniversityPage() {
           </div>
         </div>
 
-        {/* Controls Bar */}
-        <div className="bg-card/70 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.02)] border border-border/80 p-3 flex flex-col sm:flex-row items-center gap-3 mb-5">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
+        {/* Controls Bar - Premium Frameless Unique Design */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pt-2 pb-1 border-b border-border/40">
+          {/* Left: Sleek search box with active bottom border accent */}
+          <div className="relative flex-1 max-w-md w-full">
+            <Search className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
               type="text"
               placeholder="Search courses by name or description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 border-border bg-card/50 text-foreground rounded-lg text-sm focus-visible:ring-emerald-500/20"
+              className="w-full bg-transparent pl-7 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/75 focus:outline-none border-b-2 border-border/60 focus:border-emerald-500 transition-colors duration-300 font-medium"
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-2.5 py-1.5">
-              <SlidersHorizontal className="h-3 w-3 text-muted-foreground" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-transparent text-xs font-medium text-muted-foreground focus:outline-none"
-              >
-                <option value="name-asc">Alphabetical (A-Z)</option>
-                <option value="sem-desc">Semesters: High to Low</option>
-                <option value="sem-asc">Semesters: Low to High</option>
-              </select>
+          {/* Right: Quick Sort Pill Selector */}
+          <div className="flex items-center gap-2 shrink-0 overflow-x-auto scrollbar-none py-1 w-full md:w-auto">
+            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mr-1 hidden xs:inline-block">Sort by:</span>
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              {(
+                [
+                  { id: "name-asc", label: "A-Z" },
+                  { id: "sem-desc", label: "Semesters (High-Low)" },
+                  { id: "sem-asc", label: "Semesters (Low-High)" }
+                ] as const
+              ).map((opt) => {
+                const isSel = sortBy === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSortBy(opt.id)}
+                    className={`flex-1 sm:flex-none text-center px-1 pb-1 pt-1 text-[10px] font-extrabold uppercase tracking-wide transition-all duration-200 cursor-pointer border-b-2 ${
+                      isSel
+                        ? "border-emerald-500 text-emerald-600 dark:text-emerald-400 font-extrabold"
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/30"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
         {/* Shaded Tab Bar (like reference image) */}
-        <div className="flex border-b border-border/80 w-full mb-4 overflow-x-auto scrollbar-none bg-muted/30 dark:bg-card/30 p-1 gap-1">
+        <div className="flex flex-nowrap border-b border-border/80 w-full mb-4 overflow-x-auto scrollbar-none bg-muted/30 dark:bg-card/30 p-1 gap-1">
           {(["all", "ug", "pg", "wishlisted"] as const).map((tab) => {
             const label = tab === "all" ? "All Programs" : tab === "ug" ? "Undergraduate" : tab === "pg" ? "Postgraduate" : "Wishlisted";
             const isActive = activeTab === tab;
@@ -227,7 +241,7 @@ function UniversityPage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`py-2 px-4 text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                className={`shrink-0 py-1.5 px-2.5 sm:py-2 sm:px-4 text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                   isActive
                     ? "bg-emerald-600 text-white shadow-sm rounded-none"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted rounded-none"
