@@ -1,6 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
-import { motion } from "framer-motion";
 import { LogOut, Search, Bell, ChevronRight, Menu, PanelLeftClose, PanelLeft, Sparkles, UserCircle, ChevronDown, Plus, ArrowLeft, Home, MessageSquare, X, Sun, Moon } from "lucide-react";
 import { BiSolidBookHeart } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
@@ -252,7 +251,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
             <div className="pb-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
               <Link to="/admin" className="flex items-center gap-2 font-black tracking-tight text-slate-900 dark:text-white" onClick={() => setMobileMenuOpen(false)}>
                 <div className="relative flex h-8 w-8 items-center justify-center shrink-0">
-                  <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-violet-500/50" />
+                  <div className="absolute inset-0 rounded-full border border-t-transparent border-violet-500/50" />
                   <div className="absolute inset-1 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-md flex items-center justify-center">
                     <BiSolidBookHeart className="h-3.5 w-3.5 text-white" />
                   </div>
@@ -300,7 +299,7 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
         {/* Far-left narrow bar — hidden on mobile */}
         <aside className="fixed inset-y-0 left-0 w-16 bg-white dark:bg-zinc-900 border-r border-slate-200/80 dark:border-zinc-800 hidden md:flex flex-col items-center justify-between py-4 z-40 shadow-[1px_0_5px_rgba(0,0,0,0.01)] print:hidden">
           <div className="relative flex h-10 w-10 items-center justify-center shrink-0">
-            <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-violet-500/50" />
+            <div className="absolute inset-0 rounded-full border border-t-transparent border-violet-500/50" />
             <div className="absolute inset-1 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 shadow-md flex items-center justify-center">
               <BiSolidBookHeart className="h-4.5 w-4.5 text-white" />
             </div>
@@ -598,9 +597,9 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
         {/* --- Global Premium Student Mesh Gradient Background --- */}
         {variant === "student" && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-            <motion.div animate={{ x: [0, 40, -30, 0], y: [0, -50, 30, 0] }} transition={{ duration: 24, repeat: Infinity, ease: "linear" }} className="absolute -top-1/4 -right-1/4 w-[65%] h-[65%] rounded-full bg-primary/[0.05] blur-[120px]" />
-            <motion.div animate={{ x: [0, -40, 30, 0], y: [0, 40, -30, 0] }} transition={{ duration: 28, repeat: Infinity, ease: "linear" }} className="absolute -bottom-1/4 -left-1/4 w-[55%] h-[55%] rounded-full bg-emerald-500/[0.04] blur-[120px]" />
-            <motion.div animate={{ x: [0, 25, -35, 0], y: [0, -25, 35, 0] }} transition={{ duration: 32, repeat: Infinity, ease: "linear" }} className="absolute top-1/3 left-1/3 w-[35%] h-[35%] rounded-full bg-violet-500/[0.03] blur-[100px]" />
+            <div className="absolute -top-1/4 -right-1/4 w-[65%] h-[65%] rounded-full bg-primary/[0.05] blur-[120px]" />
+            <div className="absolute -bottom-1/4 -left-1/4 w-[55%] h-[55%] rounded-full bg-emerald-500/[0.04] blur-[120px]" />
+            <div className="absolute top-1/3 left-1/3 w-[35%] h-[35%] rounded-full bg-violet-500/[0.03] blur-[100px]" />
           </div>
         )}
 
@@ -621,11 +620,11 @@ export function AppShell({ items, variant, children }: { items: NavItem[]; varia
           <div className="flex md:hidden flex-1 justify-center items-center">
             <div className="flex items-center gap-2 select-none relative">
               {/* Soft Ambient Background Light Effect */}
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 bg-emerald-400/5 blur-lg rounded-full animate-[pulse_3s_infinite_ease-in-out]" />
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 bg-emerald-400/5 blur-lg rounded-full" />
 
               {/* Spinning futuristic outer orbit ring */}
               <div className="relative flex h-8 w-8 items-center justify-center shrink-0">
-                <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-emerald-500/40" />
+                <div className="absolute inset-0 rounded-full border border-t-transparent border-emerald-500/40" />
                 <div className="absolute inset-0 rounded-full border border-teal-500/10" />
                 
                 {/* Inner glowing core background */}
@@ -755,7 +754,7 @@ export function BrandHeader({ variant, isCollapsed }: { variant: string; isColla
       <div className="flex items-center gap-3.5">
         <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
           {/* Spinning futuristic outer orbit ring */}
-          <div className="absolute inset-0 rounded-full border border-t-transparent animate-[spin_4s_linear_infinite] border-emerald-500/50" />
+          <div className="absolute inset-0 rounded-full border border-t-transparent border-emerald-500/50" />
           <div className="absolute inset-0 rounded-full border border-teal-500/20" />
           
           {/* Inner glowing core background */}

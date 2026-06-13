@@ -356,7 +356,7 @@
     border-color: var(--color-border);
   }
   html {
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth; removed to prevent page change hang */
   }
   html, body {
     background-color: var(--color-background);

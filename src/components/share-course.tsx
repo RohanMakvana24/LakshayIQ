@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Share2, Copy, Check, Send, Globe } from "lucide-react";
 import { FaWhatsapp, FaTwitter, FaLinkedin, FaTelegram } from "react-icons/fa";
-import { motion } from "framer-motion";
+
 
 interface ShareButtonProps {
   title: string;
@@ -150,18 +150,16 @@ export function ShareButton({ title, type, path }: ShareButtonProps) {
               {shareChannels.map((channel) => {
                 const Icon = channel.icon;
                 return (
-                  <motion.a
+                  <a
                     key={channel.name}
                     href={channel.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                     className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border border-white/5 shadow-sm ${channel.color}`}
                   >
                     <Icon className="h-4.5 w-4.5" />
                     <span>{channel.name}</span>
-                  </motion.a>
+                  </a>
                 );
               })}
             </div>
