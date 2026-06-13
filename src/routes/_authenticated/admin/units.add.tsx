@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, BookOpen, Layers, FileText, Hash, Eye, HelpCircle, School, GraduationCap, ClipboardCopy, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, BookOpen, Layers, FileText, Hash, Eye, HelpCircle, School, GraduationCap, ClipboardCopy, Plus, Trash2, CheckCircle2, CalendarDays } from "lucide-react";
 import { useSupabaseTable } from "@/hooks/use-supabase-table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 type University = { id: string; name: string };
 type Course = { id: string; name: string; university_id?: string };
 type Subject = { id: string; name: string; subject_code: string | null; semester_id?: string };
-type Semester = { id: string; course_id: string };
+type Semester = { id: string; course_id: string; title: string | null; semester_number: number };
 
 export const Route = createFileRoute("/_authenticated/admin/units/add")({
   head: () => ({ meta: [{ title: "Add Academic Unit — Portal" }] }),
@@ -29,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/admin/units/add")({
 const UnitSchema = Yup.object().shape({
   universityId: Yup.string().required("University mapping is required"),
   courseId: Yup.string().required("Course mapping is required"),
+  semesterId: Yup.string().required("Semester mapping is required"),
   subjectId: Yup.string().required("Target course subject mapping is required"),
   unitNumber: Yup.number()
     .min(1, "Unit counter index must be at least 1")
@@ -59,6 +60,7 @@ function AddUnit() {
     initialValues: {
       universityId: "",
       courseId: "",
+      semesterId: "",
       subjectId: "",
       unitNumber: 1,
       title: "",
@@ -252,17 +254,15 @@ function AddUnit() {
     (c) => c.university_id === formik.values.universityId
   ) ?? [];
 
-  // 2. Filter subjects based on selected Course (via Semester tracking node)
-  const filteredSubjects = subjects?.filter((sub) => {
-    if (!formik.values.courseId) return false;
-    
-    // Find semesters belonging to the selected course
-    const targetSemesters = semesters?.filter(s => s.course_id === formik.values.courseId) ?? [];
-    const targetSemIds = targetSemesters.map(s => s.id);
-    
-    // Return true if subject is linked to any of these semesters
-    return sub.semester_id ? targetSemIds.includes(sub.semester_id) : false;
-  }) ?? [];
+  // 2. Filter semesters based on selected Course
+  const filteredSemesters = semesters?.filter(
+    (s) => s.course_id === formik.values.courseId
+  ) ?? [];
+
+  // 3. Filter subjects based on selected Semester
+  const filteredSubjects = subjects?.filter(
+    (sub) => sub.semester_id === formik.values.semesterId
+  ) ?? [];
 
   // Helper to extract selected subject details for the live preview
   const selectedSubjectData = subjects?.find(s => s.id === formik.values.subjectId);
@@ -346,7 +346,7 @@ function AddUnit() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* 1. Dynamic University Dropdown */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
@@ -358,6 +358,7 @@ function AddUnit() {
                   onValueChange={(val) => {
                     formik.setFieldValue("universityId", val);
                     formik.setFieldValue("courseId", "");
+                    formik.setFieldValue("semesterId", "");
                     formik.setFieldValue("subjectId", "");
                   }}
                 >
@@ -385,6 +386,7 @@ function AddUnit() {
                   disabled={!formik.values.universityId || loadingCourses}
                   onValueChange={(val) => {
                     formik.setFieldValue("courseId", val);
+                    formik.setFieldValue("semesterId", "");
                     formik.setFieldValue("subjectId", "");
                   }}
                 >
@@ -401,7 +403,34 @@ function AddUnit() {
                 </Select>
               </div>
 
-              {/* 3. Dependent Subject Selector Field */}
+              {/* 3. Dependent Semester Dropdown */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Select Semester <span className="text-rose-500">*</span></span>
+                </Label>
+                <Select 
+                  value={formik.values.semesterId} 
+                  disabled={!formik.values.courseId}
+                  onValueChange={(val) => {
+                    formik.setFieldValue("semesterId", val);
+                    formik.setFieldValue("subjectId", "");
+                  }}
+                >
+                  <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs focus:ring-0 focus:border-slate-900 bg-white transition-all disabled:bg-slate-50 disabled:text-slate-400">
+                    <SelectValue placeholder={!formik.values.courseId ? "Select Course first" : "Select Semester"} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200 bg-white shadow-lg max-h-[220px]">
+                    {filteredSemesters.map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-slate-50 cursor-pointer">
+                        {s.title || `Semester ${s.semester_number}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 4. Dependent Subject Selector Field */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
                   <BookOpen className="h-3.5 w-3.5 text-slate-400" />
@@ -409,11 +438,11 @@ function AddUnit() {
                 </Label>
                 <Select 
                   value={formik.values.subjectId} 
-                  disabled={!formik.values.courseId || loadingSubjects}
+                  disabled={!formik.values.semesterId || loadingSubjects}
                   onValueChange={(val) => formik.setFieldValue("subjectId", val)}
                 >
                   <SelectTrigger className="h-10 border-slate-200 rounded-xl text-xs focus:ring-0 focus:border-slate-900 bg-white transition-all disabled:bg-slate-50 disabled:text-slate-400">
-                    <SelectValue placeholder={!formik.values.courseId ? "Select Course first" : "Select Subject"} />
+                    <SelectValue placeholder={!formik.values.semesterId ? "Select Semester first" : "Select Subject"} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-200 bg-white shadow-lg max-h-[220px]">
                     {filteredSubjects.map((s) => (
