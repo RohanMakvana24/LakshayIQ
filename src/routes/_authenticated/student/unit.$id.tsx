@@ -194,7 +194,6 @@ function UnitPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
   const [loadedIframes, setLoadedIframes] = useState<Record<string, boolean>>({});
-  const [shouldPreload, setShouldPreload] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [markdownContent, setMarkdownContent] = useState<string>("");
   const [isMarkdownLoading, setIsMarkdownLoading] = useState<boolean>(false);
@@ -265,10 +264,12 @@ function UnitPage() {
     0
   );
 
+  const activeMaterial = unit.unit_materials?.find((m: any) => activePreview.type === "material" && activePreview.url === m.file_url);
+
   const isCurrentIframeLoading = activePreview.type === "material" && activePreview.url
     ? (isMarkdownMaterial 
         ? isMarkdownLoading 
-        : (unit.unit_materials?.some((m: any) => m.file_url === activePreview.url)
+        : (activeMaterial
             ? !loadedIframes[activePreview.url]
             : isIframeLoading))
     : isIframeLoading;
@@ -369,13 +370,6 @@ function UnitPage() {
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldPreload(true);
-    }, 800);
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -1055,98 +1049,52 @@ function UnitPage() {
                       )}
 
                       {/* For Material Preview: Pre-rendered persistent cached non-markdown iframes */}
-                      {unit.unit_materials?.filter((m: any) => !m.file_url?.includes(".md")).map((material: any) => {
-                        const isActive = activePreview.type === "material" && activePreview.url === material.file_url;
-                        const isNotion = material.file_url?.includes("notion");
-                        const isClickUp = material.file_url?.includes("clickup.com");
-                        const isAppFlowy = material.file_url?.includes("appflowy");
+                      {activePreview.type === "material" && activePreview.url && !activePreview.url.includes(".md") && (
+                        (() => {
+                          const isNotion = activePreview.url?.includes("notion");
+                          const isClickUp = activePreview.url?.includes("clickup.com");
+                          const isAppFlowy = activePreview.url?.includes("appflowy");
 
-                        let frameHeight = `calc(100% / ${zoomLevel})`;
-                        let frameTop = "0px";
-                        if (isNotion) {
-                          frameHeight = `calc((100% + 50px) / ${zoomLevel})`;
-                          frameTop = `calc(-50px / ${zoomLevel})`;
-                        } else if (isClickUp) {
-                          frameHeight = `calc((100% + 56px) / ${zoomLevel})`;
-                          frameTop = `calc(-56px / ${zoomLevel})`;
-                        } else if (isAppFlowy) {
-                          frameHeight = `calc((100% + 48px + 45px) / ${zoomLevel})`;
-                          frameTop = `calc(-48px / ${zoomLevel})`;
-                        }
+                          let frameHeight = `calc(100% / ${zoomLevel})`;
+                          let frameTop = "0px";
+                          if (isNotion) {
+                            frameHeight = `calc((100% + 50px) / ${zoomLevel})`;
+                            frameTop = `calc(-50px / ${zoomLevel})`;
+                          } else if (isClickUp) {
+                            frameHeight = `calc((100% + 56px) / ${zoomLevel})`;
+                            frameTop = `calc(-56px / ${zoomLevel})`;
+                          } else if (isAppFlowy) {
+                            frameHeight = `calc((100% + 48px + 45px) / ${zoomLevel})`;
+                            frameTop = `calc(-48px / ${zoomLevel})`;
+                          }
 
-                        return (
-                          <iframe
-                            key={`material-frame-${material.id}`}
-                            title={material.title}
-                            src={formatEmbedUrl(material.file_url || "", "material")}
-                            onLoad={() => setLoadedIframes(prev => ({ ...prev, [material.file_url || ""]: true }))}
-                            style={{
-                              transform: `scale(${zoomLevel})`,
-                              transformOrigin: "top left",
-                              width: `${100 / zoomLevel}%`,
-                              height: frameHeight,
-                              top: frameTop,
-                              transition: "opacity 0.15s ease-out, transform 0s, width 0s, height 0s, top 0s",
-                              willChange: "transform",
-                            }}
-                            className={cn(
-                              "embed-frame border-0",
-                              isActive ? "embed-frame-ready z-10" : "opacity-0 pointer-events-none -z-10",
-                              isNotion && "notion-embed-frame",
-                              isClickUp && "clickup-embed-frame",
-                              isAppFlowy && "appflowy-embed-frame"
-                            )}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          />
-                        );
-                      })}
-
-                      {/* For Important Questions / Files: Dynamic iframe viewer fallback for non-markdown attachments */}
-                      {activePreview.type === "material" && 
-                       !activePreview.url?.includes(".md") && 
-                       !unit.unit_materials?.some((m: any) => m.file_url === activePreview.url) && (() => {
-                         const isNotion = activePreview.url?.includes("notion");
-                         const isClickUp = activePreview.url?.includes("clickup.com");
-                         const isAppFlowy = activePreview.url?.includes("appflowy");
-
-                         let frameHeight = `calc(100% / ${zoomLevel})`;
-                         let frameTop = "0px";
-                         if (isNotion) {
-                           frameHeight = `calc((100% + 50px) / ${zoomLevel})`;
-                           frameTop = `calc(-50px / ${zoomLevel})`;
-                         } else if (isClickUp) {
-                           frameHeight = `calc((100% + 56px) / ${zoomLevel})`;
-                           frameTop = `calc(-56px / ${zoomLevel})`;
-                         } else if (isAppFlowy) {
-                           frameHeight = `calc((100% + 48px + 45px) / ${zoomLevel})`;
-                           frameTop = `calc(-48px / ${zoomLevel})`;
-                         }
-
-                         return (
-                           <iframe
-                             key={`important-question-frame`}
-                             title={activePreview.title}
-                             src={formatEmbedUrl(activePreview.url, "material")}
-                             onLoad={() => setIsIframeLoading(false)}
-                             style={{
-                               transform: `scale(${zoomLevel})`,
-                               transformOrigin: "top left",
-                               width: `${100 / zoomLevel}%`,
-                               height: frameHeight,
-                               top: frameTop,
-                               transition: "opacity 0.15s ease-out, transform 0s, width 0s, height 0s, top 0s",
-                               willChange: "transform",
-                             }}
-                             className={cn(
-                               "embed-frame border-0 embed-frame-ready z-10",
-                               isNotion && "notion-embed-frame",
-                               isClickUp && "clickup-embed-frame",
-                               isAppFlowy && "appflowy-embed-frame"
-                             )}
-                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                           />
-                         );
-                       })()}                    </div>
+                          return (
+                            <iframe
+                              key={`active-material-frame`}
+                              title={activePreview.title}
+                              src={formatEmbedUrl(activePreview.url, "material")}
+                              onLoad={() => setLoadedIframes(prev => ({ ...prev, [activePreview.url || ""]: true }))}
+                              style={{
+                                transform: `scale(${zoomLevel})`,
+                                transformOrigin: "top left",
+                                width: `${100 / zoomLevel}%`,
+                                height: frameHeight,
+                                top: frameTop,
+                                transition: "opacity 0.15s ease-out, transform 0s, width 0s, height 0s, top 0s",
+                                willChange: "transform",
+                              }}
+                              className={cn(
+                                "embed-frame border-0 embed-frame-ready z-10",
+                                isNotion && "notion-embed-frame",
+                                isClickUp && "clickup-embed-frame",
+                                isAppFlowy && "appflowy-embed-frame"
+                              )}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            />
+                          );
+                        })()
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3 bg-gradient-to-br from-muted/20 to-muted/40">
@@ -1166,18 +1114,6 @@ function UnitPage() {
           </div>
         </div>
 
-      {/* Hidden preloader container to cache files natively in the background */}
-      {shouldPreload && (
-        <div className="hidden absolute w-0 h-0 overflow-hidden" aria-hidden="true">
-          {unit.unit_videos?.map((video: any) => (
-            <iframe
-              key={`preload-video-${video.id}`}
-              src={formatEmbedUrl(video.video_url || "", "video")}
-              className="w-0 h-0 border-0"
-            />
-          ))}
-        </div>
-      )}
 
 
 
