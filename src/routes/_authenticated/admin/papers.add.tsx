@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, BookOpen, Calendar, Layers, FileText, UploadCloud, X, Eye, ShieldCheck, FileUp, School, GraduationCap, BookMarked } from "lucide-react";
+import { ArrowLeft, Loader2, BookOpen, Calendar, Layers, FileText, UploadCloud, X, Eye, ShieldCheck, FileUp, School, GraduationCap, BookMarked, Plus } from "lucide-react";
 import { useSupabaseTable, slugify } from "@/hooks/use-supabase-table";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,20 +24,54 @@ export const Route = createFileRoute("/_authenticated/admin/papers/add")({
 });
 
 // Robust Formik Validation Matrix using Yup
+const formatTitle = (rawTitle: string) => {
+  if (!rawTitle) return "";
+  let title = rawTitle;
+  try {
+    title = decodeURIComponent(title);
+  } catch (e) {
+    // Ignore URI malformed error
+  }
+  
+  // Remove extensions
+  title = title.replace(/\.pdf(\.url)?$/i, '');
+  title = title.replace(/\.url$/i, '');
+  
+  // Remove leading emojis or specific document icons
+  title = title.replace(/^[\u{1F300}-\u{1F9FF}]\s*/u, '');
+  title = title.replace(/^📄\s*/, '');
+  title = title.trim();
+
+  // Try to match specific format: e.g., NEW2020-BCA1-FM21 - PROGRAMMING IN C
+  const match = title.match(/^([A-Za-z]+)(\d{4})-([A-Za-z0-9]+)-([A-Za-z0-9]+)/);
+  if (match) {
+    const prefix = match[1]; // NEW
+    const year = match[2]; // 2020
+    const paperCode = match[4]; // FM21
+    return `${prefix.toUpperCase()}-${year} | ${paperCode.toUpperCase()}`;
+  }
+  
+  return title;
+};
+
 const PaperSchema = Yup.object().shape({
   universityId: Yup.string().required("University selection is required"),
   courseId: Yup.string().required("Course selection is required"),
   semester: Yup.string().required("Semester selection is required"),
   subjectId: Yup.string().required("Target course subject mapping is required"),
-  title: Yup.string()
-    .min(5, "Title should be descriptive (Min 5 characters)")
-    .required("Examination paper title is required"),
-  year: Yup.number()
-    .min(1990, "Year parameter must be valid")
-    .max(2100, "Year parameter out of index range")
-    .required("Examination year parameter is required"),
-  fileUrl: Yup.string().url("Invalid asset deployment URL detected").required("Academic asset resource required"),
-  hasSolution: Yup.boolean().required("Solution status is required"),
+  papers: Yup.array().of(
+    Yup.object().shape({
+      title: Yup.string()
+        .min(5, "Title should be descriptive (Min 5 characters)")
+        .required("Examination paper title is required"),
+      year: Yup.number()
+        .min(1990, "Year parameter must be valid")
+        .max(2100, "Year parameter out of index range")
+        .required("Examination year parameter is required"),
+      fileUrl: Yup.string().url("Invalid asset deployment URL detected").required("Academic asset resource required"),
+      hasSolution: Yup.boolean().required("Solution status is required"),
+    })
+  ).min(1, "At least one paper is required")
 });
 
 function AddPaper() {
@@ -64,25 +98,31 @@ function AddPaper() {
       courseId: "",
       semester: "", // આ ડાયનેમિક ચેઇન માટે સેમેસ્ટર નંબર સ્ટોર કરશે
       subjectId: "",
-      title: "",
-      year: new Date().getFullYear(),
-      fileUrl: "",
-      hasSolution: false,
+      papers: [
+        {
+          title: "",
+          year: new Date().getFullYear(),
+          fileUrl: "",
+          hasSolution: false,
+        }
+      ]
     },
     validationSchema: PaperSchema,
     onSubmit: async (values) => {
       try {
         setSaving(true);
         
-        // Push payloads cleanly into the Datastore Registry
-        const ok = await insert({
+        const payloads = values.papers.map(p => ({
           subject_id: values.subjectId,
-          year: values.year,
+          year: p.year,
           semester: values.semester === "" ? null : Number(values.semester), // ડેટાબેઝના ઇન્ટિજર કૉલમ માટે
-          title: values.title.trim(),
-          file_url: values.fileUrl,
-          has_solution: values.hasSolution,
-        });
+          title: p.title.trim(),
+          file_url: p.fileUrl,
+          has_solution: p.hasSolution,
+        }));
+
+        // Push payloads cleanly into the Datastore Registry
+        const ok = await insert(payloads);
 
         if (ok) {
           nav({ to: "/admin/papers" });
@@ -286,93 +326,162 @@ function AddPaper() {
 
               <div className="border-t border-slate-100 my-2 pt-2" />
 
-              {/* Document Identity/Title Entry Field */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                  <FileText className="h-3.5 w-3.5 text-slate-400" />
-                  <span>Examination Resource Title <span className="text-rose-500">*</span></span>
-                </Label>
-                <Input 
-                  name="title"
-                  value={formik.values.title} 
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  placeholder="e.g., End Semester Theoretical Examination (Regular / External)"
-                  className={cn(
-                    "h-10 border-slate-200 rounded-lg text-xs focus-visible:ring-0 focus-visible:border-slate-900 transition-all bg-white",
-                    formik.touched.title && formik.errors.title && "border-rose-400 focus-visible:border-rose-500"
+              {formik.values.papers.map((paper, index) => (
+                <div key={index} className="space-y-5 border border-slate-200 rounded-lg p-4 bg-slate-50 relative mt-4">
+                  {/* remove button */}
+                  {formik.values.papers.length > 1 && (
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="absolute top-2 right-2 h-6 w-6 text-slate-400 hover:text-rose-500"
+                      onClick={() => {
+                        const newPapers = [...formik.values.papers];
+                        newPapers.splice(index, 1);
+                        formik.setFieldValue("papers", newPapers);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   )}
-                />
-                {formik.touched.title && formik.errors.title && (
-                  <p className="text-[11px] font-medium text-rose-500">{formik.errors.title}</p>
-                )}
-              </div>
+                  
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-5 w-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600">{index + 1}</div>
+                    <h3 className="text-xs font-bold text-slate-700">Paper Details</h3>
+                  </div>
 
-              {/* Term Year Only Field */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                  <span>Examination Term Year <span className="text-rose-500">*</span></span>
-                </Label>
-                <Input 
-                  name="year"
-                  type="number" 
-                  min={1990} 
-                  max={2100} 
-                  value={formik.values.year} 
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  className={cn(
-                    "h-10 border-slate-200 rounded-lg text-xs focus-visible:ring-0 focus-visible:border-slate-900 transition-all bg-white",
-                    formik.touched.year && formik.errors.year && "border-rose-400 focus-visible:border-rose-500"
-                  )}
-                />
-                {formik.touched.year && formik.errors.year && (
-                  <p className="text-[11px] font-medium text-rose-500">{formik.errors.year}</p>
-                )}
-              </div>
+                  {/* Document Identity/Title Entry Field */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                      <FileText className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Examination Resource Title <span className="text-rose-500">*</span></span>
+                    </Label>
+                    <Input 
+                      name={`papers[${index}].title`}
+                      value={paper.title} 
+                      onChange={(e) => {
+                        const formattedTitle = formatTitle(e.target.value);
+                        formik.setFieldValue(`papers[${index}].title`, formattedTitle);
+                      }}
+                      onBlur={formik.handleBlur}
+                      placeholder="e.g., End Semester Theoretical Examination (Regular / External)"
+                      className={cn(
+                        "h-10 border-slate-200 rounded-lg text-xs focus-visible:ring-0 focus-visible:border-slate-900 transition-all bg-white",
+                        formik.touched.papers?.[index]?.title && ((formik.errors.papers as any)?.[index] as any)?.title && "border-rose-400 focus-visible:border-rose-500"
+                      )}
+                    />
+                    {formik.touched.papers?.[index]?.title && ((formik.errors.papers as any)?.[index] as any)?.title && (
+                      <p className="text-[11px] font-medium text-rose-500">{((formik.errors.papers as any)?.[index] as any).title}</p>
+                    )}
+                  </div>
 
-              {/* PDF URL Input Field */}
-              <div className="space-y-1.5 pt-2">
-                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                  <FileUp className="h-3.5 w-3.5 text-slate-400" />
-                  <span>PDF URL / File URL <span className="text-rose-500">*</span></span>
-                </Label>
-                <Input 
-                  name="fileUrl"
-                  type="url" 
-                  value={formik.values.fileUrl} 
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  placeholder="https://example.com/paper.pdf"
-                  className={cn(
-                    "h-10 border-slate-200 rounded-lg text-xs focus-visible:ring-0 focus-visible:border-slate-900 transition-all bg-white",
-                    formik.touched.fileUrl && formik.errors.fileUrl && "border-rose-400 focus-visible:border-rose-500"
-                  )}
-                />
-                {formik.touched.fileUrl && formik.errors.fileUrl && (
-                  <p className="text-[11px] font-medium text-rose-500">{formik.errors.fileUrl}</p>
-                )}
-              </div>
+                  {/* Term Year Only Field */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Examination Term Year <span className="text-rose-500">*</span></span>
+                    </Label>
+                    <Input 
+                      name={`papers[${index}].year`}
+                      type="number" 
+                      min={1990} 
+                      max={2100} 
+                      value={paper.year} 
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      className={cn(
+                        "h-10 border-slate-200 rounded-lg text-xs focus-visible:ring-0 focus-visible:border-slate-900 transition-all bg-white",
+                        formik.touched.papers?.[index]?.year && ((formik.errors.papers as any)?.[index] as any)?.year && "border-rose-400 focus-visible:border-rose-500"
+                      )}
+                    />
+                    {formik.touched.papers?.[index]?.year && ((formik.errors.papers as any)?.[index] as any)?.year && (
+                      <p className="text-[11px] font-medium text-rose-500">{((formik.errors.papers as any)?.[index] as any).year}</p>
+                    )}
+                  </div>
 
-              {/* Solution Selector Field */}
-              <div className="space-y-1.5 pt-2">
-                <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                  <span>Solution Included? <span className="text-rose-500">*</span></span>
-                </Label>
-                <Select 
-                  value={formik.values.hasSolution ? "true" : "false"}
-                  onValueChange={(val) => formik.setFieldValue("hasSolution", val === "true")}
-                >
-                  <SelectTrigger className="h-10 border-slate-200 rounded-lg text-xs bg-white">
-                    <SelectValue placeholder="Is solution included?" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-lg bg-white shadow-md">
-                    <SelectItem value="true" className="text-xs cursor-pointer">Yes, with solution</SelectItem>
-                    <SelectItem value="false" className="text-xs cursor-pointer">No, question paper only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  {/* PDF URL Input Field */}
+                  <div className="space-y-1.5 pt-2">
+                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                      <FileUp className="h-3.5 w-3.5 text-slate-400" />
+                      <span>PDF URL / File URL <span className="text-rose-500">*</span></span>
+                    </Label>
+                    <Input 
+                      name={`papers[${index}].fileUrl`}
+                      type="url" 
+                      value={paper.fileUrl} 
+                      onChange={(e) => {
+                        const rawUrl = e.target.value;
+                        let finalUrl = rawUrl;
+                        
+                        if (finalUrl.includes("github.com") && finalUrl.includes("/blob/")) {
+                          finalUrl = finalUrl.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
+                        }
+                        if (finalUrl.toLowerCase().endsWith(".url")) {
+                          finalUrl = finalUrl.slice(0, -4);
+                        }
+                        
+                        formik.setFieldValue(`papers[${index}].fileUrl`, finalUrl);
+                        
+                        if (!paper.title && rawUrl) {
+                          try {
+                            const urlObj = new URL(rawUrl);
+                            const pathParts = urlObj.pathname.split('/');
+                            const filename = pathParts[pathParts.length - 1];
+                            if (filename) {
+                              formik.setFieldValue(`papers[${index}].title`, formatTitle(filename));
+                            }
+                          } catch(err) {
+                            // ignore
+                          }
+                        }
+                      }}
+                      onBlur={formik.handleBlur}
+                      placeholder="https://example.com/paper.pdf"
+                      className={cn(
+                        "h-10 border-slate-200 rounded-lg text-xs focus-visible:ring-0 focus-visible:border-slate-900 transition-all bg-white",
+                        formik.touched.papers?.[index]?.fileUrl && ((formik.errors.papers as any)?.[index] as any)?.fileUrl && "border-rose-400 focus-visible:border-rose-500"
+                      )}
+                    />
+                    {formik.touched.papers?.[index]?.fileUrl && ((formik.errors.papers as any)?.[index] as any)?.fileUrl && (
+                      <p className="text-[11px] font-medium text-rose-500">{((formik.errors.papers as any)?.[index] as any).fileUrl}</p>
+                    )}
+                  </div>
+
+                  {/* Solution Selector Field */}
+                  <div className="space-y-1.5 pt-2">
+                    <Label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                      <span>Solution Included? <span className="text-rose-500">*</span></span>
+                    </Label>
+                    <Select 
+                      value={paper.hasSolution ? "true" : "false"}
+                      onValueChange={(val) => formik.setFieldValue(`papers[${index}].hasSolution`, val === "true")}
+                    >
+                      <SelectTrigger className="h-10 border-slate-200 rounded-lg text-xs bg-white">
+                        <SelectValue placeholder="Is solution included?" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-lg bg-white shadow-md">
+                        <SelectItem value="true" className="text-xs cursor-pointer">Yes, with solution</SelectItem>
+                        <SelectItem value="false" className="text-xs cursor-pointer">No, question paper only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add More Button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  formik.setFieldValue("papers", [
+                    ...formik.values.papers,
+                    { title: "", year: new Date().getFullYear(), fileUrl: "", hasSolution: false }
+                  ]);
+                }}
+                className="w-full mt-4 h-10 border-dashed border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-lg text-xs font-bold gap-2"
+              >
+                <Plus className="h-4 w-4" /> Add Another Paper
+              </Button>
 
             </form>
           </Card>
@@ -401,43 +510,47 @@ function AddPaper() {
             </div>
 
             {/* Simulated Live Frontend Render Interface Block */}
-            <div className="p-4 bg-slate-50/50 border border-slate-200/70 rounded-lg space-y-3 relative transition-all">
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1 flex-1">
-                  <span className="inline-flex items-center gap-1 text-[9px] uppercase font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-md">
-                    PYP Resource Registry
-                  </span>
-                  <h4 className="text-xs font-black text-slate-800 leading-snug pt-1 uppercase tracking-tight line-clamp-2">
-                    {formik.values.title || "Untitled Examination Document Core Header"}
-                  </h4>
-                </div>
-                
-                {/* Year Badge Icon Node */}
-                <div className="h-10 w-10 bg-slate-900 text-white rounded-lg flex flex-col items-center justify-center flex-shrink-0 shadow-sm font-mono">
-                  <span className="text-[8px] font-bold uppercase text-slate-400 leading-none">Term</span>
-                  <span className="text-xs font-black leading-none mt-1">{formik.values.year || "2026"}</span>
-                </div>
-              </div>
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+              {formik.values.papers.map((paper, idx) => (
+                <div key={idx} className="p-4 bg-slate-50/50 border border-slate-200/70 rounded-lg space-y-3 relative transition-all">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1 flex-1">
+                      <span className="inline-flex items-center gap-1 text-[9px] uppercase font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-md">
+                        PYP Resource Registry #{idx + 1}
+                      </span>
+                      <h4 className="text-xs font-black text-slate-800 leading-snug pt-1 uppercase tracking-tight line-clamp-2">
+                        {paper.title || "Untitled Examination Document"}
+                      </h4>
+                    </div>
+                    
+                    {/* Year Badge Icon Node */}
+                    <div className="h-10 w-10 bg-slate-900 text-white rounded-lg flex flex-col items-center justify-center flex-shrink-0 shadow-sm font-mono">
+                      <span className="text-[8px] font-bold uppercase text-slate-400 leading-none">Term</span>
+                      <span className="text-xs font-black leading-none mt-1">{paper.year || "2026"}</span>
+                    </div>
+                  </div>
 
-              {/* Sub parameters listing indicators */}
-              <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-[10px] font-semibold text-slate-500">
-                <div>Semester Block: <span className="text-slate-800 font-bold">{formik.values.semester ? `Semester ${formik.values.semester}` : "—"}</span></div>
-                <div className="truncate">Resource Link: <span className="text-emerald-600 font-bold">{formik.values.fileUrl ? "Ready" : "Pending Attachment"}</span></div>
-              </div>
-              <div className="pt-2 grid grid-cols-2 gap-2 text-[10px] font-semibold text-slate-500">
-                <div>Solution: <span className={formik.values.hasSolution ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>{formik.values.hasSolution ? "Included" : "Not Included"}</span></div>
-              </div>
+                  {/* Sub parameters listing indicators */}
+                  <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-[10px] font-semibold text-slate-500">
+                    <div>Semester Block: <span className="text-slate-800 font-bold">{formik.values.semester ? `Semester ${formik.values.semester}` : "—"}</span></div>
+                    <div className="truncate">Resource Link: <span className="text-emerald-600 font-bold">{paper.fileUrl ? "Ready" : "Pending"}</span></div>
+                  </div>
+                  <div className="pt-2 grid grid-cols-2 gap-2 text-[10px] font-semibold text-slate-500">
+                    <div>Solution: <span className={paper.hasSolution ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>{paper.hasSolution ? "Included" : "Not Included"}</span></div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Validation State Banner Message Alert */}
             <div className={cn(
               "p-3 rounded-lg border text-[10px] leading-normal flex items-center justify-center text-center font-medium transition-all",
-              formik.isValid && formik.values.fileUrl
+              formik.isValid && formik.values.papers.every(p => p.fileUrl)
                 ? "bg-emerald-50/40 border-emerald-100 text-emerald-600"
                 : "bg-amber-50/40 border-amber-100 text-amber-600"
             )}>
-              {formik.isValid && formik.values.fileUrl 
-                ? "Structure integrity checked. Clean deployment manifest ready." 
+              {formik.isValid && formik.values.papers.every(p => p.fileUrl) 
+                ? `${formik.values.papers.length} payloads structure integrity checked. Ready.` 
                 : "Awaiting valid file payload attachment and subject mappings before system compilation."}
             </div>
 

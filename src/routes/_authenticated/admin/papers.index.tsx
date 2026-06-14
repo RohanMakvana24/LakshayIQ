@@ -141,6 +141,9 @@ function ManagePapers() {
   const [updating, setUpdating] = useState(false);
 
   // Form Field Buffers
+  const [editUniversityId, setEditUniversityId] = useState("");
+  const [editCourseId, setEditCourseId] = useState("");
+  const [editSemesterId, setEditSemesterId] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const [title, setTitle] = useState("");
   const [year, setYear] = useState(new Date().getFullYear());
@@ -201,6 +204,28 @@ function ManagePapers() {
   // Initialize form properties inside current drawer context
   const handleEditInitialize = (paper: Row) => {
     setSelectedPaper(paper);
+
+    let foundUni = "";
+    let foundCourse = "";
+    let foundSem = "";
+    if (subjects && semesters && courses) {
+      const sub = subjects.find(s => s.id === paper.subject_id);
+      if (sub) {
+        foundSem = sub.semester_id;
+        const sem = semesters.find(s => s.id === sub.semester_id);
+        if (sem) {
+          foundCourse = sem.course_id;
+          const course = courses.find(c => c.id === sem.course_id);
+          if (course) {
+            foundUni = course.university_id;
+          }
+        }
+      }
+    }
+
+    setEditUniversityId(foundUni);
+    setEditCourseId(foundCourse);
+    setEditSemesterId(foundSem);
     setSubjectId(paper.subject_id);
     setTitle(paper.title);
     setYear(paper.year);
@@ -607,21 +632,107 @@ function ManagePapers() {
 
           <form onSubmit={handleCommitUpdates} className="space-y-4 pt-4">
             
+            {/* Edit Modal Cascaded Dropdowns */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-neutral-700 flex items-center gap-1">
+                <School className="h-3.5 w-3.5 text-neutral-400" />
+                <span>University *</span>
+              </Label>
+              <Select 
+                value={editUniversityId} 
+                onValueChange={(val) => {
+                  setEditUniversityId(val);
+                  setEditCourseId("");
+                  setEditSemesterId("");
+                  setSubjectId("");
+                }} 
+                required
+              >
+                <SelectTrigger className="h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all">
+                  <SelectValue placeholder="Select University" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-neutral-200 bg-white shadow-lg max-h-[200px]">
+                  {universities?.map((u) => (
+                    <SelectItem key={u.id} value={u.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 cursor-pointer">
+                      {u.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-neutral-700 flex items-center gap-1">
+                  <GraduationCap className="h-3.5 w-3.5 text-neutral-400" />
+                  <span>Course *</span>
+                </Label>
+                <Select 
+                  value={editCourseId} 
+                  onValueChange={(val) => {
+                    setEditCourseId(val);
+                    setEditSemesterId("");
+                    setSubjectId("");
+                  }} 
+                  disabled={!editUniversityId}
+                  required
+                >
+                  <SelectTrigger className="h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all">
+                    <SelectValue placeholder="Select Course" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-neutral-200 bg-white shadow-lg max-h-[200px]">
+                    {courses?.filter(c => c.university_id === editUniversityId).map((c) => (
+                      <SelectItem key={c.id} value={c.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 cursor-pointer">
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-neutral-700 flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5 text-neutral-400" />
+                  <span>Semester *</span>
+                </Label>
+                <Select 
+                  value={editSemesterId} 
+                  onValueChange={(val) => {
+                    setEditSemesterId(val);
+                    setSubjectId("");
+                  }} 
+                  disabled={!editCourseId}
+                  required
+                >
+                  <SelectTrigger className="h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all">
+                    <SelectValue placeholder="Select Semester" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-neutral-200 bg-white shadow-lg max-h-[200px]">
+                    {semesters?.filter(s => s.course_id === editCourseId).sort((a,b) => a.semester_number - b.semester_number).map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 cursor-pointer">
+                        Semester {s.semester_number}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             {/* Subject Dropdown Select */}
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-neutral-700 flex items-center gap-1">
                 <BookOpen className="h-3.5 w-3.5 text-neutral-400" />
                 <span>Parent Subject Link *</span>
               </Label>
-              <Select value={subjectId} onValueChange={setSubjectId} required>
-                <SelectTrigger className="h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all">
+              <Select value={subjectId} onValueChange={setSubjectId} disabled={!editSemesterId} required>
+                <SelectTrigger className="h-9 border-neutral-200 rounded-xl text-xs focus:ring-0 focus:border-neutral-400 bg-white transition-all disabled:opacity-50">
                   <SelectValue placeholder="Map core academic subject" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-neutral-200 bg-white shadow-lg max-h-[200px]">
                   {loadingSubjects ? (
                     <div className="flex items-center justify-center py-2"><Loader2 className="h-4 w-4 animate-spin text-neutral-400" /></div>
                   ) : (
-                    subjects?.map((s) => (
+                    subjects?.filter(s => s.semester_id === editSemesterId).map((s) => (
                       <SelectItem key={s.id} value={s.id} className="text-xs py-2 rounded-lg my-0.5 focus:bg-neutral-50 cursor-pointer">
                         {s.subject_code ? `[${s.subject_code.toUpperCase()}] ` : ""}{s.name}
                       </SelectItem>

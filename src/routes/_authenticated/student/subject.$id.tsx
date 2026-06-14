@@ -245,7 +245,7 @@ function SubjectPage() {
                 {papers.length} Papers
               </Badge>
             </div>
-            <div className="p-4">
+            <div className="p-4 max-h-[320px] overflow-y-auto">
               {papers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center py-8 rounded-lg border border-dashed border-border bg-muted/40">
                   <HelpCircle className="h-6 w-6 text-muted-foreground mb-1" />
@@ -304,7 +304,7 @@ function SubjectPage() {
                 <h2 className="font-extrabold text-sm text-foreground">Exam Timetable</h2>
               </div>
             </div>
-            <div className="p-4">
+            <div className="p-4 max-h-[320px] overflow-y-auto">
               {timetables.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center py-8 rounded-lg border border-dashed border-border bg-muted/40">
                   <AlertCircle className="h-6 w-6 text-muted-foreground mb-1" />

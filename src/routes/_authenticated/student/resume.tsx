@@ -1157,9 +1157,27 @@ function ResumeBuilderPage() {
           useCORS: true,
           logging: false,
           backgroundColor: "#ffffff",
-          windowWidth: 793,
-          windowHeight: 1122,
+          windowWidth: 1024,
+          windowHeight: 1448,
           imageTimeout: 0,
+          onclone: (clonedDoc) => {
+            // Force desktop layout by expanding iframe's html and body
+            const html = clonedDoc.documentElement;
+            const body = clonedDoc.body;
+            html.style.width = "1024px";
+            body.style.width = "1024px";
+            
+            // Reset mobile scaling overrides on the resume page itself
+            const pages = clonedDoc.querySelectorAll('.resume-page');
+            pages.forEach(p => {
+              const pageEl = p as HTMLElement;
+              pageEl.style.transform = 'none';
+              pageEl.style.width = '210mm';
+              pageEl.style.height = '297mm';
+              pageEl.style.maxWidth = 'none';
+              pageEl.style.margin = '0';
+            });
+          }
         });
         const imgData = canvas.toDataURL("image/jpeg", 0.98);
 

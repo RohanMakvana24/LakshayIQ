@@ -33,8 +33,8 @@ export function useSupabaseTable<T extends { id: string }>(
     return true;
   };
 
-  const insert = async (values: Record<string, unknown>) => {
-    const { error } = await supabase.from(table as never).insert(values as never);
+  const insert = async (values: any) => {
+    const { error } = await supabase.from(table as never).insert(values);
     if (error) { toast.error(error.message); return false; }
     toast.success("Saved");
     fetchAll();
